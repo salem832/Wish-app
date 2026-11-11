@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>WISH | ويش — نسخة تجريبية</title>
+<title>WISH | ويش — الحسابات وابدأ تجارتك</title>
 <style>
 :root{--bg:#070a12;--panel:#121827;--line:#273248;--txt:#f4f7fb;--muted:#a3b0c3;--pink:#ff4e87;--gold:#ffdc85;--teal:#2cddca}
 *{box-sizing:border-box}html,body{padding:0;margin:0;background:#050711;color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;min-height:100%;}button,input,select{font:inherit}button{cursor:pointer} .app{max-width:460px;margin:0 auto;min-height:100dvh;background:var(--bg);position:relative;box-shadow:0 0 30px #0008}
@@ -10,14 +10,81 @@ header{z-index:10;position:sticky;top:0;background:#070a12e8;backdrop-filter:blu
 section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{height:min(78dvh,760px);min-height:500px;margin:0;position:relative;overflow:hidden;border-bottom:4px solid #070a12;isolation:isolate}.art{position:absolute;inset:0;background:linear-gradient(135deg,var(--from),var(--to));display:grid;place-items:center;overflow:hidden}.art:before{pointer-events:none;content:'';position:absolute;inset:-50%;background:conic-gradient(from 0deg,transparent,#ffffff12,transparent,#ffffff20,transparent);animation:spin 18s linear infinite}.art .symbol{font-size:125px;filter:drop-shadow(0 15px 24px #0008);position:relative}.art .hint{pointer-events:none;position:absolute;top:18px;right:15px;background:#06091288;border:1px solid #ffffff22;border-radius:20px;padding:7px 12px;font-size:12px}.video{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.shadow{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#0000 48%,#000c 100%)}.details{pointer-events:none;position:absolute;bottom:23px;right:20px;left:76px;text-shadow:0 1px 5px #000b}.handle{font-weight:800;font-size:16px}.caption{font-size:14px;line-height:1.6;margin-top:7px}.tags{margin-top:12px;display:inline-block;padding:8px 11px;border-radius:13px;background:#0a1220c9;border:1px solid #ffffff25;font-size:13px;max-width:100%}.tags b{color:var(--gold)}.side{position:absolute;left:12px;bottom:35px;display:flex;flex-direction:column;gap:13px;align-items:center;z-index:2}.side button{width:49px;min-height:49px;display:grid;place-items:center;border:1px solid #ffffff3b;border-radius:16px;background:#101624b8;color:white;font-size:22px;box-shadow:0 4px 15px #0005}.side .label{font-size:10px;color:white;text-align:center;margin-top:-10px}.side .want{border:1px solid #ffb9cd;background:linear-gradient(135deg,#ff4d82,#ec356d);box-shadow:0 5px 22px #ff4d8255;font-size:16px;font-weight:900}
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,460px);height:74px;background:#0e1523f5;display:flex;align-items:center;justify-content:space-around;border-top:1px solid #263047;z-index:20;padding-bottom:env(safe-area-inset-bottom)}.nav button{background:none;border:0;color:#b6c2d5;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;min-width:67px}.nav button .icon{font-size:22px}.nav button.active{color:var(--pink)}.nav button.add .icon{font-size:24px;background:var(--pink);color:#fff;border-radius:12px;width:42px;line-height:35px}
 .content{padding:25px 20px}.h1{font-size:27px;font-weight:900;margin:5px 0 7px}.sub{color:var(--muted);font-size:14px;line-height:1.8;margin-bottom:20px}.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px;margin:12px 0}.item{display:flex;align-items:center;gap:12px}.itememoji{width:58px;height:58px;display:grid;place-items:center;background:#242b43;border-radius:16px;font-size:31px}.itemdetail{flex:1}.itemdetail b{display:block}.itemdetail small{color:var(--muted)}.btn{border:0;border-radius:12px;padding:12px 15px;background:var(--pink);color:white;font-weight:800}.btn.secondary{background:#283149;color:white}.btn.small{font-size:12px;padding:8px 11px}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.empty{border:1px dashed #3c4b61;border-radius:20px;padding:30px 20px;text-align:center;color:var(--muted);line-height:1.8;margin-top:20px}.empty .em{font-size:54px;display:block}label{font-size:13px;color:#dbe3f1;display:block;margin:18px 0 7px;font-weight:700}input,select{width:100%;border-radius:12px;border:1px solid #39445a;background:#0d1321;color:white;padding:12px 13px;outline:0}input:focus,select:focus{border-color:var(--pink)}input[type=file]{padding:13px;font-size:13px}.switch{display:flex;align-items:center;gap:12px;margin:15px 0}.switch input{width:20px;height:20px;accent-color:var(--pink)}.switch label{margin:0}.notice{font-size:12px;line-height:1.8;color:#bbcadc;background:#1b2636;border-radius:14px;padding:12px;margin-top:14px}.modalback{position:fixed;inset:0;background:#03050bc9;z-index:30;display:none;align-items:flex-end;justify-content:center}.modalback.show{display:flex}.modal{width:min(100%,460px);background:#172033;border:1px solid #3a4763;border-radius:26px 26px 0 0;padding:24px 22px 33px;box-shadow:0 0 45px #0009}.modal h2{margin:0 0 6px}.modal p{color:#b8c5d7;font-size:14px;line-height:1.7}.modal .btn{width:100%;margin-top:10px;text-align:center}.modal .close{float:left;background:#293449;color:white;border:0;border-radius:12px;font-size:19px;padding:3px 12px}.hintline{font-size:12px;color:#aec0d2;margin-top:9px}.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:#edf4ff;color:#182132;border-radius:15px;padding:12px 20px;max-width:90%;font-size:13px;font-weight:700;z-index:50;display:none;box-shadow:0 10px 25px #0005}.toast.show{display:block}.video-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;width:76px;height:76px;border:0;border-radius:50%;background:#fffdf2ed;color:#14151b;box-shadow:0 6px 30px #0009;font-size:33px;display:grid;place-items:center;touch-action:manipulation}.video-play.is-playing{display:none}.video-error{position:absolute;z-index:6;bottom:89px;left:15px;right:15px;background:#1b2638ee;border:1px solid #ff6682;color:white;border-radius:12px;padding:11px;font-size:12px;line-height:1.6;display:none;pointer-events:none}.video-error.show{display:block}@keyframes spin{to{transform:rotate(360deg)}}
+
+/* حسابات WISH - تحتاج ربط Supabase قبل أن تعمل */
+.auth-toggle{display:flex;gap:8px;margin:15px 0}
+.auth-toggle button{flex:1}
+.auth-toggle button.selected{background:var(--pink);color:white}
+.auth-feedback{color:#c1f1d9;font-size:13px;line-height:1.9;white-space:pre-wrap;margin-top:12px}
+.auth-feedback.error{color:#ffb8c6}
+.auth-name{font-size:20px;font-weight:800;overflow-wrap:anywhere}
+.auth-email{color:var(--muted);font-size:13px;overflow-wrap:anywhere;margin-top:6px}
+
+/* WISH seller demo: local storefront, no actual transactions */
+.seller-cta{text-align:center;background:linear-gradient(145deg,#281e40,#172033)}
+.seller-cta-icon{font-size:42px}.seller-cta h3{margin:5px 0 8px}.seller-cta p{color:#c2c8df;font-size:13px;line-height:1.9}.seller-cta .btn{width:100%;font-size:17px}.seller-cta small{display:block;margin-top:11px;color:#a7adc4}
+.seller-back{color:#ff9ebe;background:none;border:0;font-weight:800;padding:5px 0 15px}.seller-choice{display:flex;gap:8px}.seller-mode{flex:1;min-height:100px;color:#dbe2ef;background:#101827;border:1px solid #3b475f;border-radius:14px;padding:13px 7px;font-size:13px;font-weight:800}.seller-mode small{display:block;margin-top:10px;color:#afbdd0;font-size:10px;font-weight:400;line-height:1.5}.seller-mode.active{border:2px solid var(--pink);background:#3a203f;color:#fff}.seller-full{width:100%;margin-top:18px}.seller-heading{font-size:20px;font-weight:900;color:#ffe0e9;overflow-wrap:anywhere}.seller-product{border-top:1px solid #34405a;padding:14px 0}.seller-product b{display:block;overflow-wrap:anywhere}.seller-product small{color:#adbcd0;display:block;line-height:1.7;margin-top:3px}.seller-product .row{justify-content:space-between;align-items:center}.seller-product .price{color:#84e4cb;font-weight:850}.supplier-sample{display:flex;gap:7px;justify-content:space-between;align-items:center;border:1px solid #303d55;border-radius:13px;padding:10px;margin:9px 0;font-size:12px}.supplier-sample .btn{white-space:nowrap}.auth-status{min-height:20px;margin-top:12px}.seller-empty{color:#aabbd0;font-size:13px;line-height:1.9;padding:12px;border:1px dashed #45516a;border-radius:12px}#sellerSupplierFields[hidden]{display:none}
 </style>
 </head>
 <body><main class="app">
 <header><div class="brand">WISH <span>ويش</span></div><div class="tabs"><button class="active">لك</button><button onclick="openPage('wishes')">أمنياتي</button></div><div class="badge">نموذج تجريبي</div></header>
 <section id="feed" class="active"><div id="posts"></div></section>
 <section id="wishes"><div class="content"><div class="h1">❤️ أمنياتي</div><div class="sub">هنا تُحفظ المنتجات اللي تختار لها «أتمناها» أو «ناوي أشتريها».</div><div id="wishlist"></div></div></section>
-<section id="create"><div class="content"><div class="h1">🎬 انشر مقطعك</div><div class="sub">جرّب إضافة فيديو من جوالك وربط منتج فيه. هذه نسخة للعرض فقط: الفيديو لا يُرفع للإنترنت ولا يظهر عند الآخرين.</div><div class="card"><label for="vfile">اختر فيديو من جوالك (يفضل MP4 من كاميرا الجوال)</label><input type="file" id="vfile" accept="video/*"><label for="caption">وصف الفيديو</label><input id="caption" maxlength="160" placeholder="مثال: جربت سماعتي الجديدة 🎧"><div class="switch"><input type="checkbox" id="hasprod" onchange="toggleProduct()"><label for="hasprod">هذا الفيديو يحتوي على منتج</label></div><div id="productFields" style="display:none"><label for="pname">اسم المنتج</label><input id="pname" placeholder="مثال: سماعة بلوتوث"><label for="ptype">نوع المنتج</label><select id="ptype"><option value="🎧">سماعات</option><option value="📱">جوالات</option><option value="🌹">عطور</option><option value="⌚">ساعات</option><option value="🎮">ألعاب</option><option value="🛍️">أخرى</option></select></div><button class="btn" style="width:100%;margin-top:22px" onclick="publish()">عرض الفيديو في تجربتي</button></div><div class="notice">النسخة الحالية محلية للتجربة: ما فيها حسابات حقيقية أو نشر عام أو روابط شراء أو عمولات فعلية. بنضيفها لاحقًا بعد بناء الخادم وربط المتاجر.</div></div></section>
-<section id="profile"><div class="content"><div class="h1">👤 حسابي</div><div class="sub">مرحبًا بك في النسخة التجريبية الأولى من WISH.</div><div class="card"><h3 style="margin-top:0">منصة ترفيه + تسوق ذكي</h3><p style="color:#b2c2d9;line-height:1.8">أي شخص يقدر ينشر مقاطع. زر «أبيها» يظهر فقط على الفيديوهات المرتبطة بمنتجات. المستخدم يحفظ المنتج أو يحدد نية الشراء.</p></div><div class="card"><b>💰 خطة الأرباح المستقبلية</b><p style="color:#b2c2d9;line-height:1.8">إذا وافق المتجر على عمولة 10% من عملية بيع مؤهلة: 2% لصانع المحتوى و8% للمنصة، قبل التكاليف والضرائب. لا توجد مدفوعات فعلية في هذه النسخة.</p></div><div class="card"><b>🏪 خطة المتاجر</b><p style="color:#b2c2d9;line-height:1.8">لاحقًا يقدر المتجر يسجل ويربط منتجاته ويستقبل العملاء، مع تتبع المبيعات والتحويلات بنظام آمن.</p></div></div></section>
+<section id="create"><div class="content"><div class="h1">🎬 انشر مقطعك</div><div class="sub">جرّب إضافة فيديو من جوالك وربط منتج فيه. هذه نسخة للعرض فقط: الفيديو لا يُرفع للإنترنت ولا يظهر عند الآخرين.</div><div class="card"><label for="vfile">اختر فيديو من جوالك (يفضل MP4 من كاميرا الجوال)</label><input type="file" id="vfile" accept="video/*"><label for="caption">وصف الفيديو</label><input id="caption" maxlength="160" placeholder="مثال: جربت سماعتي الجديدة 🎧"><div class="switch"><input type="checkbox" id="hasprod" onchange="toggleProduct()"><label for="hasprod">هذا الفيديو يحتوي على منتج</label></div><div id="productFields" style="display:none"><label for="sellerVideoSelect">اختر من منتجات متجرك (اختياري)</label><select id="sellerVideoSelect" onchange="useSellerProductInVideo()"><option value="">اكتب اسم المنتج بنفسك</option></select><label for="pname">اسم المنتج</label><input id="pname" placeholder="مثال: سماعة بلوتوث"><label for="ptype">نوع المنتج</label><select id="ptype"><option value="🎧">سماعات</option><option value="📱">جوالات</option><option value="🌹">عطور</option><option value="⌚">ساعات</option><option value="🎮">ألعاب</option><option value="🛍️">أخرى</option></select></div><button class="btn" style="width:100%;margin-top:22px" onclick="publish()">عرض الفيديو في تجربتي</button></div><div class="notice">المقاطع تُعرض على جهازك فقط حتى مع تسجيل حساب حقيقي. لا يوجد نشر عام أو روابط شراء أو عمولات فعلية بعد.</div></div></section>
+<section id="profile"><div class="content"><div class="h1">👤 حسابي</div><div class="sub">قريبًا نبدأ اختبار حسابات حقيقية بالبريد الإلكتروني وكلمة المرور.</div>
+<div class="card" id="accountCard"><h3 style="margin-top:0">🔐 حساب WISH</h3>
+<div id="authSetup" class="notice">الحسابات الحقيقية غير مفعّلة بعد. سنربطها بخدمة Supabase، ولا نخزّن كلمات المرور في GitHub.</div>
+<div id="authGuest" style="display:none">
+  <div class="auth-toggle"><button class="btn small selected" id="tabSignup" type="button" onclick="setAuthMode('signup')">حساب جديد</button><button class="btn small secondary" id="tabSignin" type="button" onclick="setAuthMode('signin')">تسجيل الدخول</button></div>
+  <form id="wishAuthForm" onsubmit="event.preventDefault();submitWishAuth()">
+    <div id="nameRow"><label for="authName">اسمك الظاهر في WISH</label><input id="authName" maxlength="35" autocomplete="nickname" placeholder="مثال: سالم"></div>
+    <label for="authEmail">البريد الإلكتروني</label><input id="authEmail" type="email" required autocomplete="email" inputmode="email" placeholder="name@example.com">
+    <label for="authPassword">كلمة المرور</label><input id="authPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="8 أحرف على الأقل">
+    <button id="authSubmit" class="btn" type="submit" style="margin-top:18px;width:100%">إنشاء حساب</button>
+  </form>
+  <div class="notice">هذا تسجيل حقيقي فقط بعد ربط Supabase. قد يلزم تأكيد البريد الإلكتروني. لا تشارك كلمة المرور مع أحد.</div>
+</div>
+<div id="authSigned" style="display:none"><div class="auth-name" id="authDisplayName"></div><div class="auth-email" id="authDisplayEmail"></div><p class="hintline">✅ مسجّل الدخول. نشر الفيديوهات ما زال محليًا، وليس متاحًا للآخرين حتى نربط تخزين الفيديو.</p><button class="btn secondary" type="button" onclick="signOutWish()">تسجيل الخروج</button></div>
+<div class="auth-feedback" id="authFeedback" aria-live="polite"></div>
+</div><div class="card"><h3 style="margin-top:0">منصة ترفيه + تسوق ذكي</h3><p style="color:#b2c2d9;line-height:1.8">أي شخص يقدر ينشر مقاطع. زر «أبيها» يظهر فقط على الفيديوهات المرتبطة بمنتجات. المستخدم يحفظ المنتج أو يحدد نية الشراء.</p></div><div class="card"><b>💰 خطة الأرباح المستقبلية</b><p style="color:#b2c2d9;line-height:1.8">إذا وافق المتجر على عمولة 10% من عملية بيع مؤهلة: 2% لصانع المحتوى و8% للمنصة، قبل التكاليف والضرائب. لا توجد مدفوعات فعلية في هذه النسخة.</p></div><div class="card seller-cta"><div class="seller-cta-icon">🏪</div><h3>حوّل حسابك إلى متجر في WISH</h3><p>عندك منتجات تبي تبيعها؟ أو تبي تسوّق منتجات الموردين بدون مخزون؟ جرّب واجهة «ابدأ تجارتك» الآن.</p><button class="btn" type="button" onclick="openSeller()">🚀 ابدأ تجارتك</button><small>تجربة على جهازك فقط • لا توجد مبيعات أو أرباح فعلية</small></div>
+<div class="card"><b>💰 خطة الأرباح المستقبلية</b><p style="color:#b2c2d9;line-height:1.8">في المبيعات المؤهلة القادمة، ننوي اختبار عمولة متجر 10%: 2% لصانع المحتوى و8% للمنصة، قبل التكاليف والضرائب. النسب ليست مفعّلة حاليًا.</p></div></div></section>
+<section id="seller"><div class="content">
+  <button class="seller-back" type="button" onclick="openPage('profile')">← العودة إلى حسابي</button>
+  <div class="h1">🏪 ابدأ تجارتك</div>
+  <div class="sub">أنشئ واجهة متجر تجريبية في WISH. عندنا طريقان: تبيع منتجاتك أو تسوّق منتجات مورّدين بعد اتفاق رسمي معهم.</div>
+  <div class="notice"><b>نسخة تجريبية:</b> المنتجات تُحفظ على جوالك فقط. لا يوجد موردون متعاقدون أو سلة شراء أو دفع أو شحن أو عمولات حقيقية بعد.</div>
+  <div class="card">
+    <h3 style="margin:0 0 12px">بيانات متجرك</h3>
+    <label for="sellerShopName">اسم المتجر</label>
+    <input id="sellerShopName" maxlength="45" placeholder="مثال: متجر سالم" oninput="saveSellerShopName()">
+    <p class="auth-note">تقدر تغيّر الاسم بأي وقت. المنتجات محفوظة محليًا لهذا المتصفح فقط.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 12px">وش نوع تجارتك؟</h3>
+    <div class="seller-choice">
+      <button type="button" class="seller-mode active" id="sellerModeOwn" onclick="setSellerMode('own')">📦 أبيع منتجاتي<small>أعرض منتجات أملكها</small></button>
+      <button type="button" class="seller-mode" id="sellerModeSupplier" onclick="setSellerMode('supplier')">🤝 أسوّق منتجات الموردين<small>بدون مخزون — بعد اتفاق</small></button>
+    </div>
+    <div id="sellerOwnFields">
+      <label for="sellerProductName">اسم المنتج</label>
+      <input id="sellerProductName" maxlength="70" placeholder="مثال: عطر شرقي">
+      <label for="sellerProductPrice">السعر التجريبي بالريال</label>
+      <input id="sellerProductPrice" type="number" min="1" max="1000000" step="0.01" inputmode="decimal" placeholder="مثال: 150">
+      <label for="sellerProductDesc">وصف مختصر (اختياري)</label>
+      <input id="sellerProductDesc" maxlength="140" placeholder="اللون أو المقاس أو المميزات">
+      <button type="button" class="btn seller-full" onclick="addOwnSellerProduct()">＋ أضف المنتج إلى متجري</button>
+    </div>
+    <div id="sellerSupplierFields" hidden>
+      <p class="auth-note">هذي أمثلة خيالية للتجربة فقط وليست عروضًا من مورّدين حقيقيين. لا تسوّق منتجات أي مورّد فعليًا قبل موافقته.</p>
+      <div class="supplier-sample"><span>🎧 سماعة توضيحية — 120 ر.س</span><button type="button" class="btn small secondary" onclick="addSupplierDemo('headset')">أضف للتجربة</button></div>
+      <div class="supplier-sample"><span>🌹 عطر توضيحي — 180 ر.س</span><button type="button" class="btn small secondary" onclick="addSupplierDemo('perfume')">أضف للتجربة</button></div>
+      <div class="notice">في النسخة الحقيقية، بنضيف التحقق من البائع، اتفاق المورد، صلاحية عرض المنتجات، تتبع الطلبات والعمولات، وحلول الدفع والشحن.</div>
+    </div>
+    <div id="sellerMessage" class="auth-status" aria-live="polite"></div>
+  </div>
+  <div class="card" id="sellerStorefront"><h3 style="margin-top:0">🛍️ معاينة متجري</h3><div id="sellerShopHeading" class="seller-heading">متجري</div><div id="sellerProductCount" class="auth-note">0 منتجات</div><div id="sellerProducts"></div></div>
+  <div class="notice">عند تصوير فيديو لمنتج، تقدر تختاره من متجرك في صفحة «إضافة». زر «أبيها» يظل تجريبيًا، ولا ينفّذ طلب شراء.</div>
+</div></section>
 <nav class="nav"><button id="nav-feed" class="active" onclick="openPage('feed')"><span class="icon">▶</span>لك</button><button id="nav-wishes" onclick="openPage('wishes')"><span class="icon">❤️</span>أمنياتي</button><button id="nav-create" class="add" onclick="openPage('create')"><span class="icon">＋</span>إضافة</button><button id="nav-profile" onclick="openPage('profile')"><span class="icon">👤</span>حسابي</button></nav>
 </main>
 <div class="modalback" id="modal"><div class="modal"><button class="close" onclick="closeModal()">×</button><h2 id="modalTitle">🔥 أبيها</h2><p id="modalDesc">اختر وش تبي تسوي بهذا المنتج</p><div id="modalOptions"><button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button></div></div></div>
@@ -31,7 +98,7 @@ function renderFeed(){document.getElementById('posts').innerHTML=posts.map(p=>`<
 function syncVideoButton(id){const v=document.getElementById('video-'+id),b=document.getElementById('play-'+id);if(!v||!b)return;b.classList.toggle('is-playing',!v.paused&&!v.ended);b.textContent=v.ended?'↻':'▶'}
 function videoFailed(id){const el=document.getElementById('error-'+id),v=document.getElementById('video-'+id);if(!el)return;const code=v?.error?.code;el.textContent=code===4?'المتصفح لا يدعم صيغة الفيديو. جرّب مقطع MP4 بصيغة H.264 من كاميرا الجوال.':code===3?'تعذر فك ترميز الفيديو. جرّب فيديو MP4 آخر من كاميرا الجوال.':'تعذر تشغيل هذا الفيديو. جرّب مقطع MP4 قصير من كاميرا الجوال.';el.classList.add('show');syncVideoButton(id)}
 async function toggleVideo(id){const v=document.getElementById('video-'+id);if(!v)return;const error=document.getElementById('error-'+id);if(error)error.classList.remove('show');if(!v.paused&&!v.ended){v.pause();return}try{if(v.ended)v.currentTime=0;await v.play();syncVideoButton(id)}catch(e){videoFailed(id)}}
-function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();window.scrollTo({top:0,behavior:'instant'})}
+function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();if(id==='seller')document.getElementById('nav-profile').classList.add('active');if(id==='create')populateSellerVideoSelect();window.scrollTo({top:0,behavior:'instant'})}
 function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function openWish(id){let p=posts.find(p=>p.id===id);if(!p?.product)return;currentProduct=p.product;document.getElementById('modalTitle').textContent='🔥 '+p.product;document.getElementById('modalDesc').textContent='اختر الطريقة اللي تناسبك';document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;document.getElementById('modal').classList.add('show')}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
@@ -43,5 +110,85 @@ function toggleProduct(){document.getElementById('productFields').style.display=
 function publish(){const f=document.getElementById('vfile').files[0],desc=document.getElementById('caption').value.trim(),check=document.getElementById('hasprod').checked,product=document.getElementById('pname').value.trim();if(!desc){showToast('اكتب وصف الفيديو أولًا');return}if(check&&!product){showToast('اكتب اسم المنتج');return}const id='user'+Date.now();posts.unshift({id,name:'@أنا',caption:desc,product:check?product:null,emoji:check?document.getElementById('ptype').value:'🎬',from:'#142852',to:'#5b1e62',video:f?URL.createObjectURL(f):null});renderFeed();openPage('feed');showToast('✅ تمت إضافته للمعاينة على جهازك فقط');document.getElementById('vfile').value='';document.getElementById('caption').value='';document.getElementById('pname').value='';document.getElementById('hasprod').checked=false;toggleProduct()}
 async function shareDemo(){showToast('هذه نسخة محلية للتجربة؛ المشاركة الحقيقية بعد النشر على الإنترنت')}
 document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});renderFeed();renderWishes();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// المعرّفات العامة فقط من Supabase Dashboard > Project Settings > API.
+// لا تضع هنا service_role أو أي مفتاح سري.
+
+// Seller/storefront demo: saved locally on this device; NOT a live commerce backend.
+const WISH_SHOP_STORAGE_KEY='wish-demo-shop-v1';
+let sellerShop={name:'',products:[]},sellerMode='own';
+try{const stored=JSON.parse(localStorage.getItem(WISH_SHOP_STORAGE_KEY)||'null');if(stored&&typeof stored==='object'){sellerShop.name=String(stored.name||'').slice(0,45);sellerShop.products=Array.isArray(stored.products)?stored.products.filter(p=>p&&typeof p.name==='string'&&Number.isFinite(Number(p.price))).slice(0,40):[]}}catch(e){}
+function persistSellerShop(){try{localStorage.setItem(WISH_SHOP_STORAGE_KEY,JSON.stringify(sellerShop))}catch(e){showToast('تعذر حفظ بيانات متجرك على هذا الجهاز')}}
+function openSeller(){openPage('seller');document.getElementById('sellerShopName').value=sellerShop.name;setSellerMode(sellerMode);renderSellerProducts()}
+function setSellerMode(mode){sellerMode=mode==='supplier'?'supplier':'own';document.getElementById('sellerModeOwn').classList.toggle('active',sellerMode==='own');document.getElementById('sellerModeSupplier').classList.toggle('active',sellerMode==='supplier');document.getElementById('sellerOwnFields').hidden=sellerMode!=='own';document.getElementById('sellerOwnFields').style.display=sellerMode==='own'?'block':'none';document.getElementById('sellerSupplierFields').hidden=sellerMode!=='supplier';document.getElementById('sellerMessage').textContent=''}
+function saveSellerShopName(){sellerShop.name=document.getElementById('sellerShopName').value.trim().slice(0,45);persistSellerShop();document.getElementById('sellerShopHeading').textContent=sellerShop.name||'متجري'}
+function sellerNotice(t){document.getElementById('sellerMessage').textContent=t;showToast(t)}
+function addOwnSellerProduct(){
+ const name=document.getElementById('sellerProductName').value.trim();const price=Number(document.getElementById('sellerProductPrice').value);const desc=document.getElementById('sellerProductDesc').value.trim();
+ if(!name||!Number.isFinite(price)||price<=0||price>1000000){sellerNotice('اكتب اسم المنتج وسعرًا صحيحًا بالريال');return}
+ if(sellerShop.products.length>=40){sellerNotice('الحد التجريبي 40 منتجًا');return}
+ sellerShop.products.unshift({id:'p'+Date.now()+Math.floor(Math.random()*9999),name:name.slice(0,70),price:Math.round(price*100)/100,description:desc.slice(0,140),type:'own'});
+ persistSellerShop();renderSellerProducts();populateSellerVideoSelect();['sellerProductName','sellerProductPrice','sellerProductDesc'].forEach(id=>document.getElementById(id).value='');sellerNotice('✅ أضفنا المنتج إلى معاينة متجرك')
+}
+function addSupplierDemo(item){
+ const samples={headset:{name:'سماعة توضيحية',price:120},perfume:{name:'عطر توضيحي',price:180}};const product=samples[item];if(!product)return;
+ if(sellerShop.products.length>=40){sellerNotice('الحد التجريبي 40 منتجًا');return}
+ sellerShop.products.unshift({id:'s'+Date.now()+Math.floor(Math.random()*9999),name:product.name,price:product.price,description:'نموذج خيالي للتجربة، دون اتفاق مع مورّد',type:'supplier'});
+ persistSellerShop();renderSellerProducts();populateSellerVideoSelect();sellerNotice('✅ أضفنا منتجًا توضيحيًا — لا يمكن بيعه الآن')
+}
+function removeSellerProduct(id){sellerShop.products=sellerShop.products.filter(p=>p.id!==id);persistSellerShop();renderSellerProducts();populateSellerVideoSelect();sellerNotice('تم حذف المنتج من معاينة متجرك')}
+function renderSellerProducts(){
+ const count=document.getElementById('sellerProductCount'),list=document.getElementById('sellerProducts'),heading=document.getElementById('sellerShopHeading');if(!list)return;
+ heading.textContent=sellerShop.name||'متجري';count.textContent=sellerShop.products.length+' منتجات تجريبية';
+ if(!sellerShop.products.length){list.innerHTML='<div class="seller-empty">ما أضفت منتجات للحين. اختر طريقة تجارتك وأضف أول منتج.</div>';return}
+ list.innerHTML=sellerShop.products.map(p=>'<div class="seller-product"><b>'+escapeHtml(p.name)+'</b><small>'+(p.type==='supplier'?'🤝 نموذج مورد غير متعاقد':'📦 منتجك الخاص')+'</small><small>'+escapeHtml(p.description||'بدون وصف')+'</small><div class="row"><span class="price">'+Number(p.price).toLocaleString('ar-SA')+' ر.س (تجريبي)</span><button type="button" class="btn small secondary" data-id="'+escapeHtml(p.id)+'" onclick="removeSellerProduct(this.dataset.id)">حذف</button></div></div>').join('')
+}
+function populateSellerVideoSelect(){const select=document.getElementById('sellerVideoSelect');if(!select)return;const prev=select.value;select.innerHTML='<option value="">اكتب اسم المنتج بنفسك</option>'+sellerShop.products.map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.name)+'</option>').join('');if(sellerShop.products.some(p=>p.id===prev))select.value=prev}
+function useSellerProductInVideo(){const id=document.getElementById('sellerVideoSelect').value;const p=sellerShop.products.find(p=>p.id===id);if(p){document.getElementById('pname').value=p.name;document.getElementById('hasprod').checked=true;toggleProduct()}}
+
+const WISH_SUPABASE_URL = 'https://ukavrxavasgqnehtouii.supabase.co';
+const WISH_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_dOGwI5TmoN3BWXtnP_aA1Q_skbPFxPn';
+let wishAuthClient=null;
+let wishAuthMode='signup';
+function authMessage(message,isError=false){const el=document.getElementById('authFeedback');el.textContent=message;el.classList.toggle('error',isError)}
+function setAuthMode(mode){wishAuthMode=mode;const signup=mode==='signup';document.getElementById('nameRow').style.display=signup?'block':'none';document.getElementById('tabSignup').className=signup?'btn small selected':'btn small secondary';document.getElementById('tabSignin').className=!signup?'btn small selected':'btn small secondary';document.getElementById('authSubmit').textContent=signup?'إنشاء حساب':'تسجيل الدخول';document.getElementById('authPassword').autocomplete=signup?'new-password':'current-password';authMessage('')}
+function renderWishAuth(session){document.getElementById('authGuest').style.display=session?'none':'block';document.getElementById('authSigned').style.display=session?'block':'none';if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}}
+async function submitWishAuth(){
+ if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
+ const button=document.getElementById('authSubmit');button.disabled=true;
+ const email=document.getElementById('authEmail').value.trim();
+ const password=document.getElementById('authPassword').value;
+ const displayName=document.getElementById('authName').value.trim();
+ if(wishAuthMode==='signup' && displayName.length<2){authMessage('اكتب اسمًا من حرفين على الأقل.',true);button.disabled=false;return}
+ try{
+   let result;
+   if(wishAuthMode==='signup'){
+     result=await wishAuthClient.auth.signUp({email,password,options:{data:{display_name:displayName},emailRedirectTo:window.location.origin+window.location.pathname}});
+   }else{result=await wishAuthClient.auth.signInWithPassword({email,password})}
+   if(result.error)throw result.error;
+   document.getElementById('authPassword').value='';
+   if(result.data?.session){renderWishAuth(result.data.session);authMessage('✅ تم تسجيل الدخول بنجاح')}
+   else{authMessage('إذا كان البريد مؤهلًا للتسجيل، ستصلك رسالة تأكيد. تحقق من بريدك ثم سجل الدخول.')} 
+ }catch(e){authMessage('تعذر إتمام العملية: '+(e?.message||'خطأ غير معروف'),true)}
+ finally{button.disabled=false}
+}
+async function signOutWish(){if(!wishAuthClient)return;const {error}=await wishAuthClient.auth.signOut();if(error)authMessage(error.message,true);else{renderWishAuth(null);authMessage('تم تسجيل الخروج')}}
+async function initWishAuth(){
+ const setup=document.getElementById('authSetup');
+ if(!WISH_SUPABASE_URL||!WISH_SUPABASE_PUBLISHABLE_KEY){setup.textContent='الحسابات الحقيقية لم تُربط بعد. الخطوة التالية: إنشاء مشروع مجاني في Supabase وربط عنوان المشروع والمفتاح العام؛ لا تضع أي مفتاح سري في هذا الملف.';return}
+ if(!window.supabase?.createClient){setup.textContent='تعذر تحميل خدمة تسجيل الدخول. تحقق من اتصال الإنترنت ثم أعد فتح الصفحة.';return}
+ try{
+   wishAuthClient=window.supabase.createClient(WISH_SUPABASE_URL,WISH_SUPABASE_PUBLISHABLE_KEY);
+   setup.style.display='none';
+   setAuthMode('signup');
+   const {data,error}=await wishAuthClient.auth.getSession();
+   if(error)throw error;
+   renderWishAuth(data.session);
+   wishAuthClient.auth.onAuthStateChange((event,session)=>{renderWishAuth(session)});
+ }catch(e){setup.style.display='block';setup.textContent='تعذر الاتصال بنظام الحسابات. راجع إعدادات Supabase.';authMessage(e?.message||'خطأ بالاتصال',true)}
+}
+initWishAuth();renderSellerProducts();populateSellerVideoSelect();
 </script>
 </body></html>
