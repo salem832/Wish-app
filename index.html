@@ -24,13 +24,38 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .seller-cta{text-align:center;background:linear-gradient(145deg,#281e40,#172033)}
 .seller-cta-icon{font-size:42px}.seller-cta h3{margin:5px 0 8px}.seller-cta p{color:#c2c8df;font-size:13px;line-height:1.9}.seller-cta .btn{width:100%;font-size:17px}.seller-cta small{display:block;margin-top:11px;color:#a7adc4}
 .seller-back{color:#ff9ebe;background:none;border:0;font-weight:800;padding:5px 0 15px}.seller-choice{display:flex;gap:8px}.seller-mode{flex:1;min-height:100px;color:#dbe2ef;background:#101827;border:1px solid #3b475f;border-radius:14px;padding:13px 7px;font-size:13px;font-weight:800}.seller-mode small{display:block;margin-top:10px;color:#afbdd0;font-size:10px;font-weight:400;line-height:1.5}.seller-mode.active{border:2px solid var(--pink);background:#3a203f;color:#fff}.seller-full{width:100%;margin-top:18px}.seller-heading{font-size:20px;font-weight:900;color:#ffe0e9;overflow-wrap:anywhere}.seller-product{border-top:1px solid #34405a;padding:14px 0}.seller-product b{display:block;overflow-wrap:anywhere}.seller-product small{color:#adbcd0;display:block;line-height:1.7;margin-top:3px}.seller-product .row{justify-content:space-between;align-items:center}.seller-product .price{color:#84e4cb;font-weight:850}.supplier-sample{display:flex;gap:7px;justify-content:space-between;align-items:center;border:1px solid #303d55;border-radius:13px;padding:10px;margin:9px 0;font-size:12px}.supplier-sample .btn{white-space:nowrap}.auth-status{min-height:20px;margin-top:12px}.seller-empty{color:#aabbd0;font-size:13px;line-height:1.9;padding:12px;border:1px dashed #45516a;border-radius:12px}#sellerSupplierFields[hidden]{display:none}
+
+/* Cloud videos: experimental public posting with explicit consent. */
+.cloud-feed-bar{background:#111a2b;border-bottom:1px solid #293650;padding:10px 14px;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.cloud-feed-bar .cloud-feed-message{font-size:12px;color:#c0d0e2;line-height:1.7;flex:1;min-width:185px}
+.cloud-feed-bar .refresh-video{font-size:12px;border:1px solid #455470;border-radius:11px;padding:8px 12px;background:#27354e;color:white;white-space:nowrap}
+.cloud-publish-status{font-size:13px;line-height:1.9;margin-top:11px;color:#a6ead8;min-height:20px;white-space:pre-line}
+.cloud-publish-status.error{color:#ffb4c6}
+.cloud-publish-confirm{display:flex;align-items:flex-start;gap:9px;font-size:12px;font-weight:500;color:#c9d9ea;line-height:1.8;margin:16px 0}
+.cloud-publish-confirm input{width:20px;min-width:20px;height:20px;margin:3px 0 0;accent-color:var(--pink)}
+.cloud-publish-btn[disabled]{opacity:.55;cursor:wait}
 </style>
 </head>
 <body><main class="app">
-<header><div class="brand">WISH <span>ويش</span></div><div class="tabs"><button class="active">لك</button><button onclick="openPage('wishes')">أمنياتي</button></div><div class="badge">نموذج تجريبي</div></header>
-<section id="feed" class="active"><div id="posts"></div></section>
+<header><div class="brand">WISH <span>ويش</span></div><div class="tabs"><button class="active" onclick="openPage('feed')">لك</button><button onclick="openPage('wishes')">أمنياتي</button></div><div class="badge">نموذج تجريبي</div></header>
+<section id="feed" class="active"><div class="cloud-feed-bar"><div id="wishCloudFeedStatus" class="cloud-feed-message" aria-live="polite">🎬 جار تحميل المقاطع المنشورة... ستظهر النماذج التوضيحية أسفلها.</div><button type="button" class="refresh-video" onclick="loadCloudVideos()">↻ تحديث المقاطع</button></div><div id="posts"></div></section>
 <section id="wishes"><div class="content"><div class="h1">❤️ أمنياتي</div><div class="sub">هنا تُحفظ المنتجات اللي تختار لها «أتمناها» أو «ناوي أشتريها».</div><div id="wishlist"></div></div></section>
-<section id="create"><div class="content"><div class="h1">🎬 انشر مقطعك</div><div class="sub">جرّب إضافة فيديو من جوالك وربط منتج فيه. هذه نسخة للعرض فقط: الفيديو لا يُرفع للإنترنت ولا يظهر عند الآخرين.</div><div class="card"><label for="vfile">اختر فيديو من جوالك (يفضل MP4 من كاميرا الجوال)</label><input type="file" id="vfile" accept="video/*"><label for="caption">وصف الفيديو</label><input id="caption" maxlength="160" placeholder="مثال: جربت سماعتي الجديدة 🎧"><div class="switch"><input type="checkbox" id="hasprod" onchange="toggleProduct()"><label for="hasprod">هذا الفيديو يحتوي على منتج</label></div><div id="productFields" style="display:none"><label for="sellerVideoSelect">اختر من منتجات متجرك (اختياري)</label><select id="sellerVideoSelect" onchange="useSellerProductInVideo()"><option value="">اكتب اسم المنتج بنفسك</option></select><label for="pname">اسم المنتج</label><input id="pname" placeholder="مثال: سماعة بلوتوث"><label for="ptype">نوع المنتج</label><select id="ptype"><option value="🎧">سماعات</option><option value="📱">جوالات</option><option value="🌹">عطور</option><option value="⌚">ساعات</option><option value="🎮">ألعاب</option><option value="🛍️">أخرى</option></select></div><button class="btn" style="width:100%;margin-top:22px" onclick="publish()">عرض الفيديو في تجربتي</button></div><div class="notice">المقاطع تُعرض على جهازك فقط حتى مع تسجيل حساب حقيقي. لا يوجد نشر عام أو روابط شراء أو عمولات فعلية بعد.</div></div></section>
+<section id="create"><div class="content">
+<div class="h1">🎬 انشر مقطعك</div>
+<div class="sub">تقدر تجرّب الفيديو على جوالك، أو تنشر مقطع MP4 قصيرًا في WISH بحيث يظهر للمستخدمين الآخرين.</div>
+<div class="card">
+<label for="vfile">اختر فيديو MP4 من جوالك</label><input type="file" id="vfile" accept="video/*,.mp4">
+<label for="caption">وصف الفيديو</label><input id="caption" maxlength="160" placeholder="مثال: طلعة بحر في جدة 🌊">
+<div class="switch"><input type="checkbox" id="hasprod" onchange="toggleProduct()"><label for="hasprod">هذا الفيديو يحتوي على منتج</label></div>
+<div id="productFields" style="display:none"><label for="sellerVideoSelect">اختر من منتجات متجرك (اختياري)</label><select id="sellerVideoSelect" onchange="useSellerProductInVideo()"><option value="">اكتب اسم المنتج بنفسك</option></select><label for="pname">اسم المنتج</label><input id="pname" placeholder="مثال: سماعة بلوتوث"><label for="ptype">نوع المنتج</label><select id="ptype"><option value="🎧">سماعات</option><option value="📱">جوالات</option><option value="🌹">عطور</option><option value="⌚">ساعات</option><option value="🎮">ألعاب</option><option value="🛍️">أخرى</option></select></div>
+<div class="notice">🌐 النشر العام التجريبي: سجّل دخولك واختر فيديو MP4 لا يتجاوز 15 ميجابايت. سيظهر الفيديو للجميع ويمكن مشاركته؛ لا يوجد حاليًا زر لحذف الفيديو المنشور من التطبيق، لذلك لا تنشر معلومات شخصية أو مقاطع خاصة. ربط «أبيها» بالمنتجات المنشورة لم يكتمل بعد.</div>
+<label class="cloud-publish-confirm" for="wishPublicConsent"><input id="wishPublicConsent" type="checkbox"><span>أفهم أن الفيديو سيُنشر للعامة، وأن حذفه من داخل التطبيق غير متاح حاليًا.</span></label>
+<button id="wishPublishCloudBtn" type="button" class="btn seller-full cloud-publish-btn" onclick="publishToWISH()">🌐 نشر الفيديو للجميع (تجريبي)</button>
+<div id="wishCloudPublishStatus" class="cloud-publish-status" aria-live="polite"></div>
+<button type="button" class="btn secondary seller-full" onclick="publish()">📱 معاينة محلية على جوالي فقط</button>
+</div>
+<div class="notice">🔒 حسابك ومنتجات متجرك وأمنياتك ما زالت كما هي. الإعجابات والتعليقات وروابط الشراء على المقاطع المنشورة لم تُفعّل بعد.</div>
+</div></section>
 <section id="profile"><div class="content"><div class="h1">👤 حسابي</div><div class="sub">قريبًا نبدأ اختبار حسابات حقيقية بالبريد الإلكتروني وكلمة المرور.</div>
 <div class="card" id="accountCard"><h3 style="margin-top:0">🔐 حساب WISH</h3>
 <div id="authSetup" class="notice">الحسابات الحقيقية غير مفعّلة بعد. سنربطها بخدمة Supabase، ولا نخزّن كلمات المرور في GitHub.</div>
@@ -93,14 +118,16 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 <div class="toast" id="toast"></div>
 <script>
 const demoPosts=[{id:'d1',name:'@جديد_التقنية',caption:'هذي السماعة شكلها رهيب! وش رأيكم؟ 🎧',product:'سماعة بلوتوث',emoji:'🎧',from:'#052c4b',to:'#44309d'}, {id:'d2',name:'@يوميات_جدة',caption:'طلعة بحر وأجواء جميلة 🌊',emoji:'🌴',from:'#0b5360',to:'#303b8c'}, {id:'d3',name:'@عطور_وتجارب',caption:'تجربة عطر جديد، وش أكثر عطر تحبونه؟',product:'عطر شرقي',emoji:'🌹',from:'#561c4e',to:'#ad473a'}, {id:'d4',name:'@ضحك_وتحديات',caption:'تحدي اليوم 😂 اكتبوا أفكاركم!',emoji:'😂',from:'#54307d',to:'#9b2958'}, {id:'d5',name:'@ألعاب',caption:'تجربة يد تحكم جديدة 🎮',product:'يد تحكم للألعاب',emoji:'🎮',from:'#17365d',to:'#036f7b'}];
-let posts=[...demoPosts];let currentProduct=null;let wishes=[];try{wishes=JSON.parse(localStorage.getItem('wish-demo-wishes')||'[]')}catch(e){};
+let posts=[...demoPosts], localVideoPosts=[], cloudVideoPosts=[];
+let cloudVideoLoadVersion=0, wishVideoUploading=false;
+let currentProduct=null;let wishes=[];try{wishes=JSON.parse(localStorage.getItem('wish-demo-wishes')||'[]')}catch(e){};
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderFeed(){document.getElementById('posts').innerHTML=posts.map(p=>`<article class="feedpost"><div class="art" style="--from:${p.from};--to:${p.to}">${p.video?`<video class="video" id="video-${p.id}" src="${p.video}" controls playsinline webkit-playsinline preload="metadata" onplay="syncVideoButton('${p.id}')" onpause="syncVideoButton('${p.id}')" onended="syncVideoButton('${p.id}')" onerror="videoFailed('${p.id}')"></video><button class="video-play" id="play-${p.id}" onclick="toggleVideo('${p.id}')" aria-label="تشغيل الفيديو">▶</button><div class="video-error" id="error-${p.id}"></div>`:`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?'مقطعك المحلي':'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div><div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side"><button onclick="showToast('❤️ تفاعل تجريبي')">♡</button><span class="label">أعجبني</span><button onclick="showToast('التعليقات تحتاج خادمًا في النسخة القادمة')">💬</button><span class="label">تعليق</span>${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}<button onclick="shareDemo()">↗</button><span class="label">مشاركة</span></div></article>`).join('')}
+function renderFeed(){document.getElementById('posts').innerHTML=posts.map(p=>`<article class="feedpost"><div class="art" style="--from:${p.from};--to:${p.to}">${p.video?`<video class="video" id="video-${p.id}" src="${escapeHtml(p.video)}" controls playsinline webkit-playsinline preload="metadata" onplay="syncVideoButton('${p.id}')" onpause="syncVideoButton('${p.id}')" onended="syncVideoButton('${p.id}')" onerror="videoFailed('${p.id}')"></video><button class="video-play" id="play-${p.id}" onclick="toggleVideo('${p.id}')" aria-label="تشغيل الفيديو">▶</button><div class="video-error" id="error-${p.id}"></div>`:`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div><div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side"><button onclick="showToast('❤️ تفاعل تجريبي')">♡</button><span class="label">أعجبني</span><button onclick="showToast('التعليقات تحتاج خادمًا في النسخة القادمة')">💬</button><span class="label">تعليق</span>${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}<button onclick="shareDemo()">↗</button><span class="label">مشاركة</span></div></article>`).join('')}
 
 function syncVideoButton(id){const v=document.getElementById('video-'+id),b=document.getElementById('play-'+id);if(!v||!b)return;b.classList.toggle('is-playing',!v.paused&&!v.ended);b.textContent=v.ended?'↻':'▶'}
 function videoFailed(id){const el=document.getElementById('error-'+id),v=document.getElementById('video-'+id);if(!el)return;const code=v?.error?.code;el.textContent=code===4?'المتصفح لا يدعم صيغة الفيديو. جرّب مقطع MP4 بصيغة H.264 من كاميرا الجوال.':code===3?'تعذر فك ترميز الفيديو. جرّب فيديو MP4 آخر من كاميرا الجوال.':'تعذر تشغيل هذا الفيديو. جرّب مقطع MP4 قصير من كاميرا الجوال.';el.classList.add('show');syncVideoButton(id)}
 async function toggleVideo(id){const v=document.getElementById('video-'+id);if(!v)return;const error=document.getElementById('error-'+id);if(error)error.classList.remove('show');if(!v.paused&&!v.ended){v.pause();return}try{if(v.ended)v.currentTime=0;await v.play();syncVideoButton(id)}catch(e){videoFailed(id)}}
-function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();if(id==='seller')document.getElementById('nav-profile').classList.add('active');if(id==='create')populateSellerVideoSelect();window.scrollTo({top:0,behavior:'instant'})}
+function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();if(id==='seller')document.getElementById('nav-profile').classList.add('active');if(id==='create')populateSellerVideoSelect();if(id==='feed'&&wishAuthClient)loadCloudVideos();window.scrollTo({top:0,behavior:'instant'})}
 function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function openWish(id){let p=posts.find(p=>p.id===id);if(!p?.product)return;currentProduct=p.product;document.getElementById('modalTitle').textContent='🔥 '+p.product;document.getElementById('modalDesc').textContent='اختر الطريقة اللي تناسبك';document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;document.getElementById('modal').classList.add('show')}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
@@ -109,7 +136,91 @@ function showIntent(){document.getElementById('modalDesc').textContent='متى �
 function renderWishes(){const box=document.getElementById('wishlist');if(!wishes.length){box.innerHTML='<div class="empty"><span class="em">💭</span>ما عندك أمنيات محفوظة الآن.<br>روح لصفحة «لك» واضغط «أبيها» على أي منتج.</div>';return}box.innerHTML=wishes.map((w,i)=>`<div class="card"><div class="item"><div class="itememoji">${w.product.includes('عطر')?'🌹':w.product.includes('سماع')?'🎧':w.product.includes('تحكم')?'🎮':'🛍️'}</div><div class="itemdetail"><b>${escapeHtml(w.product)}</b><small>${escapeHtml(w.type)}</small></div></div><div class="row"><button class="btn small secondary" onclick="removeWish(${i})">حذف</button><button class="btn small" onclick="showToast('لا يوجد متجر مربوط بعد — سنضيف العروض لاحقًا')">عرض المتاجر (قريبًا)</button></div></div>`).join('')}
 function removeWish(i){wishes.splice(i,1);try{localStorage.setItem('wish-demo-wishes',JSON.stringify(wishes))}catch(e){};renderWishes()}
 function toggleProduct(){document.getElementById('productFields').style.display=document.getElementById('hasprod').checked?'block':'none'}
-function publish(){const f=document.getElementById('vfile').files[0],desc=document.getElementById('caption').value.trim(),check=document.getElementById('hasprod').checked,product=document.getElementById('pname').value.trim();if(!desc){showToast('اكتب وصف الفيديو أولًا');return}if(check&&!product){showToast('اكتب اسم المنتج');return}const id='user'+Date.now();posts.unshift({id,name:'@أنا',caption:desc,product:check?product:null,emoji:check?document.getElementById('ptype').value:'🎬',from:'#142852',to:'#5b1e62',video:f?URL.createObjectURL(f):null});renderFeed();openPage('feed');showToast('✅ تمت إضافته للمعاينة على جهازك فقط');document.getElementById('vfile').value='';document.getElementById('caption').value='';document.getElementById('pname').value='';document.getElementById('hasprod').checked=false;toggleProduct()}
+function publish(){
+ const f=document.getElementById('vfile').files[0],desc=document.getElementById('caption').value.trim(),check=document.getElementById('hasprod').checked,product=document.getElementById('pname').value.trim();
+ if(!desc){showToast('اكتب وصف الفيديو أولًا');return}if(check&&!product){showToast('اكتب اسم المنتج');return}
+ const id='user'+Date.now();
+ localVideoPosts.unshift({id,name:'@أنا',caption:desc,product:check?product:null,
+  emoji:check?document.getElementById('ptype').value:'🎬',from:'#142852',to:'#5b1e62',video:f?URL.createObjectURL(f):null});
+ refreshWISHPosts();openPage('feed');showToast('✅ تمت إضافته للمعاينة على جهازك فقط');
+ document.getElementById('vfile').value='';document.getElementById('caption').value='';document.getElementById('pname').value='';document.getElementById('hasprod').checked=false;toggleProduct();
+}
+function refreshWISHPosts(){posts=[...localVideoPosts,...cloudVideoPosts,...demoPosts];renderFeed()}
+function cloudFeedMessage(t){const el=document.getElementById('wishCloudFeedStatus');if(el)el.textContent=t}
+function cloudPublishMessage(t,isError=false){const el=document.getElementById('wishCloudPublishStatus');el.textContent=t;el.classList.toggle('error',isError)}
+async function loadCloudVideos(){
+ const version=++cloudVideoLoadVersion;
+ if(!wishAuthClient){cloudFeedMessage('المقاطع المنشورة تحتاج اتصال Supabase. النماذج أسفل الصفحة للعرض فقط.');return false}
+ cloudFeedMessage('⏳ جار تحميل الفيديوهات المنشورة...');
+ try{
+  const {data,error}=await wishAuthClient.from('wish_videos')
+    .select('id,owner_id,caption,storage_path,created_at')
+    .order('created_at',{ascending:false}).limit(25);
+  if(version!==cloudVideoLoadVersion)return false;
+  if(error)throw error;
+  const uuidPath=/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.mp4$/i;
+  cloudVideoPosts=(data||[]).filter(p=>uuidPath.test(p.storage_path)).map(p=>{
+    const url=wishAuthClient.storage.from('wish-videos').getPublicUrl(p.storage_path).data.publicUrl;
+    return {id:p.id,name:p.owner_id===wishShopUserId?'@أنا':'@عضو_WISH',caption:p.caption||'',
+      emoji:'🎬',from:'#102a3f',to:'#392058',video:url,product:null,cloud:true};
+  });
+  refreshWISHPosts();
+  cloudFeedMessage(cloudVideoPosts.length?'✅ '+cloudVideoPosts.length+' فيديو منشور في WISH · اسحب لأسفل للمشاهدة':'🎬 لا توجد فيديوهات منشورة حتى الآن. النماذج أسفل الصفحة للتوضيح فقط.');
+  return true;
+ }catch(e){
+  if(version!==cloudVideoLoadVersion)return false;
+  cloudFeedMessage('⚠️ تعذر تحميل المقاطع المنشورة. تأكد من جدول wish_videos ثم جرّب «تحديث المقاطع».');
+  return false;
+ }
+}
+async function publishToWISH(){
+ if(wishVideoUploading)return;
+ const f=document.getElementById('vfile').files[0],desc=document.getElementById('caption').value.trim();
+ const consent=document.getElementById('wishPublicConsent').checked;
+ if(!wishAuthClient){cloudPublishMessage('خدمة تسجيل الدخول غير متاحة. تأكد من الإنترنت وأعد فتح الموقع.',true);return}
+ if(!f){cloudPublishMessage('اختر فيديو MP4 من جوالك أولًا.',true);return}
+ if(!desc){cloudPublishMessage('اكتب وصفًا للفيديو أولًا.',true);return}
+ if(!/\.mp4$/i.test(f.name)||(f.type&&f.type!=='video/mp4')){
+  cloudPublishMessage('النشر التجريبي يدعم ملفات MP4 فقط. يمكنك استخدام المعاينة المحلية للملفات الأخرى.',true);return
+ }
+ if(f.size===0||f.size>15*1024*1024){cloudPublishMessage('حجم الفيديو لازم يكون بين 1 بايت و15 ميجابايت. جرّب فيديو أقصر.',true);return}
+ if(document.getElementById('hasprod').checked){cloudPublishMessage('ربط «أبيها» بالفيديوهات المنشورة لم يجهز بعد. ألغِ اختيار «يحتوي على منتج» للنشر العام، أو استخدم المعاينة المحلية.',true);return}
+ if(!consent){cloudPublishMessage('لازم توافق أولًا على أن الفيديو سيكون متاحًا للجميع.',true);return}
+ const button=document.getElementById('wishPublishCloudBtn');
+ wishVideoUploading=true;button.disabled=true;button.textContent='⏳ جار نشر الفيديو...';
+ let uploaded=false;
+ try{
+  const {data:authData,error:authError}=await wishAuthClient.auth.getUser();
+  if(authError)throw authError;
+  const uid=authData?.user?.id;
+  if(!uid)throw new Error('سجّل دخولك من صفحة حسابي، ثم جرّب مرة ثانية.');
+  if(!globalThis.crypto?.randomUUID)throw new Error('المتصفح يحتاج تحديثًا ليعمل رفع الفيديو بأمان.');
+  const path=uid+'/'+crypto.randomUUID()+'.mp4';
+  cloudPublishMessage('⏳ جار رفع الفيديو إلى WISH. أبقِ الصفحة مفتوحة حتى تكتمل العملية.');
+  const {error:uploadError}=await wishAuthClient.storage.from('wish-videos')
+    .upload(path,f,{cacheControl:'3600',upsert:false,contentType:'video/mp4'});
+  if(uploadError)throw uploadError;
+  uploaded=true;
+  cloudPublishMessage('⏳ اكتمل رفع الملف. جار حفظ بياناته في WISH...');
+  const {error:insertError}=await wishAuthClient.from('wish_videos')
+    .insert({owner_id:uid,storage_path:path,caption:desc});
+  if(insertError)throw insertError;
+  cloudPublishMessage('✅ نُشر الفيديو في WISH! يمكن للآخرين مشاهدته.');
+  document.getElementById('vfile').value='';
+  document.getElementById('caption').value='';
+  document.getElementById('wishPublicConsent').checked=false;
+  const loaded=await loadCloudVideos();
+  if(loaded){openPage('feed');showToast('🎬 تم نشر الفيديو على WISH')}
+  else cloudPublishMessage('✅ تم نشر الفيديو، لكن تعذر تحديث صفحة «لك» الآن. افتحها واضغط تحديث المقاطع.');
+ }catch(e){
+  const message=(e?.message||'خطأ اتصال غير معروف');
+  cloudPublishMessage(uploaded
+    ?'⚠️ رُفع الملف لكن تعذر تسجيل الفيديو في قاعدة البيانات. لا تكرر الرفع الآن. احتفظ بصورة الخطأ وأرسلها لنا: '+message
+    :'❌ لم يكتمل رفع الفيديو. تأكد من تسجيل الدخول وصلاحية التخزين والإنترنت: '+message,true);
+ }finally{
+  wishVideoUploading=false;button.disabled=false;button.textContent='🌐 نشر الفيديو للجميع (تجريبي)';
+ }
+}
 async function shareDemo(){showToast('هذه نسخة محلية للتجربة؛ المشاركة الحقيقية بعد النشر على الإنترنت')}
 document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});renderFeed();renderWishes();
 </script>
@@ -353,7 +464,7 @@ async function signOutWish(){if(!wishAuthClient)return;const {error}=await wishA
 async function initWishAuth(){
  const setup=document.getElementById('authSetup');
  if(!WISH_SUPABASE_URL||!WISH_SUPABASE_PUBLISHABLE_KEY){setup.textContent='الحسابات الحقيقية لم تُربط بعد. الخطوة التالية: إنشاء مشروع مجاني في Supabase وربط عنوان المشروع والمفتاح العام؛ لا تضع أي مفتاح سري في هذا الملف.';return}
- if(!window.supabase?.createClient){setup.textContent='تعذر تحميل خدمة تسجيل الدخول. تحقق من اتصال الإنترنت ثم أعد فتح الصفحة.';return}
+ if(!window.supabase?.createClient){setup.textContent='تعذر تحميل خدمة تسجيل الدخول. تحقق من اتصال الإنترنت ثم أعد فتح الصفحة.';cloudFeedMessage('تعذر الاتصال بنظام الفيديوهات. تحقق من الإنترنت ثم أعد فتح الصفحة.');return}
  try{
    wishAuthClient=window.supabase.createClient(WISH_SUPABASE_URL,WISH_SUPABASE_PUBLISHABLE_KEY);
    setup.style.display='none';
@@ -362,6 +473,7 @@ async function initWishAuth(){
    if(error)throw error;
    renderWishAuth(data.session);
    wishAuthClient.auth.onAuthStateChange((event,session)=>{renderWishAuth(session)});
+   loadCloudVideos();
  }catch(e){setup.style.display='block';setup.textContent='تعذر الاتصال بنظام الحسابات. راجع إعدادات Supabase.';authMessage(e?.message||'خطأ بالاتصال',true)}
 }
 shopAuthChanged(null);initWishAuth();renderSellerProducts();populateSellerVideoSelect();
