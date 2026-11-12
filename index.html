@@ -52,12 +52,14 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <button class="seller-back" type="button" onclick="openPage('profile')">← العودة إلى حسابي</button>
   <div class="h1">🏪 ابدأ تجارتك</div>
   <div class="sub">أنشئ واجهة متجر تجريبية في WISH. عندنا طريقان: تبيع منتجاتك أو تسوّق منتجات مورّدين بعد اتفاق رسمي معهم.</div>
-  <div class="notice"><b>نسخة تجريبية:</b> المنتجات تُحفظ على جوالك فقط. لا يوجد موردون متعاقدون أو سلة شراء أو دفع أو شحن أو عمولات حقيقية بعد.</div>
+  <div class="notice"><b>نسخة تجريبية:</b> بعد تسجيل الدخول يمكنك حفظ المتجر والمنتجات في حسابك على Supabase. لا يوجد طلب شراء أو دفع أو شحن أو عمولات حقيقية بعد، والمنتجات ليست ظاهرة للآخرين.</div>
   <div class="card">
     <h3 style="margin:0 0 12px">بيانات متجرك</h3>
+    <div id="wishShopStatus" class="notice" aria-live="polite">جار التحقق من الحساب...</div>
+    <button id="wishShopImportBtn" type="button" class="btn secondary seller-full" style="display:none" onclick="importLocalShopToAccount()">📦 نقل منتجات جوالي القديمة إلى حسابي</button>
     <label for="sellerShopName">اسم المتجر</label>
-    <input id="sellerShopName" maxlength="45" placeholder="مثال: متجر سالم" oninput="saveSellerShopName()">
-    <p class="auth-note">تقدر تغيّر الاسم بأي وقت. المنتجات محفوظة محليًا لهذا المتصفح فقط.</p>
+    <input id="sellerShopName" maxlength="45" placeholder="مثال: متجر سالم" onchange="saveSellerShopName()">
+    <p class="auth-note">تقدر تغيّر الاسم بأي وقت. عند تسجيل الدخول، يظهر تأكيد حفظه في حسابك.</p>
   </div>
   <div class="card">
     <h3 style="margin:0 0 12px">وش نوع تجارتك؟</h3>
@@ -117,36 +119,209 @@ document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='
 // لا تضع هنا service_role أو أي مفتاح سري.
 
 // Seller/storefront demo: saved locally on this device; NOT a live commerce backend.
+// WISH seller cloud sync: logged-in accounts are owner-scoped via Supabase RLS.
+// Anonymous/local data is never uploaded without pressing the migration button.
 const WISH_SHOP_STORAGE_KEY='wish-demo-shop-v1';
-let sellerShop={name:'',products:[]},sellerMode='own';
-try{const stored=JSON.parse(localStorage.getItem(WISH_SHOP_STORAGE_KEY)||'null');if(stored&&typeof stored==='object'){sellerShop.name=String(stored.name||'').slice(0,45);sellerShop.products=Array.isArray(stored.products)?stored.products.filter(p=>p&&typeof p.name==='string'&&Number.isFinite(Number(p.price))).slice(0,40):[]}}catch(e){}
-function persistSellerShop(){try{localStorage.setItem(WISH_SHOP_STORAGE_KEY,JSON.stringify(sellerShop))}catch(e){showToast('تعذر حفظ بيانات متجرك على هذا الجهاز')}}
-function openSeller(){openPage('seller');document.getElementById('sellerShopName').value=sellerShop.name;setSellerMode(sellerMode);renderSellerProducts()}
-function setSellerMode(mode){sellerMode=mode==='supplier'?'supplier':'own';document.getElementById('sellerModeOwn').classList.toggle('active',sellerMode==='own');document.getElementById('sellerModeSupplier').classList.toggle('active',sellerMode==='supplier');document.getElementById('sellerOwnFields').hidden=sellerMode!=='own';document.getElementById('sellerOwnFields').style.display=sellerMode==='own'?'block':'none';document.getElementById('sellerSupplierFields').hidden=sellerMode!=='supplier';document.getElementById('sellerMessage').textContent=''}
-function saveSellerShopName(){sellerShop.name=document.getElementById('sellerShopName').value.trim().slice(0,45);persistSellerShop();document.getElementById('sellerShopHeading').textContent=sellerShop.name||'متجري'}
-function sellerNotice(t){document.getElementById('sellerMessage').textContent=t;showToast(t)}
-function addOwnSellerProduct(){
- const name=document.getElementById('sellerProductName').value.trim();const price=Number(document.getElementById('sellerProductPrice').value);const desc=document.getElementById('sellerProductDesc').value.trim();
- if(!name||!Number.isFinite(price)||price<=0||price>1000000){sellerNotice('اكتب اسم المنتج وسعرًا صحيحًا بالريال');return}
- if(sellerShop.products.length>=40){sellerNotice('الحد التجريبي 40 منتجًا');return}
- sellerShop.products.unshift({id:'p'+Date.now()+Math.floor(Math.random()*9999),name:name.slice(0,70),price:Math.round(price*100)/100,description:desc.slice(0,140),type:'own'});
- persistSellerShop();renderSellerProducts();populateSellerVideoSelect();['sellerProductName','sellerProductPrice','sellerProductDesc'].forEach(id=>document.getElementById(id).value='');sellerNotice('✅ أضفنا المنتج إلى معاينة متجرك')
+function localWishShop(){
+  const empty={name:'',products:[]};
+  try{
+    const v=JSON.parse(localStorage.getItem(WISH_SHOP_STORAGE_KEY)||'null');
+    if(v&&typeof v==='object'){
+      return {name:String(v.name||'').slice(0,45),
+        products:(Array.isArray(v.products)?v.products:[]).filter(p=>p&&typeof p.name==='string'&&Number.isFinite(Number(p.price))&&Number(p.price)>0)
+          .slice(0,40).map(p=>({id:String(p.id||''),name:String(p.name).slice(0,70),price:Number(p.price),
+            description:String(p.description||'').slice(0,140),type:p.type==='supplier'?'supplier':'own'}))};
+    }
+  }catch(e){}
+  return empty;
 }
-function addSupplierDemo(item){
- const samples={headset:{name:'سماعة توضيحية',price:120},perfume:{name:'عطر توضيحي',price:180}};const product=samples[item];if(!product)return;
- if(sellerShop.products.length>=40){sellerNotice('الحد التجريبي 40 منتجًا');return}
- sellerShop.products.unshift({id:'s'+Date.now()+Math.floor(Math.random()*9999),name:product.name,price:product.price,description:'نموذج خيالي للتجربة، دون اتفاق مع مورّد',type:'supplier'});
- persistSellerShop();renderSellerProducts();populateSellerVideoSelect();sellerNotice('✅ أضفنا منتجًا توضيحيًا — لا يمكن بيعه الآن')
+let sellerShop=localWishShop(),sellerMode='own';
+let wishShopUserId=null,wishShopReady=false,wishShopRevision=0,wishShopBusy=false;
+function shopStatus(t){document.getElementById('wishShopStatus').textContent=t}
+function shopLocalSave(){
+  if(wishShopUserId)return;
+  try{localStorage.setItem(WISH_SHOP_STORAGE_KEY,JSON.stringify(sellerShop))}catch(e){showToast('تعذر حفظ المتجر على الجهاز')}
 }
-function removeSellerProduct(id){sellerShop.products=sellerShop.products.filter(p=>p.id!==id);persistSellerShop();renderSellerProducts();populateSellerVideoSelect();sellerNotice('تم حذف المنتج من معاينة متجرك')}
+function shopMessage(t){document.getElementById('sellerMessage').textContent=t;showToast(t)}
+function updateImportButton(){
+  const b=document.getElementById('wishShopImportBtn');
+  const v=localWishShop();
+  b.style.display=wishShopUserId&&wishShopReady&&(v.products.length||v.name)?'block':'none';
+}
+function shopCanEdit(){
+  if(wishShopBusy){shopMessage('انتظر حتى تنتهي العملية السابقة');return false}
+  if(wishShopUserId&&!wishShopReady){shopMessage('انتظر حتى يتصل متجرك بحسابك في Supabase');return false}
+  return true;
+}
+function shopViewRefresh(){
+  document.getElementById('sellerShopName').value=sellerShop.name;
+  renderSellerProducts();populateSellerVideoSelect();updateImportButton();
+}
+async function loadCloudShop(uid,version){
+  shopStatus('⏳ جار تحميل متجرك من حساب WISH...');
+  try{
+    const shop=await wishAuthClient.from('wish_shops').select('name').eq('owner_id',uid).maybeSingle();
+    if(uid!==wishShopUserId||version!==wishShopRevision)return;
+    if(shop.error)throw shop.error;
+    const products=await wishAuthClient.from('wish_products')
+      .select('id,name,price,description,kind').eq('owner_id',uid).order('created_at',{ascending:false});
+    if(uid!==wishShopUserId||version!==wishShopRevision)return;
+    if(products.error)throw products.error;
+    sellerShop={name:shop.data?.name||'',products:(products.data||[]).map(p=>({
+      id:p.id,name:p.name,price:Number(p.price),description:p.description||'',type:p.kind==='supplier'?'supplier':'own'
+    }))};
+    wishShopReady=true;
+    shopStatus('✅ متجرك مرتبط بحسابك. المنتجات محفوظة في Supabase وخاصة بك، وليست منشورة للآخرين بعد.');
+    shopViewRefresh();
+  }catch(e){
+    if(uid!==wishShopUserId||version!==wishShopRevision)return;
+    wishShopReady=false;
+    shopStatus('⚠️ تعذر تحميل متجرك. تحقق من جداول wish_shops و wish_products في Supabase ثم أعد فتح الصفحة. ' + (e.message||''));
+  }
+}
+function shopAuthChanged(session){
+  const uid=session?.user?.id||null;
+  if(uid===wishShopUserId){if(!uid)shopStatus('📱 وضع الجوال: سجّل دخولك لربط متجرك بحسابك. المنتجات المحلية لم تُحذف.');return;}
+  wishShopUserId=uid;wishShopRevision++;wishShopReady=false;
+  if(uid){
+    sellerShop={name:'',products:[]};shopViewRefresh();
+    loadCloudShop(uid,wishShopRevision);
+  }else{
+    sellerShop=localWishShop();
+    shopStatus('📱 وضع الجوال: سجّل دخولك لربط متجرك بحسابك. المنتجات المحلية لم تُحذف.');
+    shopViewRefresh();
+  }
+}
+async function createShopIfMissing(uid){
+  // Upsert only after a user action; RLS ensures uid matches auth.uid().
+  const {error}=await wishAuthClient.from('wish_shops')
+    .upsert({owner_id:uid,name:sellerShop.name.slice(0,45)},{onConflict:'owner_id'});
+  if(error)throw error;
+}
+function openSeller(){openPage('seller');setSellerMode(sellerMode);shopViewRefresh()}
+function setSellerMode(mode){
+  sellerMode=mode==='supplier'?'supplier':'own';
+  document.getElementById('sellerModeOwn').classList.toggle('active',sellerMode==='own');
+  document.getElementById('sellerModeSupplier').classList.toggle('active',sellerMode==='supplier');
+  document.getElementById('sellerOwnFields').hidden=sellerMode!=='own';
+  document.getElementById('sellerOwnFields').style.display=sellerMode==='own'?'block':'none';
+  document.getElementById('sellerSupplierFields').hidden=sellerMode!=='supplier';
+  document.getElementById('sellerMessage').textContent='';
+}
+async function saveSellerShopName(){
+  if(!shopCanEdit())return;
+  const name=document.getElementById('sellerShopName').value.trim().slice(0,45);
+  if(!wishShopUserId){sellerShop.name=name;shopLocalSave();renderSellerProducts();return}
+  const uid=wishShopUserId;wishShopBusy=true;
+  try{
+    const {error}=await wishAuthClient.from('wish_shops').upsert({owner_id:uid,name},{onConflict:'owner_id'});
+    if(error)throw error;
+    if(uid!==wishShopUserId)return;
+    sellerShop.name=name;renderSellerProducts();shopMessage('✅ اسم متجرك محفوظ في حساب WISH');
+  }catch(e){shopMessage('❌ تعذر حفظ اسم المتجر: '+(e.message||'خطأ الاتصال'));document.getElementById('sellerShopName').value=sellerShop.name}
+  finally{wishShopBusy=false}
+}
+async function addShopProduct(product){
+  if(!shopCanEdit())return;
+  if(sellerShop.products.length>=40){shopMessage('الحد التجريبي 40 منتجًا');return}
+  const uid=wishShopUserId;
+  wishShopBusy=true;
+  try{
+    if(uid){
+      await createShopIfMissing(uid);
+      const {data,error}=await wishAuthClient.from('wish_products')
+        .insert({owner_id:uid,name:product.name,description:product.description,price:product.price,kind:product.type})
+        .select('id').single();
+      if(error)throw error;
+      if(uid!==wishShopUserId)return;
+      product.id=data.id;
+    }else{product.id='local'+Date.now()+Math.floor(Math.random()*9999)}
+    sellerShop.products.unshift(product);
+    shopLocalSave();renderSellerProducts();populateSellerVideoSelect();
+    if(uid)shopMessage('✅ تم حفظ المنتج في حساب WISH');
+    else shopMessage('✅ أضفنا المنتج محليًا على هذا الجهاز');
+    return true;
+  }catch(e){shopMessage('❌ لم يتم حفظ المنتج: '+(e.message||'خطأ الاتصال'));return false}
+  finally{wishShopBusy=false}
+}
+async function addOwnSellerProduct(){
+  const name=document.getElementById('sellerProductName').value.trim();
+  const price=Number(document.getElementById('sellerProductPrice').value);
+  const desc=document.getElementById('sellerProductDesc').value.trim();
+  if(!name||!Number.isFinite(price)||price<=0||price>1000000){shopMessage('اكتب اسم المنتج وسعرًا صحيحًا بالريال');return}
+  const ok=await addShopProduct({name:name.slice(0,70),price:Math.round(price*100)/100,
+    description:desc.slice(0,140),type:'own'});
+  if(ok)['sellerProductName','sellerProductPrice','sellerProductDesc'].forEach(id=>document.getElementById(id).value='');
+}
+async function addSupplierDemo(item){
+  const samples={headset:{name:'سماعة توضيحية',price:120},perfume:{name:'عطر توضيحي',price:180}};
+  const p=samples[item];if(!p)return;
+  await addShopProduct({name:p.name,price:p.price,description:'نموذج خيالي للتجربة، دون اتفاق مع مورّد',type:'supplier'});
+}
+async function removeSellerProduct(id){
+  if(!shopCanEdit())return;
+  const uid=wishShopUserId;wishShopBusy=true;
+  try{
+    if(uid){
+      const {error}=await wishAuthClient.from('wish_products').delete().eq('id',id).eq('owner_id',uid);
+      if(error)throw error;
+      if(uid!==wishShopUserId)return;
+    }
+    sellerShop.products=sellerShop.products.filter(p=>p.id!==id);
+    shopLocalSave();renderSellerProducts();populateSellerVideoSelect();
+    shopMessage('تم حذف المنتج');
+  }catch(e){shopMessage('تعذر حذف المنتج من حسابك: '+(e.message||'خطأ الاتصال'))}
+  finally{wishShopBusy=false}
+}
 function renderSellerProducts(){
- const count=document.getElementById('sellerProductCount'),list=document.getElementById('sellerProducts'),heading=document.getElementById('sellerShopHeading');if(!list)return;
- heading.textContent=sellerShop.name||'متجري';count.textContent=sellerShop.products.length+' منتجات تجريبية';
- if(!sellerShop.products.length){list.innerHTML='<div class="seller-empty">ما أضفت منتجات للحين. اختر طريقة تجارتك وأضف أول منتج.</div>';return}
- list.innerHTML=sellerShop.products.map(p=>'<div class="seller-product"><b>'+escapeHtml(p.name)+'</b><small>'+(p.type==='supplier'?'🤝 نموذج مورد غير متعاقد':'📦 منتجك الخاص')+'</small><small>'+escapeHtml(p.description||'بدون وصف')+'</small><div class="row"><span class="price">'+Number(p.price).toLocaleString('ar-SA')+' ر.س (تجريبي)</span><button type="button" class="btn small secondary" data-id="'+escapeHtml(p.id)+'" onclick="removeSellerProduct(this.dataset.id)">حذف</button></div></div>').join('')
+  const count=document.getElementById('sellerProductCount'),list=document.getElementById('sellerProducts'),heading=document.getElementById('sellerShopHeading');
+  if(!list)return;
+  heading.textContent=sellerShop.name||'متجري';
+  count.textContent=sellerShop.products.length+' منتجات تجريبية';
+  if(!sellerShop.products.length){list.innerHTML='<div class="seller-empty">ما أضفت منتجات للحين. اختر طريقة تجارتك وأضف أول منتج.</div>';return}
+  list.innerHTML=sellerShop.products.map(p=>'<div class="seller-product"><b>'+escapeHtml(p.name)+'</b><small>'+(p.type==='supplier'?'🤝 نموذج مورد غير متعاقد':'📦 منتجك الخاص')+'</small><small>'+escapeHtml(p.description||'بدون وصف')+'</small><div class="row"><span class="price">'+Number(p.price).toLocaleString('ar-SA')+' ر.س (تجريبي)</span><button type="button" class="btn small secondary" data-id="'+escapeHtml(p.id)+'" onclick="removeSellerProduct(this.dataset.id)">حذف</button></div></div>').join('')
 }
-function populateSellerVideoSelect(){const select=document.getElementById('sellerVideoSelect');if(!select)return;const prev=select.value;select.innerHTML='<option value="">اكتب اسم المنتج بنفسك</option>'+sellerShop.products.map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.name)+'</option>').join('');if(sellerShop.products.some(p=>p.id===prev))select.value=prev}
-function useSellerProductInVideo(){const id=document.getElementById('sellerVideoSelect').value;const p=sellerShop.products.find(p=>p.id===id);if(p){document.getElementById('pname').value=p.name;document.getElementById('hasprod').checked=true;toggleProduct()}}
+function populateSellerVideoSelect(){
+  const select=document.getElementById('sellerVideoSelect');if(!select)return;
+  const prev=select.value;
+  select.innerHTML='<option value="">اكتب اسم المنتج بنفسك</option>'+sellerShop.products.map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.name)+'</option>').join('');
+  if(sellerShop.products.some(p=>p.id===prev))select.value=prev;
+}
+function useSellerProductInVideo(){
+  const id=document.getElementById('sellerVideoSelect').value;
+  const p=sellerShop.products.find(p=>p.id===id);
+  if(p){document.getElementById('pname').value=p.name;document.getElementById('hasprod').checked=true;toggleProduct()}
+}
+async function importLocalShopToAccount(){
+  if(!wishShopUserId||!wishShopReady){shopMessage('سجّل الدخول وانتظر تحميل متجرك أولًا');return}
+  if(!shopCanEdit())return;
+  const old=localWishShop(),uid=wishShopUserId;
+  const existing=new Set(sellerShop.products.map(p=>[p.name,p.price,p.type].join('|')));
+  const list=old.products.filter(p=>!existing.has([p.name,p.price,p.type].join('|')))
+    .slice(0,Math.max(0,40-sellerShop.products.length));
+  if(!list.length&&!old.name){shopMessage('ما فيه منتجات محلية جديدة لنقلها');return}
+  wishShopBusy=true;
+  const button=document.getElementById('wishShopImportBtn');button.disabled=true;
+  let moved=0;
+  try{
+    if(!sellerShop.name&&old.name){
+      const {error}=await wishAuthClient.from('wish_shops').upsert({owner_id:uid,name:old.name},{onConflict:'owner_id'});
+      if(error)throw error;
+      if(uid!==wishShopUserId)return;
+      sellerShop.name=old.name;
+    }else{await createShopIfMissing(uid)}
+    for(const p of list){
+      const {data,error}=await wishAuthClient.from('wish_products').insert({
+        owner_id:uid,name:p.name,price:p.price,description:p.description,kind:p.type
+      }).select('id').single();
+      if(error)throw error;
+      if(uid!==wishShopUserId)return;
+      sellerShop.products.unshift({...p,id:data.id});moved++;
+    }
+    shopViewRefresh();shopMessage('✅ تم نقل '+moved+' منتج إلى حساب WISH. احتفظنا بالنسخة المحلية على جوالك.');
+  }catch(e){shopMessage('تعذّر إكمال نقل المنتجات؛ قد يكون نُقل بعضها. حدّث الصفحة للتحقق. لم نحذف النسخ المحلية: '+(e.message||''))}
+  finally{wishShopBusy=false;button.disabled=false;shopViewRefresh()}
+}
 
 const WISH_SUPABASE_URL = 'https://ukavrxavasgqnehtouii.supabase.co';
 const WISH_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_dOGwI5TmoN3BWXtnP_aA1Q_skbPFxPn';
@@ -154,7 +329,7 @@ let wishAuthClient=null;
 let wishAuthMode='signup';
 function authMessage(message,isError=false){const el=document.getElementById('authFeedback');el.textContent=message;el.classList.toggle('error',isError)}
 function setAuthMode(mode){wishAuthMode=mode;const signup=mode==='signup';document.getElementById('nameRow').style.display=signup?'block':'none';document.getElementById('tabSignup').className=signup?'btn small selected':'btn small secondary';document.getElementById('tabSignin').className=!signup?'btn small selected':'btn small secondary';document.getElementById('authSubmit').textContent=signup?'إنشاء حساب':'تسجيل الدخول';document.getElementById('authPassword').autocomplete=signup?'new-password':'current-password';authMessage('')}
-function renderWishAuth(session){document.getElementById('authGuest').style.display=session?'none':'block';document.getElementById('authSigned').style.display=session?'block':'none';if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}}
+function renderWishAuth(session){document.getElementById('authGuest').style.display=session?'none':'block';document.getElementById('authSigned').style.display=session?'block':'none';if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session)}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
@@ -189,6 +364,6 @@ async function initWishAuth(){
    wishAuthClient.auth.onAuthStateChange((event,session)=>{renderWishAuth(session)});
  }catch(e){setup.style.display='block';setup.textContent='تعذر الاتصال بنظام الحسابات. راجع إعدادات Supabase.';authMessage(e?.message||'خطأ بالاتصال',true)}
 }
-initWishAuth();renderSellerProducts();populateSellerVideoSelect();
+shopAuthChanged(null);initWishAuth();renderSellerProducts();populateSellerVideoSelect();
 </script>
 </body></html>
