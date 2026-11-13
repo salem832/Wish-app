@@ -78,6 +78,20 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .wish-calc-line.wish-calc-main strong{font-size:19px;color:#fff}
 #wishCalcError{font-size:12px;color:#ffb4c6;min-height:18px;line-height:1.7}
 .wish-calc-note{font-size:12px;line-height:1.9;color:#beccde;margin:12px 0 0}
+
+/* Owner-scoped demo sale journal. Strictly simulations; no orders, payments or payouts. */
+.wish-demo-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.wish-demo-metric{background:#0d1b2c;border:1px solid #365365;border-radius:14px;padding:12px;min-width:0}
+.wish-demo-metric b{display:block;color:#87ead0;font-size:21px;overflow-wrap:anywhere}
+.wish-demo-metric small{display:block;color:#c3d4e8;font-size:11px;line-height:1.7;margin-top:5px}
+.wish-demo-entry{background:#0b1726;border:1px solid #30435b;border-radius:13px;margin-top:12px;padding:13px;line-height:1.8}
+.wish-demo-entry strong{display:block;font-size:14px;overflow-wrap:anywhere}
+.wish-demo-entry small{display:block;color:#b9c8da;font-size:12px;line-height:1.8}
+.wish-demo-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.wish-demo-actions button{font-size:12px}
+.wish-demo-status{display:inline-block;border:1px solid #54647b;color:#d5e2ef;background:#233148;padding:2px 9px;border-radius:999px;font-size:11px;margin:5px 0}
+.wish-demo-info{font-size:12px;color:#c9d8eb;line-height:1.9;min-height:24px;margin-top:12px}
+#wishDemoSubmit:disabled,#wishDemoRefresh:disabled,.wish-demo-actions button:disabled{opacity:.55;cursor:wait}
 </style>
 </head>
 <body><main class="app">
@@ -191,6 +205,28 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
     <div id="wishCalcError" role="status" aria-live="polite"></div>
     <div id="wishCalcResults" class="wish-calc-results" aria-live="polite" aria-atomic="true"></div>
     <p class="wish-calc-note">مبلغ التاجر هنا هو المتبقي بعد خصم العمولة الافتراضية فقط، وليس صافي ربحه. حصة WISH قبل المصاريف والضرائب. لا يُعتمد أي استحقاق إلا بعد بيع مؤكد واستيفاء شروط الاتفاق والاسترجاع.</p>
+  </div>
+
+  <div class="card" id="wishDemoSalesCard">
+    <h3 style="margin:0 0 6px">🧾 سجل المبيعات التجريبية</h3>
+    <div class="notice">🧪 محاكاة تعليمية فقط: لا توجد طلبات أو عمليات شراء أو أرباح حقيقية، ولا يتم إرسال بيانات إلى جدول المبيعات الفعلية. «مؤكدة» هنا تعني <b>مؤكدة تجريبيًا</b> فقط.</div>
+    <label for="wishDemoProduct">المنتج من متجرك</label>
+    <select id="wishDemoProduct"><option value="">سجّل دخولك وانتظر تحميل منتجاتك</option></select>
+    <label for="wishDemoAmount">مبلغ البيع الافتراضي (ريال)</label>
+    <input id="wishDemoAmount" type="number" inputmode="decimal" min="0.01" max="1000000" step="0.01" value="1000">
+    <label for="wishDemoRate">عمولة التاجر الافتراضية</label>
+    <select id="wishDemoRate"><option value="10">10%</option><option value="5">5%</option></select>
+    <label for="wishDemoScenario">طريقة التسويق الافتراضية</label>
+    <select id="wishDemoScenario">
+      <option value="creator_promoter">صانع محتوى + مسوّق منفصل</option>
+      <option value="creator_only">صانع محتوى فقط</option>
+      <option value="same_person">نفس الشخص صانع محتوى ومسوّق</option>
+    </select>
+    <button id="wishDemoSubmit" type="button" class="btn seller-full" onclick="createWishDemoSale()">＋ سجّل عملية بيع تجريبية معلّقة</button>
+    <div id="wishDemoStatus" class="wish-demo-info" aria-live="polite">🔒 سجّل دخولك لعرض سجل التجارب الخاص بحسابك.</div>
+    <div id="wishDemoTotals" class="wish-demo-summary"></div>
+    <div id="wishDemoEntries"></div>
+    <button id="wishDemoRefresh" type="button" class="btn secondary seller-full" onclick="loadWishDemoSales()">↻ تحديث السجل من Supabase</button>
   </div>
   <div class="notice">🌍 من قسم «السوق» تقدر تشوف المنتجات المنشورة. زر «أبيها» يحفظ الرغبة تجريبيًا ولا ينفّذ طلب شراء أو دفع.</div>
 </div></section>
@@ -413,7 +449,7 @@ function shopCanEdit(){
 }
 function shopViewRefresh(){
   document.getElementById('sellerShopName').value=sellerShop.name;
-  renderSellerProducts();populateSellerVideoSelect();updateImportButton();
+  renderSellerProducts();populateSellerVideoSelect();updateImportButton();populateWishDemoProductSelect();
 }
 async function loadCloudShop(uid,version){
   shopStatus('⏳ جار تحميل متجرك من حساب WISH...');
@@ -431,7 +467,7 @@ async function loadCloudShop(uid,version){
     wishShopReady=true;
     shopStatus('✅ متجرك مرتبط بحسابك. المنتجات الخاصة لا تظهر للآخرين، والمنشورة تظهر في سوق WISH.');
     shopViewRefresh();
-    if(document.getElementById('seller').classList.contains('active'))loadWishMerchantStats();
+    if(document.getElementById('seller').classList.contains('active')){loadWishMerchantStats();loadWishDemoSales();}
   }catch(e){
     if(uid!==wishShopUserId||version!==wishShopRevision)return;
     wishShopReady=false;
@@ -443,6 +479,7 @@ function shopAuthChanged(session){
   if(uid===wishShopUserId){if(!uid)shopStatus('📱 وضع الجوال: سجّل دخولك لربط متجرك بحسابك. المنتجات المحلية لم تُحذف.');return;}
   wishShopUserId=uid;wishShopRevision++;wishShopReady=false;
   resetWishMerchantStats(uid?'⏳ جار تحميل المتجر، ثم تظهر إحصائياته.':'🔒 سجّل دخولك حتى تشوف إحصائيات متجرك.');
+  resetWishDemoSales(uid?'⏳ جار تحميل المتجر، ثم تظهر التجارب.':'🔒 سجّل دخولك لحفظ التجارب.');
   if(uid){
     sellerShop={name:'',products:[]};shopViewRefresh();
     loadCloudShop(uid,wishShopRevision);
@@ -498,7 +535,7 @@ async function loadWishMerchantStats(){
    status.textContent='⚠️ تعذر تحميل الإحصائيات. تأكد من تشغيل كود wish_merchant_click_stats في Supabase. '+(e?.message||'');
  }finally{if(request===wishMerchantStatsRequest)refresh.disabled=false}
 }
-function openSeller(){openPage('seller');setSellerMode(sellerMode);shopViewRefresh();loadWishMerchantStats()}
+function openSeller(){openPage('seller');setSellerMode(sellerMode);shopViewRefresh();loadWishMerchantStats();loadWishDemoSales()}
 function setSellerMode(mode){
   sellerMode=mode==='supplier'?'supplier':'own';
   document.getElementById('sellerModeOwn').classList.toggle('active',sellerMode==='own');
@@ -715,6 +752,123 @@ function renderWishCommissionCalculator(){
     +line('المتبقي للتاجر بعد العمولة فقط',data.merchantCents);
 }
 
+
+// WISH demo journal: separate from public.wish_sales, intentionally never handles payments.
+let wishDemoSales=[],wishDemoRequest=0,wishDemoBusy=false;
+const wishDemoScenarioMode={creator_only:'creator',creator_promoter:'separate',same_person:'same'};
+const wishDemoStatusText={pending:'⏳ معلّقة تجريبيًا',confirmed:'✅ مؤكدة تجريبيًا',cancelled:'🚫 ملغاة تجريبيًا',refunded:'↩️ مسترجعة تجريبيًا'};
+function wishDemoSar(cents){return (cents/100).toLocaleString('ar-SA',{minimumFractionDigits:2,maximumFractionDigits:2})+' ر.س'}
+function populateWishDemoProductSelect(){
+ const select=document.getElementById('wishDemoProduct');if(!select)return;
+ const old=select.value;
+ const products=wishShopUserId&&wishShopReady?sellerShop.products.filter(p=>p.type==='own'):[];
+ select.innerHTML='<option value="">'+(products.length?'اختر المنتج':'لا توجد منتجات في حسابك')+'</option>'+
+   products.map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.name)+'</option>').join('');
+ if(products.some(p=>p.id===old))select.value=old;
+ else if(products.length===1)select.value=products[0].id;
+}
+function resetWishDemoSales(message){
+ wishDemoRequest++;
+ wishDemoSales=[];
+ document.getElementById('wishDemoStatus').textContent=message||'🔒 سجّل الدخول لحفظ التجارب في حسابك.';
+ document.getElementById('wishDemoEntries').innerHTML='';
+ document.getElementById('wishDemoTotals').innerHTML='';
+ document.getElementById('wishDemoSubmit').disabled=false;
+ document.getElementById('wishDemoRefresh').disabled=false;
+ populateWishDemoProductSelect();
+}
+function renderWishDemoSales(){
+ const totals=document.getElementById('wishDemoTotals');
+ const list=document.getElementById('wishDemoEntries');
+ const confirmed=wishDemoSales.filter(r=>r.status==='confirmed');
+ const sum=confirmed.reduce((a,r)=>a+(calculateWishDemoCommission(Number(r.sale_amount),Number(r.commission_rate),wishDemoScenarioMode[r.scenario])?.wishCents||0),0);
+ totals.innerHTML='<div class="wish-demo-metric"><b>'+wishDemoSales.length.toLocaleString('ar-SA')+'</b><small>سجلات تجريبية معروضة (آخر 25)</small></div>'+
+   '<div class="wish-demo-metric"><b>'+confirmed.length.toLocaleString('ar-SA')+'</b><small>عمليات مؤكدة تجريبيًا</small></div>'+
+   '<div class="wish-demo-metric"><b>'+wishDemoSar(sum)+'</b><small>حصة WISH الافتراضية للعمليات المؤكدة تجريبيًا، ليست أرباحًا</small></div>'+
+   '<div class="wish-demo-metric"><b>0 ر.س</b><small>أرباح حقيقية مسجلة بهذا النظام</small></div>';
+ if(!wishDemoSales.length){list.innerHTML='<div class="seller-empty">ما عندك مبيعات تجريبية. جرّب تسجيل عملية معلّقة أولًا.</div>';return}
+ const map=new Map(sellerShop.products.map(p=>[p.id,p.name]));
+ list.innerHTML=wishDemoSales.map(r=>{
+   const mode=wishDemoScenarioMode[r.scenario];
+   const parts=calculateWishDemoCommission(Number(r.sale_amount),Number(r.commission_rate),mode);
+   const label=wishDemoStatusText[r.status]||'تجربة';
+   const who=map.get(r.product_id)||'منتج من متجرك';
+   let actions='';
+   if(r.status==='pending')actions='<button class="btn small" type="button" data-id="'+escapeHtml(r.id)+'" data-next="confirmed" onclick="updateWishDemoStatus(this.dataset.id,this.dataset.next)">✅ تأكيد تجريبي</button><button class="btn small secondary" type="button" data-id="'+escapeHtml(r.id)+'" data-next="cancelled" onclick="updateWishDemoStatus(this.dataset.id,this.dataset.next)">إلغاء التجربة</button>';
+   if(r.status==='confirmed')actions='<button class="btn small secondary" type="button" data-id="'+escapeHtml(r.id)+'" data-next="refunded" onclick="updateWishDemoStatus(this.dataset.id,this.dataset.next)">↩️ محاكاة استرجاع</button>';
+   return '<div class="wish-demo-entry"><strong>'+escapeHtml(who)+'</strong><span class="wish-demo-status">'+label+'</span>'+
+    '<small>بيع افتراضي: '+(parts?wishDemoSar(parts.saleCents):'—')+' · نسبة العمولة: '+Number(r.commission_rate)+'%</small>'+
+    '<small>عمولة إجمالية افتراضية: '+(parts?wishDemoSar(parts.totalCents):'—')+' · حصة WISH افتراضيًا: '+(parts?wishDemoSar(parts.wishCents):'—')+'</small>'+
+    '<div class="wish-demo-actions">'+actions+'</div></div>';
+ }).join('');
+}
+async function loadWishDemoSales(){
+ if(!wishAuthClient||!wishShopUserId){resetWishDemoSales('🔒 سجّل دخولك إلى WISH لحفظ التجارب.');return}
+ if(!wishShopReady){resetWishDemoSales('⏳ انتظر تحميل المتجر، ثم حدّث سجل المبيعات التجريبية.');return}
+ const uid=wishShopUserId,rev=wishShopRevision,request=++wishDemoRequest;
+ const refresh=document.getElementById('wishDemoRefresh');refresh.disabled=true;
+ document.getElementById('wishDemoStatus').textContent='⏳ جار جلب سجل التجارب من Supabase...';
+ try{
+  const {data,error}=await wishAuthClient.from('wish_demo_sales')
+   .select('id,product_id,sale_amount,commission_rate,scenario,status,is_demo,created_at')
+   .eq('owner_id',uid).eq('is_demo',true).order('created_at',{ascending:false}).limit(25);
+  if(error)throw error;
+  if(request!==wishDemoRequest||uid!==wishShopUserId||rev!==wishShopRevision)return;
+  wishDemoSales=(data||[]).filter(r=>r.is_demo===true);
+  document.getElementById('wishDemoStatus').textContent='✅ سجل تجريبي خاص بحسابك، تم تحميله من Supabase. لا توجد مبيعات أو تحويلات فعلية.';
+  renderWishDemoSales();
+ }catch(e){
+  if(request!==wishDemoRequest||uid!==wishShopUserId||rev!==wishShopRevision)return;
+  document.getElementById('wishDemoStatus').textContent='⚠️ تعذر قراءة التجارب؛ تأكد من إنشاء wish_demo_sales وتفعيل سياسات RLS. '+(e?.message||'');
+ }finally{if(request===wishDemoRequest)refresh.disabled=false}
+}
+async function createWishDemoSale(){
+ if(wishDemoBusy)return;
+ if(!wishAuthClient||!wishShopUserId||!wishShopReady){document.getElementById('wishDemoStatus').textContent='🔒 سجّل دخولك وانتظر تحميل متجرك أولًا.';return}
+ const uid=wishShopUserId,rev=wishShopRevision;
+ const productId=document.getElementById('wishDemoProduct').value;
+ const product=sellerShop.products.find(p=>p.id===productId&&p.type==='own');
+ const amount=document.getElementById('wishDemoAmount').value.trim();
+ const rate=Number(document.getElementById('wishDemoRate').value);
+ const scenario=document.getElementById('wishDemoScenario').value;
+ if(!product){document.getElementById('wishDemoStatus').textContent='اختر منتجًا تملكه من متجرك.';return}
+ if(!wishDemoScenarioMode[scenario]||!calculateWishDemoCommission(amount,rate,wishDemoScenarioMode[scenario])){
+  document.getElementById('wishDemoStatus').textContent='اكتب مبلغًا صحيحًا بين 0.01 و1,000,000 ريال، بحد أقصى منزلتين عشريتين.';return;
+ }
+ wishDemoBusy=true;
+ const btn=document.getElementById('wishDemoSubmit');btn.disabled=true;
+ document.getElementById('wishDemoStatus').textContent='⏳ جار حفظ عملية تجريبية معلّقة...';
+ try{
+  const {error}=await wishAuthClient.from('wish_demo_sales').insert({
+   owner_id:uid,product_id:productId,sale_amount:Number(amount),commission_rate:rate,scenario,status:'pending',is_demo:true
+  });
+  if(error)throw error;
+  if(uid!==wishShopUserId||rev!==wishShopRevision)return;
+  await loadWishDemoSales();
+  if(uid===wishShopUserId)document.getElementById('wishDemoStatus').textContent='✅ تم تسجيل عملية بيع افتراضية معلّقة؛ لم يحصل شراء أو دفع حقيقي.';
+ }catch(e){if(uid===wishShopUserId&&rev===wishShopRevision)document.getElementById('wishDemoStatus').textContent='❌ تعذر حفظ التجربة: '+(e?.message||'خطأ اتصال')}
+ finally{wishDemoBusy=false;btn.disabled=false}
+}
+async function updateWishDemoStatus(id,next){
+ if(wishDemoBusy||!wishAuthClient||!wishShopUserId||!wishShopReady)return;
+ const old=wishDemoSales.find(r=>r.id===id);
+ if(!old||!((old.status==='pending'&&['confirmed','cancelled'].includes(next))||(old.status==='confirmed'&&next==='refunded')))return;
+ const uid=wishShopUserId,rev=wishShopRevision;
+ if(!window.confirm('هذه محاكاة فقط، ولن تُنشأ عملية دفع أو عمولة حقيقية. هل تؤكد تغيير الحالة؟'))return;
+ wishDemoBusy=true;document.getElementById('wishDemoStatus').textContent='⏳ جار تحديث الحالة التجريبية...';
+ const controls=document.querySelectorAll('#wishDemoEntries button');controls.forEach(b=>b.disabled=true);
+ try{
+  const {data,error}=await wishAuthClient.from('wish_demo_sales')
+    .update({status:next}).eq('id',id).eq('owner_id',uid).eq('status',old.status).eq('is_demo',true)
+    .select('id,status').single();
+  if(error)throw error;
+  if(uid!==wishShopUserId||rev!==wishShopRevision)return;
+  await loadWishDemoSales();
+  if(uid===wishShopUserId)document.getElementById('wishDemoStatus').textContent='✅ تحدّثت حالة المحاكاة إلى «'+(wishDemoStatusText[data.status]||'تجربة')+'». لا توجد أرباح حقيقية.';
+ }catch(e){if(uid===wishShopUserId&&rev===wishShopRevision)document.getElementById('wishDemoStatus').textContent='❌ لم تُحدّث الحالة: '+(e?.message||'خطأ اتصال')}
+ finally{wishDemoBusy=false;controls.forEach(b=>b.disabled=false)}
+}
+
 const WISH_SUPABASE_URL = 'https://ukavrxavasgqnehtouii.supabase.co';
 const WISH_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_dOGwI5TmoN3BWXtnP_aA1Q_skbPFxPn';
 let wishAuthClient=null;
@@ -757,6 +911,6 @@ async function initWishAuth(){
    loadCloudVideos();
  }catch(e){setup.style.display='block';setup.textContent='تعذر الاتصال بنظام الحسابات. راجع إعدادات Supabase.';authMessage(e?.message||'خطأ بالاتصال',true)}
 }
-shopAuthChanged(null);initWishAuth();renderSellerProducts();populateSellerVideoSelect();renderWishCommissionCalculator();
+shopAuthChanged(null);initWishAuth();renderSellerProducts();populateSellerVideoSelect();renderWishCommissionCalculator();populateWishDemoProductSelect();
 </script>
 </body></html>
