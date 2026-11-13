@@ -69,6 +69,15 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .merchant-stats-item small{font-size:12px;color:#c0d0e4;line-height:1.8;display:block}
 #merchantStatsStatus{font-size:12px;color:#c6d8e6;line-height:1.9;margin:12px 0}
 #merchantStatsRefresh:disabled{opacity:.5;cursor:wait}
+
+/* Offline, hypothetical commission calculator; never writes a sale or payout. */
+.wish-calc-results{background:#0b1827;border:1px solid #344d5e;border-radius:15px;padding:12px;margin-top:15px}
+.wish-calc-line{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 4px;border-bottom:1px solid #2b3d51;font-size:13px;line-height:1.7}
+.wish-calc-line:last-child{border-bottom:0}
+.wish-calc-line strong{color:#8cebd2;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:14px}
+.wish-calc-line.wish-calc-main strong{font-size:19px;color:#fff}
+#wishCalcError{font-size:12px;color:#ffb4c6;min-height:18px;line-height:1.7}
+.wish-calc-note{font-size:12px;line-height:1.9;color:#beccde;margin:12px 0 0}
 </style>
 </head>
 <body><main class="app">
@@ -162,6 +171,26 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
     <div id="merchantStatsTotals" class="merchant-stats-grid"></div>
     <div id="merchantStatsProducts"></div>
     <button id="merchantStatsRefresh" type="button" class="btn secondary seller-full" onclick="loadWishMerchantStats()">↻ تحديث الإحصائيات</button>
+  </div>
+  <div class="card" id="wishCalculatorCard">
+    <h3 style="margin:0 0 6px">🧮 حاسبة عمولات WISH (تجريبية)</h3>
+    <div class="notice">الأرقام للتوضيح فقط، ولا تسجّل مبيعات أو أرباحًا أو مستحقات في قاعدة البيانات. نسب العمولة المقترحة تحتاج اتفاقًا فعليًا مع التاجر قبل تطبيقها.</div>
+    <label for="wishCalcAmount">قيمة البيع الافتراضية (بالريال)</label>
+    <input id="wishCalcAmount" type="number" inputmode="decimal" min="0.01" max="1000000" step="0.01" value="1000" oninput="renderWishCommissionCalculator()" aria-describedby="wishCalcError">
+    <label for="wishCalcRate">نسبة العمولة المتفق عليها افتراضيًا</label>
+    <select id="wishCalcRate" onchange="renderWishCommissionCalculator()">
+      <option value="10">10% من سعر البيع</option>
+      <option value="5">5% من سعر البيع</option>
+    </select>
+    <label for="wishCalcMode">من الذي سوّق المنتج؟</label>
+    <select id="wishCalcMode" onchange="renderWishCommissionCalculator()">
+      <option value="separate">صانع محتوى + مسوّق منفصل</option>
+      <option value="creator">صانع محتوى فقط</option>
+      <option value="same">نفس الشخص صانع محتوى ومسوّق</option>
+    </select>
+    <div id="wishCalcError" role="status" aria-live="polite"></div>
+    <div id="wishCalcResults" class="wish-calc-results" aria-live="polite" aria-atomic="true"></div>
+    <p class="wish-calc-note">مبلغ التاجر هنا هو المتبقي بعد خصم العمولة الافتراضية فقط، وليس صافي ربحه. حصة WISH قبل المصاريف والضرائب. لا يُعتمد أي استحقاق إلا بعد بيع مؤكد واستيفاء شروط الاتفاق والاسترجاع.</p>
   </div>
   <div class="notice">🌍 من قسم «السوق» تقدر تشوف المنتجات المنشورة. زر «أبيها» يحفظ الرغبة تجريبيًا ولا ينفّذ طلب شراء أو دفع.</div>
 </div></section>
@@ -646,6 +675,46 @@ async function importLocalShopToAccount(){
   finally{wishShopBusy=false;button.disabled=false;shopViewRefresh()}
 }
 
+
+function calculateWishDemoCommission(amount,rate,mode){
+  const r=Number(rate),sale=Number(amount);
+  if(!Number.isFinite(sale)||sale<0.01||sale>1000000||Math.round(sale*100)/100!==sale||![5,10].includes(r)||!['creator','separate','same'].includes(mode))return null;
+  const saleCents=Math.round(sale*100);
+  const totalCents=Math.round(saleCents*r/100);
+  const baseRate=r===10?2:1;
+  const creatorRate=mode==='same'?baseRate*2:baseRate;
+  const promoterRate=mode==='separate'?baseRate:0;
+  const creatorCents=Math.round(saleCents*creatorRate/100);
+  const promoterCents=Math.min(totalCents-creatorCents,Math.round(saleCents*promoterRate/100));
+  return {saleCents,totalCents,creatorCents,promoterCents,
+    wishCents:totalCents-creatorCents-promoterCents,merchantCents:saleCents-totalCents};
+}
+function renderWishCommissionCalculator(){
+  const amount=document.getElementById('wishCalcAmount');
+  const rate=document.getElementById('wishCalcRate');
+  const mode=document.getElementById('wishCalcMode');
+  const error=document.getElementById('wishCalcError');
+  const results=document.getElementById('wishCalcResults');
+  if(!amount||!rate||!mode||!error||!results)return;
+  const v=amount.value.trim();
+  const data=v?calculateWishDemoCommission(v,rate.value,mode.value):null;
+  if(!data){
+    error.textContent='اكتب مبلغًا صحيحًا بين 0.01 و1,000,000 ريال، وبحد أقصى منزلتين عشريتين.';
+    results.textContent='أدخل قيمة بيع صحيحة لعرض التوزيع الافتراضي.';
+    return;
+  }
+  error.textContent='';
+  const sar=cents=>(cents/100).toLocaleString('ar-SA',{minimumFractionDigits:2,maximumFractionDigits:2})+' ر.س';
+  const line=(label,value,extra='')=>`<div class="wish-calc-line ${extra}"><span>${label}</span><strong>${sar(value)}</strong></div>`;
+  const creatorLabel=mode.value==='same'?'صانع المحتوى (وهو المسوّق أيضًا)':'صانع المحتوى';
+  results.innerHTML=line('قيمة البيع الافتراضية',data.saleCents)
+    +line('إجمالي العمولة ('+rate.value+'%)',data.totalCents,'wish-calc-main')
+    +line(creatorLabel,data.creatorCents)
+    +(mode.value==='separate'?line('المسوّق المنفصل',data.promoterCents):'')
+    +line('حصة WISH قبل التكاليف والضرائب',data.wishCents)
+    +line('المتبقي للتاجر بعد العمولة فقط',data.merchantCents);
+}
+
 const WISH_SUPABASE_URL = 'https://ukavrxavasgqnehtouii.supabase.co';
 const WISH_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_dOGwI5TmoN3BWXtnP_aA1Q_skbPFxPn';
 let wishAuthClient=null;
@@ -688,6 +757,6 @@ async function initWishAuth(){
    loadCloudVideos();
  }catch(e){setup.style.display='block';setup.textContent='تعذر الاتصال بنظام الحسابات. راجع إعدادات Supabase.';authMessage(e?.message||'خطأ بالاتصال',true)}
 }
-shopAuthChanged(null);initWishAuth();renderSellerProducts();populateSellerVideoSelect();
+shopAuthChanged(null);initWishAuth();renderSellerProducts();populateSellerVideoSelect();renderWishCommissionCalculator();
 </script>
 </body></html>
