@@ -49,6 +49,15 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .market-seller-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .market-seller-actions button{margin-top:7px}
 .market-status{font-size:12px;color:#c7d7e9;line-height:1.9;min-height:25px}
+/* External merchant links are optional, never processed as payments inside WISH. */
+.wish-buy-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;color:white;text-decoration:none;border:1px solid #67877d;background:#244339;border-radius:12px;padding:11px 15px;font-size:13px;font-weight:750}
+.wish-buy-link:focus-visible{outline:3px solid var(--pink)}
+.wish-buy-link-notice{font-size:12px;color:#d0bfaf;line-height:1.8;margin:10px 0 0}
+.seller-link-editor{background:#0c1725;border:1px solid #344a5d;border-radius:14px;padding:12px;margin:12px 0 8px}
+.seller-link-editor label{font-size:12px;color:#d4e0ee;display:block;margin-bottom:4px}
+.seller-link-editor input{margin:7px 0 9px;font-size:13px;direction:ltr;text-align:left}
+.seller-link-editor button{margin-top:3px}
+.seller-link-editor small{font-size:11px;color:#adbac9}
 </style>
 </head>
 <body><main class="app">
@@ -58,7 +67,7 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 <section id="market"><div class="content">
   <div class="h1">🛍️ سوق WISH</div>
   <div class="sub">تصفح منتجات التجار الذين اختاروا نشرها للعامة. المنتجات الخاصة لا تظهر هنا.</div>
-  <div class="notice">🧪 سوق تجريبي: المنتجات المعروضة ليست عروض بيع موثّقة، ولا تتوفر عمليات شراء أو دفع أو شحن أو عمولات فعلية بعد. لا توجد موافقات تجارية أو ضمانات بيع من WISH.</div>
+  <div class="notice">🧪 سوق تجريبي: قد تجد رابطًا خارجيًا يضعه التاجر بنفسه؛ تحقّق من الموقع قبل الشراء. WISH لا يستقبل مدفوعات أو يشحن منتجات، ولا يتحقّق حاليًا من المبيعات أو يحتسب عمولات. المنتجات والعروض غير موثّقة من WISH.</div>
   <label for="marketSearch">ابحث عن منتج منشور</label>
   <input id="marketSearch" class="market-search" placeholder="مثال: سماعة بلوتوث" maxlength="70" oninput="renderMarketProducts()">
   <div class="row"><button type="button" class="btn secondary small" onclick="loadMarketProducts()">↻ تحديث المنتجات</button></div>
@@ -134,7 +143,7 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
     </div>
     <div id="sellerMessage" class="auth-status" aria-live="polite"></div>
   </div>
-  <div class="card" id="sellerStorefront"><h3 style="margin-top:0">🛍️ معاينة متجري</h3><div class="notice">🔒 كل منتج جديد خاص افتراضيًا. اضغط «نشر المنتج» لإظهاره للعامة. المنتجات التوضيحية للموردين لا يمكن نشرها قبل اعتماد الموردين.</div><div id="sellerShopHeading" class="seller-heading">متجري</div><div id="sellerProductCount" class="auth-note">0 منتجات</div><div id="sellerProducts"></div></div>
+  <div class="card" id="sellerStorefront"><h3 style="margin-top:0">🛍️ معاينة متجري</h3><div class="notice">🔒 كل منتج جديد خاص افتراضيًا. تقدر تضيف رابط شراء خارجي لكل منتج تملكه، لكنه لا يظهر للناس إلا بعد نشر المنتج. لا تضف رابط دفع غير موثوق. نماذج الموردين لا يمكن نشرها قبل اعتمادهم.</div><div id="sellerShopHeading" class="seller-heading">متجري</div><div id="sellerProductCount" class="auth-note">0 منتجات</div><div id="sellerProducts"></div></div>
   <div class="notice">🌍 من قسم «السوق» تقدر تشوف المنتجات المنشورة. زر «أبيها» يحفظ الرغبة تجريبيًا ولا ينفّذ طلب شراء أو دفع.</div>
 </div></section>
 <nav class="nav"><button id="nav-feed" class="active" onclick="openPage('feed')"><span class="icon">▶</span>لك</button><button id="nav-wishes" onclick="openPage('wishes')"><span class="icon">❤️</span>أمنياتي</button><button id="nav-market" onclick="openPage('market')"><span class="icon">🛍️</span>السوق</button><button id="nav-create" class="add" onclick="openPage('create')"><span class="icon">＋</span>إضافة</button><button id="nav-profile" onclick="openPage('profile')"><span class="icon">👤</span>حسابي</button></nav>
@@ -148,6 +157,19 @@ let cloudVideoLoadVersion=0, wishVideoUploading=false;
 let marketProducts=[],marketRequestId=0;
 let currentProduct=null;let wishes=[];try{wishes=JSON.parse(localStorage.getItem('wish-demo-wishes')||'[]')}catch(e){};
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function validMerchantUrl(value){
+ if(!value||typeof value!=='string'||value.length>1500||/\s/.test(value))return false;
+ try{
+  const u=new URL(value);
+  return u.protocol==='https:'&&!u.username&&!u.password&&u.hostname.includes('.')&&u.hostname.length>=4;
+ }catch(e){return false}
+}
+function confirmMerchantLink(el){
+ const href=el.getAttribute('href');
+ if(!validMerchantUrl(href)){showToast('الرابط الخارجي غير صالح');return false}
+ const hostname=new URL(href).hostname;
+ return window.confirm('بتنتقل إلى موقع خارجي: '+hostname+'\n\nWISH لا يضمن هذا المتجر ولا يعالج الدفع أو الشحن أو الإرجاع. تأكد من موثوقية الموقع قبل أي شراء.\n\nهل تبي تكمل؟');
+}
 function renderFeed(){document.getElementById('posts').innerHTML=posts.map(p=>`<article class="feedpost"><div class="art" style="--from:${p.from};--to:${p.to}">${p.video?`<video class="video" id="video-${p.id}" src="${escapeHtml(p.video)}" controls playsinline webkit-playsinline preload="metadata" onplay="syncVideoButton('${p.id}')" onpause="syncVideoButton('${p.id}')" onended="syncVideoButton('${p.id}')" onerror="videoFailed('${p.id}')"></video><button class="video-play" id="play-${p.id}" onclick="toggleVideo('${p.id}')" aria-label="تشغيل الفيديو">▶</button><div class="video-error" id="error-${p.id}"></div>`:`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div><div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side"><button onclick="showToast('❤️ تفاعل تجريبي')">♡</button><span class="label">أعجبني</span><button onclick="showToast('التعليقات تحتاج خادمًا في النسخة القادمة')">💬</button><span class="label">تعليق</span>${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}<button onclick="shareDemo()">↗</button><span class="label">مشاركة</span></div></article>`).join('')}
 
 function syncVideoButton(id){const v=document.getElementById('video-'+id),b=document.getElementById('play-'+id);if(!v||!b)return;b.classList.toggle('is-playing',!v.paused&&!v.ended);b.textContent=v.ended?'↻':'▶'}
@@ -166,7 +188,7 @@ function renderMarketProducts(){
  const query=(document.getElementById('marketSearch')?.value||'').trim().toLocaleLowerCase('ar');
  const filtered=marketProducts.map((p,i)=>({...p,_index:i})).filter(p=>!query||(p.name+' '+p.description).toLocaleLowerCase('ar').includes(query));
  if(!filtered.length){el.innerHTML='<div class="seller-empty">'+(query?'ما لقينا منتجات منشورة تطابق بحثك.':'ما فيه منتجات منشورة للعامة للحين. التاجر يقدر ينشر منتجًا من صفحة «ابدأ تجارتك».')+'</div>';return}
- el.innerHTML=filtered.map(p=>`<div class="market-product"><h3>${escapeHtml(p.name)}</h3><div class="market-label">🌍 منتج نشره أحد تجار WISH · عرض تجريبي</div><p class="market-desc">${escapeHtml(p.description||'بدون وصف إضافي')}</p><div class="market-actions"><div class="market-price">${Number(p.price).toLocaleString('ar-SA',{maximumFractionDigits:2})} ر.س</div><button type="button" class="btn market-wish" data-index="${p._index}" onclick="openMarketWish(Number(this.dataset.index))">❤️ أبيها</button></div></div>`).join('');
+ el.innerHTML=filtered.map(p=>`<div class="market-product"><h3>${escapeHtml(p.name)}</h3><div class="market-label">🌍 منتج نشره أحد تجار WISH · عرض تجريبي</div><p class="market-desc">${escapeHtml(p.description||'بدون وصف إضافي')}</p><div class="market-actions"><div class="market-price">${Number(p.price).toLocaleString('ar-SA',{maximumFractionDigits:2})} ر.س</div><button type="button" class="btn market-wish" data-index="${p._index}" onclick="openMarketWish(Number(this.dataset.index))">❤️ أبيها</button></div>${validMerchantUrl(p.purchase_url)?`<div style="margin-top:13px"><a class="wish-buy-link" href="${escapeHtml(p.purchase_url)}" target="_blank" rel="noopener noreferrer nofollow" onclick="return confirmMerchantLink(this)">🔗 فتح رابط التاجر الخارجي</a><p class="wish-buy-link-notice">رابط يضيفه التاجر؛ لم نتحقق منه، ولا يعني ضغطه حصول عملية بيع أو استحقاق عمولة.</p></div>`:''}</div>`).join('');
 }
 async function loadMarketProducts(){
  const requestId=++marketRequestId;
@@ -174,7 +196,7 @@ async function loadMarketProducts(){
  marketMessage('⏳ جار جلب المنتجات المنشورة...');
  try{
   const {data,error}=await wishAuthClient.from('wish_products')
-    .select('id,name,price,description,created_at')
+    .select('id,name,price,description,created_at,purchase_url')
     .eq('is_published',true).eq('kind','own')
     .order('created_at',{ascending:false}).limit(60);
   if(requestId!==marketRequestId)return false;
@@ -338,11 +360,11 @@ async function loadCloudShop(uid,version){
     if(uid!==wishShopUserId||version!==wishShopRevision)return;
     if(shop.error)throw shop.error;
     const products=await wishAuthClient.from('wish_products')
-      .select('id,name,price,description,kind,is_published').eq('owner_id',uid).order('created_at',{ascending:false});
+      .select('id,name,price,description,kind,is_published,purchase_url').eq('owner_id',uid).order('created_at',{ascending:false});
     if(uid!==wishShopUserId||version!==wishShopRevision)return;
     if(products.error)throw products.error;
     sellerShop={name:shop.data?.name||'',products:(products.data||[]).map(p=>({
-      id:p.id,name:p.name,price:Number(p.price),description:p.description||'',type:p.kind==='supplier'?'supplier':'own',isPublished:p.is_published===true
+      id:p.id,name:p.name,price:Number(p.price),description:p.description||'',type:p.kind==='supplier'?'supplier':'own',isPublished:p.is_published===true,purchaseUrl:p.purchase_url||''
     }))};
     wishShopReady=true;
     shopStatus('✅ متجرك مرتبط بحسابك. المنتجات الخاصة لا تظهر للآخرين، والمنشورة تظهر في سوق WISH.');
@@ -476,7 +498,36 @@ function renderSellerProducts(){
   heading.textContent=sellerShop.name||'متجري';
   count.textContent=sellerShop.products.length+' منتجات تجريبية';
   if(!sellerShop.products.length){list.innerHTML='<div class="seller-empty">ما أضفت منتجات للحين. اختر طريقة تجارتك وأضف أول منتج.</div>';return}
-  list.innerHTML=sellerShop.products.map(p=>'<div class="seller-product"><b>'+escapeHtml(p.name)+'</b><small>'+(p.type==='supplier'?'🤝 نموذج مورد غير متعاقد':'📦 منتجك الخاص')+'</small><small>'+escapeHtml(p.description||'بدون وصف')+'</small><span class="'+(p.isPublished?'market-public-tag':'market-private-tag')+'">'+(p.isPublished?'🌍 منشور للعامة':'🔒 خاص')+'</span><div class="row"><span class="price">'+Number(p.price).toLocaleString('ar-SA')+' ر.س (تجريبي)</span><div class="market-seller-actions">'+(wishShopUserId&&wishShopReady&&p.type==='own'?'<button type="button" class="btn small '+(p.isPublished?'secondary':'')+'" data-id="'+escapeHtml(p.id)+'" onclick="toggleSellerProductPublication(this.dataset.id)">'+(p.isPublished?'🔒 إخفاء المنتج':'🌍 نشر المنتج')+'</button>':'')+'<button type="button" class="btn small secondary" data-id="'+escapeHtml(p.id)+'" onclick="removeSellerProduct(this.dataset.id)">حذف</button></div></div></div>').join('')
+  list.innerHTML=sellerShop.products.map(p=>{
+    const ownCloud=!!(wishShopUserId&&wishShopReady&&p.type==='own');
+    const linkEditor=ownCloud?`<div class="seller-link-editor"><label for="wish-buy-${escapeHtml(p.id)}">🔗 رابط شراء خارجي للمنتج (اختياري)</label><input type="url" inputmode="url" id="wish-buy-${escapeHtml(p.id)}" maxlength="1500" placeholder="https://www.example.com/product" value="${escapeHtml(p.purchaseUrl||'')}"><small>ضع رابط صفحة المنتج على موقع التاجر الذي تملك صلاحية استخدامه، وليس رابطًا غير موثوق. الرابط يظهر للناس فقط إذا نشرت المنتج، والشراء خارج WISH.</small><button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="saveSellerPurchaseUrl(this.dataset.id)">💾 حفظ رابط الشراء</button></div>`:'';
+    return `<div class="seller-product"><b>${escapeHtml(p.name)}</b><small>${p.type==='supplier'?'🤝 نموذج مورد غير متعاقد':'📦 منتجك الخاص'}</small><small>${escapeHtml(p.description||'بدون وصف')}</small><span class="${p.isPublished?'market-public-tag':'market-private-tag'}">${p.isPublished?'🌍 منشور للعامة':'🔒 خاص'}</span>${linkEditor}<div class="row"><span class="price">${Number(p.price).toLocaleString('ar-SA')} ر.س (تجريبي)</span><div class="market-seller-actions">${ownCloud?`<button type="button" class="btn small ${p.isPublished?'secondary':''}" data-id="${escapeHtml(p.id)}" onclick="toggleSellerProductPublication(this.dataset.id)">${p.isPublished?'🔒 إخفاء المنتج':'🌍 نشر المنتج'}</button>`:''}<button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="removeSellerProduct(this.dataset.id)">حذف</button></div></div></div>`;
+  }).join('');
+}
+async function saveSellerPurchaseUrl(id){
+ if(!shopCanEdit())return;
+ const uid=wishShopUserId,rev=wishShopRevision;
+ if(!uid||!wishShopReady){shopMessage('سجّل دخولك أولًا لحفظ رابط الشراء');return}
+ const item=sellerShop.products.find(p=>p.id===id);
+ if(!item||item.type!=='own'){shopMessage('روابط الشراء متاحة حاليًا للمنتجات التي تملكها فقط');return}
+ const field=document.getElementById('wish-buy-'+id);
+ if(!field)return;
+ const purchaseUrl=field.value.trim();
+ if(purchaseUrl&&!validMerchantUrl(purchaseUrl)){shopMessage('اكتب رابط HTTPS كاملًا وصحيحًا مثل https://example.com/product');return}
+ if(item.isPublished&&purchaseUrl&&!window.confirm('سيظهر هذا الرابط الخارجي للعامة على منتجك المنشور. هل تؤكد أن لديك إذنًا لاستخدامه وأنه يقود إلى صفحة المنتج الصحيحة؟'))return;
+ wishShopBusy=true;
+ try{
+   const {data,error}=await wishAuthClient.from('wish_products')
+     .update({purchase_url:purchaseUrl||null}).eq('id',id).eq('owner_id',uid)
+     .select('id,purchase_url').single();
+   if(error)throw error;
+   if(uid!==wishShopUserId||rev!==wishShopRevision)return;
+   item.purchaseUrl=data.purchase_url||'';
+   renderSellerProducts();
+   shopMessage(purchaseUrl?'✅ رابط الشراء محفوظ في حسابك؛ الشراء يتم خارج WISH.':'✅ تم مسح رابط الشراء من المنتج');
+   if(item.isPublished)loadMarketProducts();
+ }catch(e){shopMessage('❌ تعذر حفظ رابط الشراء: '+(e?.message||'خطأ الاتصال'))}
+ finally{wishShopBusy=false}
 }
 function populateSellerVideoSelect(){
   const select=document.getElementById('sellerVideoSelect');if(!select)return;
