@@ -58,6 +58,17 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .seller-link-editor input{margin:7px 0 9px;font-size:13px;direction:ltr;text-align:left}
 .seller-link-editor button{margin-top:3px}
 .seller-link-editor small{font-size:11px;color:#adbac9}
+
+/* WISH merchant-only analytics, loaded via owner-scoped Supabase RPC. */
+.merchant-stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.merchant-stats-metric{background:#0c1725;border:1px solid #364b60;border-radius:15px;padding:13px;min-width:0}
+.merchant-stats-metric strong{display:block;font-size:27px;color:#87ead0;line-height:1.4;font-variant-numeric:tabular-nums}
+.merchant-stats-metric span{display:block;font-size:12px;line-height:1.7;color:#c4d2e5;margin-top:4px}
+.merchant-stats-item{padding:13px 0;border-top:1px solid #344359}
+.merchant-stats-item b{display:block;font-size:14px;overflow-wrap:anywhere;margin-bottom:6px}
+.merchant-stats-item small{font-size:12px;color:#c0d0e4;line-height:1.8;display:block}
+#merchantStatsStatus{font-size:12px;color:#c6d8e6;line-height:1.9;margin:12px 0}
+#merchantStatsRefresh:disabled{opacity:.5;cursor:wait}
 </style>
 </head>
 <body><main class="app">
@@ -144,6 +155,14 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
     <div id="sellerMessage" class="auth-status" aria-live="polite"></div>
   </div>
   <div class="card" id="sellerStorefront"><h3 style="margin-top:0">🛍️ معاينة متجري</h3><div class="notice">🔒 كل منتج جديد خاص افتراضيًا. تقدر تضيف رابط شراء خارجي لكل منتج تملكه، لكنه لا يظهر للناس إلا بعد نشر المنتج. لا تضف رابط دفع غير موثوق. نماذج الموردين لا يمكن نشرها قبل اعتمادهم.</div><div id="sellerShopHeading" class="seller-heading">متجري</div><div id="sellerProductCount" class="auth-note">0 منتجات</div><div id="sellerProducts"></div></div>
+  <div class="card" id="wishMerchantStatsCard">
+    <h3 style="margin:0 0 5px">📊 إحصائيات متجري</h3>
+    <div class="notice">هذه أعداد الضغطات <b>المسجلة</b> على روابط الشراء الخارجية من مستخدمي WISH المسجّلين. ليست عدد زوار فريدين، ولا عمليات بيع أو أرباح. المنتجات التي لا تملك رابط شراء قد تظهر بصفر.</div>
+    <div id="merchantStatsStatus" aria-live="polite">سجّل دخولك لعرض إحصائيات منتجاتك.</div>
+    <div id="merchantStatsTotals" class="merchant-stats-grid"></div>
+    <div id="merchantStatsProducts"></div>
+    <button id="merchantStatsRefresh" type="button" class="btn secondary seller-full" onclick="loadWishMerchantStats()">↻ تحديث الإحصائيات</button>
+  </div>
   <div class="notice">🌍 من قسم «السوق» تقدر تشوف المنتجات المنشورة. زر «أبيها» يحفظ الرغبة تجريبيًا ولا ينفّذ طلب شراء أو دفع.</div>
 </div></section>
 <nav class="nav"><button id="nav-feed" class="active" onclick="openPage('feed')"><span class="icon">▶</span>لك</button><button id="nav-wishes" onclick="openPage('wishes')"><span class="icon">❤️</span>أمنياتي</button><button id="nav-market" onclick="openPage('market')"><span class="icon">🛍️</span>السوق</button><button id="nav-create" class="add" onclick="openPage('create')"><span class="icon">＋</span>إضافة</button><button id="nav-profile" onclick="openPage('profile')"><span class="icon">👤</span>حسابي</button></nav>
@@ -383,6 +402,7 @@ async function loadCloudShop(uid,version){
     wishShopReady=true;
     shopStatus('✅ متجرك مرتبط بحسابك. المنتجات الخاصة لا تظهر للآخرين، والمنشورة تظهر في سوق WISH.');
     shopViewRefresh();
+    if(document.getElementById('seller').classList.contains('active'))loadWishMerchantStats();
   }catch(e){
     if(uid!==wishShopUserId||version!==wishShopRevision)return;
     wishShopReady=false;
@@ -393,6 +413,7 @@ function shopAuthChanged(session){
   const uid=session?.user?.id||null;
   if(uid===wishShopUserId){if(!uid)shopStatus('📱 وضع الجوال: سجّل دخولك لربط متجرك بحسابك. المنتجات المحلية لم تُحذف.');return;}
   wishShopUserId=uid;wishShopRevision++;wishShopReady=false;
+  resetWishMerchantStats(uid?'⏳ جار تحميل المتجر، ثم تظهر إحصائياته.':'🔒 سجّل دخولك حتى تشوف إحصائيات متجرك.');
   if(uid){
     sellerShop={name:'',products:[]};shopViewRefresh();
     loadCloudShop(uid,wishShopRevision);
@@ -408,7 +429,47 @@ async function createShopIfMissing(uid){
     .upsert({owner_id:uid,name:sellerShop.name.slice(0,45)},{onConflict:'owner_id'});
   if(error)throw error;
 }
-function openSeller(){openPage('seller');setSellerMode(sellerMode);shopViewRefresh()}
+let wishMerchantStatsRequest=0;
+function resetWishMerchantStats(message){
+ wishMerchantStatsRequest++;
+ document.getElementById('merchantStatsStatus').textContent=message||'سجّل دخولك لعرض إحصائيات منتجاتك.';
+ document.getElementById('merchantStatsTotals').innerHTML='';
+ document.getElementById('merchantStatsProducts').innerHTML='';
+ document.getElementById('merchantStatsRefresh').disabled=false;
+}
+function wishClickCount(value){
+ const n=Number(value);
+ return Number.isFinite(n)&&n>0?Math.floor(n):0;
+}
+async function loadWishMerchantStats(){
+ const status=document.getElementById('merchantStatsStatus');
+ const totals=document.getElementById('merchantStatsTotals');
+ const products=document.getElementById('merchantStatsProducts');
+ const refresh=document.getElementById('merchantStatsRefresh');
+ if(!wishAuthClient||!wishShopUserId){resetWishMerchantStats('🔒 سجّل دخولك إلى حساب WISH حتى تشوف إحصائيات متجرك.');return}
+ if(!wishShopReady){resetWishMerchantStats('⏳ انتظر حتى يكتمل تحميل متجرك من Supabase، ثم اضغط تحديث الإحصائيات.');return}
+ const uid=wishShopUserId,revision=wishShopRevision,request=++wishMerchantStatsRequest;
+ refresh.disabled=true;
+ status.textContent='⏳ جار تحميل إحصائيات متجرك...';
+ totals.innerHTML='';products.innerHTML='';
+ try{
+   // This RPC uses auth.uid() on the database, not an owner_id passed by the browser.
+   const {data,error}=await wishAuthClient.rpc('wish_merchant_click_stats');
+   if(error)throw error;
+   if(request!==wishMerchantStatsRequest||uid!==wishShopUserId||revision!==wishShopRevision)return;
+   const rows=Array.isArray(data)?data:[];
+   const total=rows.reduce((n,p)=>n+wishClickCount(p.total_clicks),0);
+   const week=rows.reduce((n,p)=>n+wishClickCount(p.clicks_last_7_days),0);
+   totals.innerHTML=`<div class="merchant-stats-metric"><strong>${total.toLocaleString('ar-SA')}</strong><span>إجمالي الضغطات المسجلة</span></div><div class="merchant-stats-metric"><strong>${week.toLocaleString('ar-SA')}</strong><span>الضغطات آخر 7 أيام</span></div>`;
+   products.innerHTML=rows.length?rows.map(p=>`<div class="merchant-stats-item"><b>${escapeHtml(p.product_name||'منتج')}</b><small>إجمالي الضغطات: ${wishClickCount(p.total_clicks).toLocaleString('ar-SA')} · آخر 7 أيام: ${wishClickCount(p.clicks_last_7_days).toLocaleString('ar-SA')}</small></div>`).join(''):'<div class="seller-empty">ما فيه منتجات محفوظة في هذا الحساب حاليًا.</div>';
+   status.textContent='✅ آخر قراءة من Supabase. الأرقام قد تبقى صفرًا حتى تتوفر روابط شراء وضغطات مسجّلة.';
+ }catch(e){
+   if(request!==wishMerchantStatsRequest||uid!==wishShopUserId||revision!==wishShopRevision)return;
+   totals.innerHTML='';products.innerHTML='';
+   status.textContent='⚠️ تعذر تحميل الإحصائيات. تأكد من تشغيل كود wish_merchant_click_stats في Supabase. '+(e?.message||'');
+ }finally{if(request===wishMerchantStatsRequest)refresh.disabled=false}
+}
+function openSeller(){openPage('seller');setSellerMode(sellerMode);shopViewRefresh();loadWishMerchantStats()}
 function setSellerMode(mode){
   sellerMode=mode==='supplier'?'supplier':'own';
   document.getElementById('sellerModeOwn').classList.toggle('active',sellerMode==='own');
