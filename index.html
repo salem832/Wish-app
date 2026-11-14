@@ -109,6 +109,14 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .wish-demo-status{display:inline-block;border:1px solid #54647b;color:#d5e2ef;background:#233148;padding:2px 9px;border-radius:999px;font-size:11px;margin:5px 0}
 .wish-demo-info{font-size:12px;color:#c9d8eb;line-height:1.9;min-height:24px;margin-top:12px}
 #wishDemoSubmit:disabled,#wishDemoRefresh:disabled,.wish-demo-actions button:disabled{opacity:.55;cursor:wait}
+/* Password recovery remains usable without leaving another logged-in account. */
+.wish-recovery-link{display:block;width:100%;border:0;background:transparent;color:#ffa7c4;text-decoration:underline;font-size:14px;font-weight:750;padding:14px 5px;text-align:center}
+.wish-recovery-section{background:#101b2e;border:1px solid #3f526e;border-radius:15px;margin-top:15px;padding:15px}
+.wish-recovery-section h4{margin:0 0 12px;color:#ffe2ed;font-size:18px}
+.wish-recovery-section label{display:block;margin:10px 0 6px}
+.wish-recovery-section .btn{width:100%;margin-top:14px}
+.wish-recovery-section .auth-feedback{min-height:23px}
+#wishResetRequest[hidden],#wishResetNewPassword[hidden],#wishForgotTrigger[hidden]{display:none!important}
 </style>
 </head>
 <body><main class="app">
@@ -153,9 +161,34 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
     <label for="authPassword">كلمة المرور</label><input id="authPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="8 أحرف على الأقل">
     <button id="authSubmit" class="btn" type="submit" style="margin-top:18px;width:100%">إنشاء حساب</button>
   </form>
+  <button id="wishForgotTrigger" class="wish-recovery-link" type="button" onclick="openWishResetRequest()" hidden>🔑 نسيت كلمة المرور؟</button>
   <div class="notice">هذا تسجيل حقيقي فقط بعد ربط Supabase. قد يلزم تأكيد البريد الإلكتروني. لا تشارك كلمة المرور مع أحد.</div>
 </div>
-<div id="authSigned" style="display:none"><div class="auth-name" id="authDisplayName"></div><div class="auth-email" id="authDisplayEmail"></div><p class="hintline">✅ مسجّل الدخول. تستطيع نشر فيديو MP4 تجريبي من صفحة «إضافة» بعد الموافقة على النشر العام.</p><button class="btn secondary" type="button" onclick="signOutWish()">تسجيل الخروج</button></div>
+<div id="authSigned" style="display:none"><div class="auth-name" id="authDisplayName"></div><div class="auth-email" id="authDisplayEmail"></div><p class="hintline">✅ مسجّل الدخول. تستطيع نشر فيديو MP4 تجريبي من صفحة «إضافة» بعد الموافقة على النشر العام.</p><button class="wish-recovery-link" type="button" onclick="openWishResetRequest()">🔐 استعادة كلمة مرور حساب آخر</button><button class="btn secondary" type="button" onclick="signOutWish()">تسجيل الخروج</button></div>
+<div id="wishResetRequest" class="wish-recovery-section" hidden>
+  <h4>🔑 استعادة كلمة المرور</h4>
+  <p class="auth-note">اكتب بريد الحساب اللي نسيت كلمة مروره. ما راح نسجّل خروجك من أي حساب عشان نرسل الطلب.</p>
+  <form onsubmit="event.preventDefault();sendWishPasswordRecovery()">
+    <label for="wishResetEmail">بريد الحساب المراد استعادته</label>
+    <input id="wishResetEmail" type="email" autocomplete="email" inputmode="email" required placeholder="name@example.com" style="direction:ltr;text-align:left">
+    <button class="btn" id="wishResetSendButton" type="submit">📧 أرسل رابط الاستعادة</button>
+  </form>
+  <div id="wishResetRequestStatus" class="auth-feedback" aria-live="polite"></div>
+  <button class="btn secondary" type="button" onclick="closeWishResetRequest()">الرجوع للحساب</button>
+</div>
+<div id="wishResetNewPassword" class="wish-recovery-section" hidden>
+  <h4>🔒 تعيين كلمة مرور جديدة</h4>
+  <p class="auth-note">هذا هو البريد المرتبط برابط الاستعادة الذي فتحته. تأكد أنه حسابك المطلوب قبل التغيير:</p>
+  <div id="wishResetForEmail" class="auth-email" style="font-weight:800;color:#fff;direction:ltr;text-align:left"></div>
+  <form onsubmit="event.preventDefault();finishWishPasswordRecovery()">
+    <label for="wishResetPassword1">كلمة المرور الجديدة</label>
+    <input id="wishResetPassword1" type="password" required minlength="8" autocomplete="new-password" placeholder="8 أحرف على الأقل">
+    <label for="wishResetPassword2">تأكيد كلمة المرور الجديدة</label>
+    <input id="wishResetPassword2" type="password" required minlength="8" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور">
+    <button id="wishResetSaveButton" class="btn" type="submit">✅ حفظ كلمة المرور الجديدة</button>
+  </form>
+  <div id="wishResetSaveStatus" class="auth-feedback" aria-live="polite"></div>
+</div>
 <div class="auth-feedback" id="authFeedback" aria-live="polite"></div>
 </div>
 <div class="card" id="wishAffiliateStatsCard">
@@ -1092,9 +1125,76 @@ const WISH_SUPABASE_URL = 'https://ukavrxavasgqnehtouii.supabase.co';
 const WISH_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_dOGwI5TmoN3BWXtnP_aA1Q_skbPFxPn';
 let wishAuthClient=null;
 let wishAuthMode='signup';
+let wishResetRequestOpen=false;
+let wishPasswordRecoveryActive=false;
+let wishCurrentAuthSession=null;
+function wishResetStatus(id,message,isError=false){const el=document.getElementById(id);el.textContent=message;el.classList.toggle('error',isError)}
+function updateWishAuthPanels(){
+ const session=wishCurrentAuthSession;
+ const changing=wishPasswordRecoveryActive && !!session;
+ document.getElementById('authGuest').style.display=(!session&&!wishResetRequestOpen&&!changing)?'block':'none';
+ document.getElementById('authSigned').style.display=(!!session&&!wishResetRequestOpen&&!changing)?'block':'none';
+ document.getElementById('wishResetRequest').hidden=!wishResetRequestOpen||changing;
+ document.getElementById('wishResetNewPassword').hidden=!changing;
+ if(changing)document.getElementById('wishResetForEmail').textContent=session.user?.email||'راجع البريد المرتبط بالرابط';
+}
+function openWishResetRequest(){
+ wishResetRequestOpen=true;
+ wishPasswordRecoveryActive=false;
+ const entered=document.getElementById('authEmail').value.trim();
+ if(entered)document.getElementById('wishResetEmail').value=entered;
+ wishResetStatus('wishResetRequestStatus','');
+ updateWishAuthPanels();openPage('profile');
+}
+function closeWishResetRequest(){wishResetRequestOpen=false;updateWishAuthPanels()}
+async function sendWishPasswordRecovery(){
+ if(!wishAuthClient){wishResetStatus('wishResetRequestStatus','خدمة الحسابات غير متاحة الآن. حاول لاحقًا.',true);return}
+ const email=document.getElementById('wishResetEmail').value.trim();
+ const button=document.getElementById('wishResetSendButton');
+ if(!email||!document.getElementById('wishResetEmail').checkValidity()){wishResetStatus('wishResetRequestStatus','اكتب بريدًا إلكترونيًا صحيحًا.',true);return}
+ button.disabled=true;
+ wishResetStatus('wishResetRequestStatus','⏳ جار إرسال الطلب...');
+ try{
+  const redirectTo=window.location.origin+window.location.pathname+'?wish_reset=1';
+  const {error}=await wishAuthClient.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error)throw error;
+  wishResetStatus('wishResetRequestStatus','✅ إذا كان البريد مرتبطًا بحساب، فستصلك رسالة استعادة. افحص الوارد والرسائل غير المرغوب فيها. افتح الرابط في متصفحك، ولا تشاركه مع أحد.');
+ }catch(e){wishResetStatus('wishResetRequestStatus','❌ تعذر طلب الاستعادة. حاول لاحقًا. '+(e?.message||''),true)}
+ finally{button.disabled=false}
+}
+function activateWishPasswordRecovery(session){
+ if(!session?.user)return;
+ wishCurrentAuthSession=session;
+ wishPasswordRecoveryActive=true;
+ wishResetRequestOpen=false;
+ updateWishAuthPanels();
+ openPage('profile');
+}
+async function finishWishPasswordRecovery(){
+ if(!wishAuthClient||!wishCurrentAuthSession?.user){wishResetStatus('wishResetSaveStatus','الرابط غير صالح أو انتهت صلاحيته. اطلب رابط استعادة جديد.',true);return}
+ const p1=document.getElementById('wishResetPassword1').value;
+ const p2=document.getElementById('wishResetPassword2').value;
+ if(p1.length<8){wishResetStatus('wishResetSaveStatus','كلمة المرور لازم تكون 8 أحرف على الأقل.',true);return}
+ if(p1!==p2){wishResetStatus('wishResetSaveStatus','كلمتا المرور غير متطابقتين.',true);return}
+ const button=document.getElementById('wishResetSaveButton');button.disabled=true;
+ wishResetStatus('wishResetSaveStatus','⏳ جار تغيير كلمة المرور...');
+ try{
+  const {error}=await wishAuthClient.auth.updateUser({password:p1});
+  if(error)throw error;
+  document.getElementById('wishResetPassword1').value='';
+  document.getElementById('wishResetPassword2').value='';
+  wishPasswordRecoveryActive=false;
+  wishResetRequestOpen=false;
+  window.history.replaceState(null,'',window.location.origin+window.location.pathname);
+  updateWishAuthPanels();
+  authMessage('✅ تم تغيير كلمة المرور بنجاح. احفظها في مدير كلمات المرور. أنت مسجّل الدخول بالحساب الذي يظهر بريده أعلاه.');
+ }catch(e){wishResetStatus('wishResetSaveStatus','❌ تعذر تغيير كلمة المرور: '+(e?.message||'حاول طلب رابط جديد.'),true)}
+ finally{button.disabled=false}
+}
+
 function authMessage(message,isError=false){const el=document.getElementById('authFeedback');el.textContent=message;el.classList.toggle('error',isError)}
-function setAuthMode(mode){wishAuthMode=mode;const signup=mode==='signup';document.getElementById('nameRow').style.display=signup?'block':'none';document.getElementById('tabSignup').className=signup?'btn small selected':'btn small secondary';document.getElementById('tabSignin').className=!signup?'btn small selected':'btn small secondary';document.getElementById('authSubmit').textContent=signup?'إنشاء حساب':'تسجيل الدخول';document.getElementById('authPassword').autocomplete=signup?'new-password':'current-password';authMessage('')}
-function renderWishAuth(session){document.getElementById('authGuest').style.display=session?'none':'block';document.getElementById('authSigned').style.display=session?'block':'none';if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session)}
+function setAuthMode(mode){wishAuthMode=mode;const signup=mode==='signup';document.getElementById('nameRow').style.display=signup?'block':'none';document.getElementById('tabSignup').className=signup?'btn small selected':'btn small secondary';document.getElementById('tabSignin').className=!signup?'btn small selected':'btn small secondary';document.getElementById('authSubmit').textContent=signup?'إنشاء حساب':'تسجيل الدخول';document.getElementById('authPassword').autocomplete=signup?'new-password':'current-password';document.getElementById('wishForgotTrigger').hidden=signup;authMessage('')}
+function renderWishAuth(session){wishCurrentAuthSession=session;updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session)}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
@@ -1123,10 +1223,25 @@ async function initWishAuth(){
    wishAuthClient=window.supabase.createClient(WISH_SUPABASE_URL,WISH_SUPABASE_PUBLISHABLE_KEY);
    setup.style.display='none';
    setAuthMode('signup');
+   // Listen before getSession so a recovery callback cannot be missed.
+   wishAuthClient.auth.onAuthStateChange((event,session)=>{
+     renderWishAuth(session);
+     if(event==='PASSWORD_RECOVERY')activateWishPasswordRecovery(session);
+   });
    const {data,error}=await wishAuthClient.auth.getSession();
    if(error)throw error;
    renderWishAuth(data.session);
-   wishAuthClient.auth.onAuthStateChange((event,session)=>{renderWishAuth(session)});
+   // Some browsers resolve the recovery link during getSession, before displaying it.
+   // Only show the password form when a recovery callback token is present.
+   const recoveryQuery=new URLSearchParams(window.location.search);
+   const recoveryHash=new URLSearchParams(window.location.hash.replace(/^#/,''));
+   const hasRecoveryCode=recoveryQuery.has('code') || recoveryHash.get('type')==='recovery';
+   if(recoveryQuery.get('wish_reset')==='1' && hasRecoveryCode && data.session){
+     activateWishPasswordRecovery(data.session);
+   }else if(recoveryQuery.get('wish_reset')==='1' && !data.session){
+     openWishResetRequest();
+     wishResetStatus('wishResetRequestStatus','إذا انتهت صلاحية رابط الاستعادة أو لم يتم تأكيده، اطلب رابطًا جديدًا من هنا.',true);
+   }
    loadCloudVideos();
    const sharedProduct=new URLSearchParams(window.location.search).get('wish_product')||'';
    if(/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(sharedProduct))openPage('market');
