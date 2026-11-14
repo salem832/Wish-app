@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>WISH | ويش — سوق ومنتجات وروابط مسوقين تجريبية</title>
+<title>WISH | ويش — سوق واتفاق عمولات تجريبي واضح للتاجر</title>
 <style>
 :root{--bg:#070a12;--panel:#121827;--line:#273248;--txt:#f4f7fb;--muted:#a3b0c3;--pink:#ff4e87;--gold:#ffdc85;--teal:#2cddca}
 *{box-sizing:border-box}html,body{padding:0;margin:0;background:#050711;color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;min-height:100%;}button,input,select{font:inherit}button{cursor:pointer} .app{max-width:460px;margin:0 auto;min-height:100dvh;background:var(--bg);position:relative;box-shadow:0 0 30px #0008}
@@ -61,6 +61,18 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .affiliate-editor{border:1px solid #40566b;border-radius:14px;padding:12px;margin:12px 0;background:#0b1b2b}
 .affiliate-editor small{font-size:11px;color:#b8cadc;line-height:1.8}.affiliate-editor .btn{margin-top:10px}
 .affiliate-off{color:#bac9d8;font-size:12px;margin-top:8px}.affiliate-on{color:#80ead0;font-size:12px;margin-top:8px}
+.affiliate-split{margin:12px 0;background:#111b2b;border:1px solid #41546d;border-radius:12px;padding:12px}
+.affiliate-split-title{font-size:14px;font-weight:750;color:#ffdae8;margin:0 0 8px}
+.affiliate-split-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;text-align:center;direction:rtl}
+.affiliate-split-cell{border-radius:10px;background:#19273a;padding:10px 4px;min-width:0}
+.affiliate-split-cell strong{display:block;color:#9ae9d7;font-size:21px}
+.affiliate-split-cell span{display:block;font-size:11px;color:#c6d8e8;line-height:1.6}
+.affiliate-split-example{font-size:12px;color:#d8e6f1;margin-top:10px;line-height:1.9}
+.affiliate-consent{display:flex;align-items:flex-start;gap:10px;border:1px solid #52607b;padding:12px;border-radius:12px;margin:12px 0 4px;cursor:pointer;background:#142137;line-height:1.75}
+.affiliate-consent input{width:21px;height:21px;flex:0 0 21px;margin:3px 0 0;accent-color:#ff4e87}
+.affiliate-consent span{font-size:12px;color:#f2f3f8}
+.affiliate-editor button:disabled{opacity:.45;cursor:not-allowed}
+.affiliate-prior-note{font-size:11px;line-height:1.8;color:#ffdf9a;margin:9px 0}
 .affiliate-market{margin-top:12px;padding:12px;border-radius:13px;border:1px dashed #43606a;background:#101e2b}
 .affiliate-market p{color:#a9becf;font-size:11px;line-height:1.8;margin:8px 0 0}.affiliate-ref-product{outline:2px solid #ff4e87;outline-offset:2px}
 
@@ -151,7 +163,7 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <button class="seller-back" type="button" onclick="openPage('profile')">← العودة إلى حسابي</button>
   <div class="h1">🏪 ابدأ تجارتك</div>
   <div class="sub">أنشئ واجهة متجر تجريبية في WISH. عندنا طريقان: تبيع منتجاتك أو تسوّق منتجات مورّدين بعد اتفاق رسمي معهم.</div>
-  <div class="notice"><b>نسخة تجريبية:</b> منتجاتك محفوظة في حسابك على Supabase. تظل خاصة افتراضيًا حتى تضغط «نشر المنتج» وتؤكد النشر. سيظهر المنشور في سوق WISH للعامة. لا توجد مدفوعات أو شحن أو عمولات حقيقية بعد. يمكنك السماح للمستخدمين بإنشاء روابط مشاركة لمنتجاتك المنشورة.</div>
+  <div class="notice"><b>نسخة تجريبية:</b> منتجاتك محفوظة في حسابك على Supabase. تظل خاصة افتراضيًا حتى تضغط «نشر المنتج» وتؤكد النشر. سيظهر المنشور في سوق WISH للعامة. لا توجد مدفوعات أو شحن أو عمولات حقيقية بعد. يمكنك السماح للمستخدمين بإنشاء روابط مشاركة لمنتجاتك المنشورة بعد قراءة نسب العمولات المقترحة. موافقة المشاركة التجريبية ليست قبولًا بعقد مالي.</div>
   <div class="card">
     <h3 style="margin:0 0 12px">بيانات متجرك</h3>
     <div id="wishShopStatus" class="notice" aria-live="polite">جار التحقق من الحساب...</div>
@@ -713,9 +725,32 @@ function renderSellerProducts(){
   list.innerHTML=sellerShop.products.map(p=>{
     const ownCloud=!!(wishShopUserId&&wishShopReady&&p.type==='own');
     const linkEditor=ownCloud?`<div class="seller-link-editor"><label for="wish-buy-${escapeHtml(p.id)}">🔗 رابط شراء خارجي للمنتج (اختياري)</label><input type="url" inputmode="url" id="wish-buy-${escapeHtml(p.id)}" maxlength="1500" placeholder="https://www.example.com/product" value="${escapeHtml(p.purchaseUrl||'')}"><small>ضع رابط صفحة المنتج على موقع التاجر الذي تملك صلاحية استخدامه، وليس رابطًا غير موثوق. الرابط يظهر للناس فقط إذا نشرت المنتج، والشراء خارج WISH.</small><button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="saveSellerPurchaseUrl(this.dataset.id)">💾 حفظ رابط الشراء</button></div>`:'';
-    const affiliateEditor=ownCloud?`<div class="affiliate-editor"><b>🤝 التسويق بالعمولة (تجريبي)</b><div class="${p.affiliateEnabled&&p.isPublished?'affiliate-on':'affiliate-off'}">${p.affiliateEnabled&&p.isPublished?'✅ مسموح للمستخدمين إنشاء روابط مشاركة':'🔒 التسويق غير مفعّل لهذا المنتج'}</div><small>لن تُنشأ روابط للمسوّقين إلا بعد موافقتك ونشر المنتج للعامة. الروابط لا تتتبّع المبيعات أو تمنح أرباحًا حتى الآن.</small><button type="button" class="btn small ${p.affiliateEnabled?'secondary':''}" data-id="${escapeHtml(p.id)}" onclick="toggleWishSellerAffiliate(this.dataset.id)">${p.affiliateEnabled?'🔒 إيقاف التسويق':'🤝 السماح بالتسويق'}</button></div>`:'';
+    const merchantExample=Number(p.price);
+    const merchantSar=v=>Number(v).toLocaleString('ar-SA',{minimumFractionDigits:2,maximumFractionDigits:2})+' ر.س';
+    const affiliateEditor=ownCloud?`<div class="affiliate-editor">
+      <b>🤝 التسويق بالعمولة (تجريبي)</b>
+      <div class="${p.affiliateEnabled&&p.isPublished?'affiliate-on':'affiliate-off'}">${p.affiliateEnabled&&p.isPublished?'✅ روابط المشاركة التجريبية مفعّلة':'🔒 روابط المشاركة غير مفعّلة'}</div>
+      <div class="affiliate-split" aria-label="توزيع عمولة 10 بالمئة المقترحة">
+        <div class="affiliate-split-title">💰 عند الاتفاق على عمولة 10% من سعر البيع المؤهل</div>
+        <div class="affiliate-split-grid">
+          <div class="affiliate-split-cell"><strong>2%</strong><span>المسوّق المنفصل</span></div>
+          <div class="affiliate-split-cell"><strong>2%</strong><span>صانع المحتوى</span></div>
+          <div class="affiliate-split-cell"><strong>6%</strong><span>منصة WISH</span></div>
+        </div>
+        <div class="affiliate-split-example">مثال بسعر منتجك ${merchantSar(merchantExample)}: عمولة ${merchantSar(merchantExample*.10)} (للمسوّق ${merchantSar(merchantExample*.02)}، لصانع المحتوى ${merchantSar(merchantExample*.02)}، لـ WISH ${merchantSar(merchantExample*.06)}). المتبقي للتاجر ${merchantSar(merchantExample*.90)} قبل التكاليف والضرائب.</div>
+      </div>
+      <small>هذه التقسيمة عندما يوجد صانع محتوى ومسوّق منفصل. بدون مسوّق منفصل: 2% لصانع المحتوى و8% لـ WISH من نفس عمولة 10%. النسب مقترحة وليست عقدًا، ويجب الاتفاق عليها مع التاجر قبل أي تحصيل حقيقي. لا تستحق عمولة إلا عن بيع مكتمل وموثّق ومؤهل وبعد معالجة الاسترجاع.</small>
+      ${p.affiliateEnabled?`<div class="affiliate-prior-note">⚠️ سمحت بروابط المشاركة سابقًا. هذا التفعيل التجريبي لا يُعتبر قبولًا لشروط مالية أو عقد عمولة.</div>`:`<label class="affiliate-consent" for="wish-affiliate-consent-${escapeHtml(p.id)}"><input type="checkbox" id="wish-affiliate-consent-${escapeHtml(p.id)}" data-id="${escapeHtml(p.id)}" onchange="wishAffiliateConsentChanged(this)"><span>اطّلعت على التقسيم المقترح (2% للمسوّق، 2% لصانع المحتوى، 6% لـ WISH). أوافق على تفعيل <b>روابط المشاركة التجريبية فقط</b> لهذا المنتج. أعلم أن هذا ليس عقدًا تجاريًا أو تفويضًا بتحصيل أموال.</span></label>`}
+      <button type="button" class="btn small ${p.affiliateEnabled?'secondary':''}" data-id="${escapeHtml(p.id)}" onclick="toggleWishSellerAffiliate(this.dataset.id)" ${p.affiliateEnabled?'':'disabled'}>${p.affiliateEnabled?'🔒 إيقاف التسويق':'🤝 السماح بالتسويق التجريبي'}</button>
+    </div>`:'';
     return `<div class="seller-product"><b>${escapeHtml(p.name)}</b><small>${p.type==='supplier'?'🤝 نموذج مورد غير متعاقد':'📦 منتجك الخاص'}</small><small>${escapeHtml(p.description||'بدون وصف')}</small><span class="${p.isPublished?'market-public-tag':'market-private-tag'}">${p.isPublished?'🌍 منشور للعامة':'🔒 خاص'}</span>${linkEditor}${affiliateEditor}<div class="row"><span class="price">${Number(p.price).toLocaleString('ar-SA')} ر.س (تجريبي)</span><div class="market-seller-actions">${ownCloud?`<button type="button" class="btn small ${p.isPublished?'secondary':''}" data-id="${escapeHtml(p.id)}" onclick="toggleSellerProductPublication(this.dataset.id)">${p.isPublished?'🔒 إخفاء المنتج':'🌍 نشر المنتج'}</button>`:''}<button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="removeSellerProduct(this.dataset.id)">حذف</button></div></div></div>`;
   }).join('');
+}
+function wishAffiliateConsentChanged(input){
+ const id=input.dataset.id;
+ const editor=input.closest('.affiliate-editor');
+ const button=editor?.querySelector('button[data-id]');
+ if(button&&button.dataset.id===id)button.disabled=!input.checked;
 }
 async function toggleWishSellerAffiliate(id){
  if(!shopCanEdit())return;
@@ -725,7 +760,11 @@ async function toggleWishSellerAffiliate(id){
  if(!item||item.type!=='own'){shopMessage('الميزة مخصصة لمنتجاتك التي تملكها');return}
  if(!item.isPublished){shopMessage('انشر المنتج للعامة قبل السماح بالتسويق');return}
  const enabled=!item.affiliateEnabled;
- if(enabled&&!window.confirm('هل تسمح للمستخدمين المسجّلين بإنشاء روابط مشاركة لمنتج «'+item.name+'»؟\n\nهذا اختبار، وليس اتفاق عمولات أو تفويض بيع أو دفع حقيقي.'))return;
+ if(enabled){
+   const consent=document.getElementById('wish-affiliate-consent-'+id);
+   if(!consent?.checked){shopMessage('ضع علامة الموافقة على اطلاعك على تقسيم العمولة المقترح أولًا.');consent?.focus();return}
+   if(!window.confirm('هل تريد تفعيل روابط مشاركة تجريبية لمنتج «'+item.name+'»؟\n\nعرض 10% (2% مسوّق + 2% محتوى + 6% WISH) للتوضيح فقط. لا يوجد عقد أو عمولات مالية حقيقية في هذه المرحلة.'))return;
+ }
  wishShopBusy=true;
  try{
   const {data,error}=await wishAuthClient.from('wish_products')
