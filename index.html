@@ -119,7 +119,7 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <div class="h1">🛍️ سوق WISH</div>
   <div class="sub">تصفح منتجات التجار الذين اختاروا نشرها للعامة. المنتجات الخاصة لا تظهر هنا.</div>
   <div class="notice">🧪 سوق تجريبي: قد تجد رابطًا خارجيًا يضعه التاجر بنفسه؛ تحقّق من الموقع قبل الشراء. WISH لا يستقبل مدفوعات أو يشحن منتجات، ولا يتحقّق حاليًا من المبيعات أو يحتسب عمولات. المنتجات والعروض غير موثّقة من WISH.</div>
-  <div class="notice">🤝 التسويق بالعمولة هنا تجريبي: التاجر يختار المنتجات المسموح بتسويقها، والمسوق المسجّل ينشئ رابط مشاركة. الرابط لا يثبت المبيعات ولا يمنح عمولات بعد.</div>
+  <div class="notice">🤝 التسويق بالعمولة هنا تجريبي: التاجر يختار المنتجات المسموح بتسويقها، والمسوق المسجّل ينشئ رابط مشاركة. تُسجّل زيارات مؤهلة للمستخدمين المسجّلين عند فتح روابط المشاركة بعد اكتمال تحديث قاعدة البيانات؛ الزيارات ليست مبيعات أو أرباحًا.</div>
   <label for="marketSearch">ابحث عن منتج منشور</label>
   <input id="marketSearch" class="market-search" placeholder="مثال: سماعة بلوتوث" maxlength="70" oninput="renderMarketProducts()">
   <div class="row"><button type="button" class="btn secondary small" onclick="loadMarketProducts()">↻ تحديث المنتجات</button></div>
@@ -157,6 +157,14 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 </div>
 <div id="authSigned" style="display:none"><div class="auth-name" id="authDisplayName"></div><div class="auth-email" id="authDisplayEmail"></div><p class="hintline">✅ مسجّل الدخول. تستطيع نشر فيديو MP4 تجريبي من صفحة «إضافة» بعد الموافقة على النشر العام.</p><button class="btn secondary" type="button" onclick="signOutWish()">تسجيل الخروج</button></div>
 <div class="auth-feedback" id="authFeedback" aria-live="polite"></div>
+</div>
+<div class="card" id="wishAffiliateStatsCard">
+  <h3 style="margin:0 0 7px">🤝 روابط تسويقي وزياراتها</h3>
+  <div class="notice">📊 تعرض هذه الصفحة زيارات روابطك <b>المسجلة</b> من أعضاء WISH المسجّلين فقط. لا تُحتسب زيارتك أنت أو زيارة صاحب المنتج، ولا تُحتسب الزيارات المتكررة لنفس العضو خلال 24 ساعة. الأرقام ليست زوارًا فريدين أو مبيعات أو عمولات. لا نعرض هويات الزوار.</div>
+  <div id="wishAffiliateStatsStatus" class="market-status" aria-live="polite">🔒 سجّل دخولك لعرض روابط التسويق.</div>
+  <div id="wishAffiliateStatsTotals" class="merchant-stats-grid"></div>
+  <div id="wishAffiliateStatsItems"></div>
+  <button id="wishAffiliateStatsRefresh" type="button" class="btn secondary seller-full" onclick="loadWishAffiliateStats()">↻ تحديث زيارات روابط تسويقي</button>
 </div><div class="card"><h3 style="margin-top:0">منصة ترفيه + تسوق ذكي</h3><p style="color:#b2c2d9;line-height:1.8">أي شخص يقدر ينشر مقاطع. زر «أبيها» يظهر فقط على الفيديوهات المرتبطة بمنتجات. المستخدم يحفظ المنتج أو يحدد نية الشراء.</p></div><div class="card"><b>💰 خطة الأرباح المستقبلية</b><p style="color:#b2c2d9;line-height:1.8">إذا وافق المتجر على عمولة 10% من عملية بيع مؤهلة: 2% لصانع المحتوى و8% للمنصة، قبل التكاليف والضرائب. لا توجد مدفوعات فعلية في هذه النسخة.</p></div><div class="card seller-cta"><div class="seller-cta-icon">🏪</div><h3>حوّل حسابك إلى متجر في WISH</h3><p>عندك منتجات تبي تبيعها؟ أو تبي تسوّق منتجات الموردين بدون مخزون؟ جرّب واجهة «ابدأ تجارتك» الآن.</p><button class="btn" type="button" onclick="openSeller()">🚀 ابدأ تجارتك</button><small>المتاجر محفوظة في Supabase • المنتجات لا تظهر إلا بعد نشرها • لا مبيعات فعلية</small></div>
 <div class="card"><b>💰 خطة الأرباح المستقبلية</b><p style="color:#b2c2d9;line-height:1.8">في المبيعات المؤهلة القادمة، ننوي اختبار عمولة متجر 10%: 2% لصانع المحتوى و8% للمنصة، قبل التكاليف والضرائب. النسب ليست مفعّلة حاليًا.</p></div></div></section>
 <section id="seller"><div class="content">
@@ -291,7 +299,7 @@ function renderFeed(){document.getElementById('posts').innerHTML=posts.map(p=>`<
 function syncVideoButton(id){const v=document.getElementById('video-'+id),b=document.getElementById('play-'+id);if(!v||!b)return;b.classList.toggle('is-playing',!v.paused&&!v.ended);b.textContent=v.ended?'↻':'▶'}
 function videoFailed(id){const el=document.getElementById('error-'+id),v=document.getElementById('video-'+id);if(!el)return;const code=v?.error?.code;el.textContent=code===4?'المتصفح لا يدعم صيغة الفيديو. جرّب مقطع MP4 بصيغة H.264 من كاميرا الجوال.':code===3?'تعذر فك ترميز الفيديو. جرّب فيديو MP4 آخر من كاميرا الجوال.':'تعذر تشغيل هذا الفيديو. جرّب مقطع MP4 قصير من كاميرا الجوال.';el.classList.add('show');syncVideoButton(id)}
 async function toggleVideo(id){const v=document.getElementById('video-'+id);if(!v)return;const error=document.getElementById('error-'+id);if(error)error.classList.remove('show');if(!v.paused&&!v.ended){v.pause();return}try{if(v.ended)v.currentTime=0;await v.play();syncVideoButton(id)}catch(e){videoFailed(id)}}
-function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();if(id==='seller')document.getElementById('nav-profile').classList.add('active');if(id==='create')populateSellerVideoSelect();if(id==='feed'&&wishAuthClient)loadCloudVideos();if(id==='market')loadMarketProducts();window.scrollTo({top:0,behavior:'instant'})}
+function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();if(id==='seller')document.getElementById('nav-profile').classList.add('active');if(id==='create')populateSellerVideoSelect();if(id==='feed'&&wishAuthClient)loadCloudVideos();if(id==='market')loadMarketProducts();if(id==='profile')loadWishAffiliateStats();window.scrollTo({top:0,behavior:'instant'})}
 function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function openWish(id){let p=posts.find(p=>p.id===id);if(!p?.product)return;currentProduct=p.product;document.getElementById('modalTitle').textContent='🔥 '+p.product;document.getElementById('modalDesc').textContent='اختر الطريقة اللي تناسبك';document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;document.getElementById('modal').classList.add('show')}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
@@ -304,7 +312,7 @@ function renderMarketProducts(){
  const query=(document.getElementById('marketSearch')?.value||'').trim().toLocaleLowerCase('ar');
  const filtered=marketProducts.map((p,i)=>({...p,_index:i})).filter(p=>!query||(p.name+' '+p.description).toLocaleLowerCase('ar').includes(query));
  if(!filtered.length){el.innerHTML='<div class="seller-empty">'+(query?'ما لقينا منتجات منشورة تطابق بحثك.':'ما فيه منتجات منشورة للعامة للحين. التاجر يقدر ينشر منتجًا من صفحة «ابدأ تجارتك».')+'</div>';return}
- el.innerHTML=filtered.map(p=>`<div class="market-product" data-product-id="${escapeHtml(p.id)}"><h3>${escapeHtml(p.name)}</h3><div class="market-label">🌍 منتج نشره أحد تجار WISH · عرض تجريبي</div><p class="market-desc">${escapeHtml(p.description||'بدون وصف إضافي')}</p><div class="market-actions"><div class="market-price">${Number(p.price).toLocaleString('ar-SA',{maximumFractionDigits:2})} ر.س</div><button type="button" class="btn market-wish" data-index="${p._index}" onclick="openMarketWish(Number(this.dataset.index))">❤️ أبيها</button></div>${validMerchantUrl(p.purchase_url)?`<div style="margin-top:13px"><a class="wish-buy-link" href="${escapeHtml(p.purchase_url)}" target="_blank" rel="noopener noreferrer nofollow" data-product-id="${escapeHtml(p.id)}" onclick="return confirmMerchantLink(this)">🔗 فتح رابط التاجر الخارجي</a><p class="wish-buy-link-notice">رابط خارجي يضيفه التاجر. للمستخدم المسجّل قد تُسجَّل ضغطة لأغراض الإحصاء فقط؛ لم نتحقق من التاجر، والضغط لا يعني بيعًا أو استحقاق عمولة.</p></div>`:''}${p.affiliate_enabled===true?`<div class="affiliate-market"><b>🤝 التاجر يسمح بمشاركة هذا المنتج</b><p>للمستخدم المسجّل: أنشئ رابط مشاركة تجريبي باسم حسابك. لا يوجد اعتماد مبيعات أو أرباح، ولا يتم تتبع الإحالات آليًا بعد.</p><button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="createWishAffiliateLink(this.dataset.id)">🔗 سوّق هذا المنتج</button></div>`:''}</div>`).join('');
+ el.innerHTML=filtered.map(p=>`<div class="market-product" data-product-id="${escapeHtml(p.id)}"><h3>${escapeHtml(p.name)}</h3><div class="market-label">🌍 منتج نشره أحد تجار WISH · عرض تجريبي</div><p class="market-desc">${escapeHtml(p.description||'بدون وصف إضافي')}</p><div class="market-actions"><div class="market-price">${Number(p.price).toLocaleString('ar-SA',{maximumFractionDigits:2})} ر.س</div><button type="button" class="btn market-wish" data-index="${p._index}" onclick="openMarketWish(Number(this.dataset.index))">❤️ أبيها</button></div>${validMerchantUrl(p.purchase_url)?`<div style="margin-top:13px"><a class="wish-buy-link" href="${escapeHtml(p.purchase_url)}" target="_blank" rel="noopener noreferrer nofollow" data-product-id="${escapeHtml(p.id)}" onclick="return confirmMerchantLink(this)">🔗 فتح رابط التاجر الخارجي</a><p class="wish-buy-link-notice">رابط خارجي يضيفه التاجر. للمستخدم المسجّل قد تُسجَّل ضغطة لأغراض الإحصاء فقط؛ لم نتحقق من التاجر، والضغط لا يعني بيعًا أو استحقاق عمولة.</p></div>`:''}${p.affiliate_enabled===true?`<div class="affiliate-market"><b>🤝 التاجر يسمح بمشاركة هذا المنتج</b><p>للمستخدم المسجّل: أنشئ رابط مشاركة تجريبي باسم حسابك. تُسجّل زيارة العضو المسجّل المؤهلة عند فتح رابط المشاركة، بعد تفعيل قاعدة البيانات. لا مبيعات أو أرباح حقيقية.</p><button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="createWishAffiliateLink(this.dataset.id)">🔗 سوّق هذا المنتج</button></div>`:''}</div>`).join('');
 }
 async function loadMarketProducts(){
  const requestId=++marketRequestId;
@@ -341,8 +349,35 @@ function focusWishSharedProduct(){
  const found=marketProducts.some(p=>p.id===productId);
  if(!found){marketMessage('هذا المنتج غير موجود في النتائج المنشورة حاليًا.');return}
  const el=[...document.querySelectorAll('.market-product')].find(e=>e.dataset.productId===productId);
- if(el){el.classList.add('affiliate-ref-product');setTimeout(()=>el.scrollIntoView({block:'center',behavior:'smooth'}),200)}
+ if(el){
+   el.classList.add('affiliate-ref-product');
+   setTimeout(()=>el.scrollIntoView({block:'center',behavior:'smooth'}),200);
+   logWishAffiliateLanding(productId);
+ }
 }
+// Count only server-eligible authenticated visits. Never infer sales or payouts from a link open.
+let wishLastAffiliateVisitKey='';
+async function logWishAffiliateLanding(productId){
+ if(!wishAuthClient || !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(productId))return;
+ const q=new URLSearchParams(window.location.search);
+ const linkCode=(q.get('wish_ref')||'').toLowerCase();
+ if(!/^[0-9a-f]{32}$/.test(linkCode))return;
+ const key=productId+'|'+linkCode;
+ if(key===wishLastAffiliateVisitKey)return;
+ try{
+  const {data:authData,error:authError}=await wishAuthClient.auth.getUser();
+  if(authError||!authData?.user)return; // signed-out guests cannot be counted yet
+  if(key===wishLastAffiliateVisitKey)return;
+  wishLastAffiliateVisitKey=key;
+  const {data,error}=await wishAuthClient.rpc('wish_log_affiliate_visit',{
+    p_link_code:linkCode,p_product_id:productId
+  });
+  if(error)throw error;
+  if(data===true)showToast('📊 سُجّلت زيارة مشاركة تجريبية');
+  // false means: self-visit, merchant-visit, ineligible link or recent duplicate.
+ }catch(e){console.warn('WISH affiliate visit not recorded:',e?.message||e)}
+}
+
 async function copyWishAffiliateUrl(url){
  try{
   if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);return true;}
@@ -355,6 +390,57 @@ async function copyWishAffiliateUrl(url){
  if(!copied)window.prompt('انسخ رابط المشاركة يدويًا:',url);
  return copied;
 }
+// The server returns only totals for the signed-in promoter's own links.
+let wishAffiliateStatsRequest=0,wishAffiliateStatsUid=null;
+function affiliateStatsAuthChanged(session){
+ const uid=session?.user?.id||null;
+ if(uid!==wishAffiliateStatsUid){
+  wishAffiliateStatsUid=uid;wishAffiliateStatsRequest++;wishLastAffiliateVisitKey='';
+  document.getElementById('wishAffiliateStatsStatus').textContent=uid?'اضغط تحديث لعرض زيارات روابطك.':'🔒 سجّل دخولك لعرض روابط التسويق.';
+  document.getElementById('wishAffiliateStatsTotals').innerHTML='';
+  document.getElementById('wishAffiliateStatsItems').innerHTML='';
+ }
+ if(uid&&document.getElementById('profile').classList.contains('active'))loadWishAffiliateStats();
+ if(uid&&document.getElementById('market').classList.contains('active')&&marketProducts.length)focusWishSharedProduct();
+}
+async function loadWishAffiliateStats(){
+ const status=document.getElementById('wishAffiliateStatsStatus');
+ const totals=document.getElementById('wishAffiliateStatsTotals');
+ const items=document.getElementById('wishAffiliateStatsItems');
+ const btn=document.getElementById('wishAffiliateStatsRefresh');
+ if(!wishAuthClient||!wishAffiliateStatsUid){
+  wishAffiliateStatsRequest++;
+  status.textContent='🔒 سجّل دخولك إلى WISH لعرض زيارات روابطك.';
+  totals.innerHTML='';items.innerHTML='';return;
+ }
+ const uid=wishAffiliateStatsUid,request=++wishAffiliateStatsRequest;
+ btn.disabled=true;status.textContent='⏳ جار تحميل روابطك وزياراتها من Supabase...';
+ try{
+  const {data,error}=await wishAuthClient.rpc('wish_affiliate_visit_stats');
+  if(error)throw error;
+  if(request!==wishAffiliateStatsRequest||uid!==wishAffiliateStatsUid)return;
+  const rows=Array.isArray(data)?data:[];
+  const total=rows.reduce((sum,p)=>sum+wishClickCount(p.total_visits),0);
+  const week=rows.reduce((sum,p)=>sum+wishClickCount(p.visits_last_7_days),0);
+  totals.innerHTML=`<div class="merchant-stats-metric"><strong>${total.toLocaleString('ar-SA')}</strong><span>إجمالي الزيارات المسجلة لروابطك</span></div><div class="merchant-stats-metric"><strong>${week.toLocaleString('ar-SA')}</strong><span>الزيارات المسجلة آخر 7 أيام</span></div>`;
+  items.innerHTML=rows.length?rows.map(p=>{
+   const valid=/^[0-9a-f-]{36}$/i.test(p.product_id||'')&&/^[0-9a-f]{32}$/i.test(p.link_code||'');
+   return `<div class="merchant-stats-item"><b>${escapeHtml(p.product_name||'منتج')}</b><small>${p.is_active?'🟢 مشاركة مفعلة':'🔒 المشاركة متوقفة'} · إجمالي: ${wishClickCount(p.total_visits).toLocaleString('ar-SA')} · آخر 7 أيام: ${wishClickCount(p.visits_last_7_days).toLocaleString('ar-SA')}</small>${valid?`<button type="button" class="btn small secondary" style="margin-top:8px" data-product="${escapeHtml(p.product_id)}" data-code="${escapeHtml(p.link_code)}" onclick="copyWishPromoterLink(this.dataset.product,this.dataset.code)">🔗 نسخ رابط المشاركة</button>`:''}</div>`;
+  }).join(''):'<div class="seller-empty">ما أنشأت روابط تسويق بعد. افتح «السوق»، واختر منتجًا يسمح التاجر بتسويقه.</div>';
+  status.textContent='✅ أرقام الزيارات المسجلة من Supabase. فتح الرابط لا يعني شراءً أو ربحًا.';
+ }catch(e){
+  if(request!==wishAffiliateStatsRequest||uid!==wishAffiliateStatsUid)return;
+  totals.innerHTML='';items.innerHTML='';
+  status.textContent='⚠️ تعذر عرض الزيارات. شغّل كود إحصائيات المسوّق في Supabase أولًا. '+(e?.message||'');
+ }finally{if(request===wishAffiliateStatsRequest)btn.disabled=false}
+}
+async function copyWishPromoterLink(productId,linkCode){
+ if(!/^[0-9a-f-]{36}$/i.test(productId)||!/^[0-9a-f]{32}$/i.test(linkCode))return;
+ const url=wishAffiliateShareUrl(productId,linkCode);
+ const copied=await copyWishAffiliateUrl(url);
+ showToast(copied?'✅ تم نسخ رابطك التجريبي':'انسخ الرابط من النافذة الظاهرة');
+}
+
 let wishAffiliateCreating=false;
 async function createWishAffiliateLink(productId){
  if(wishAffiliateCreating)return;
@@ -387,7 +473,7 @@ async function createWishAffiliateLink(productId){
   const url=wishAffiliateShareUrl(productId,code);
   const copied=await copyWishAffiliateUrl(url);
   showToast(copied?'✅ تم نسخ رابط المشاركة التجريبي':'تم تجهيز رابط المشاركة');
-  window.alert('رابط مشاركة تجريبي لمنتج «'+product.name+'»'+(copied?' تم نسخه.':' جاهز للنسخ.')+'\n\nالرابط يفتح صفحة المنتج في WISH. لم نفعّل بعد توثيق نسب الزيارات أو تأكيد المبيعات أو دفع عمولات.');
+  window.alert('رابط مشاركة تجريبي لمنتج «'+product.name+'»'+(copied?' تم نسخه.':' جاهز للنسخ.')+'\n\nالرابط يفتح صفحة المنتج في WISH. تُسجّل الزيارات المؤهلة للمستخدمين المسجّلين فقط، بعد تفعيل قاعدة البيانات. لا توجد مبيعات مؤكدة أو مدفوعات أو عمولات.');
  }catch(e){showToast('تعذر إنشاء الرابط: '+(e?.message||'تحقق من صلاحيات Supabase'))}
  finally{wishAffiliateCreating=false}
 }
@@ -1008,7 +1094,7 @@ let wishAuthClient=null;
 let wishAuthMode='signup';
 function authMessage(message,isError=false){const el=document.getElementById('authFeedback');el.textContent=message;el.classList.toggle('error',isError)}
 function setAuthMode(mode){wishAuthMode=mode;const signup=mode==='signup';document.getElementById('nameRow').style.display=signup?'block':'none';document.getElementById('tabSignup').className=signup?'btn small selected':'btn small secondary';document.getElementById('tabSignin').className=!signup?'btn small selected':'btn small secondary';document.getElementById('authSubmit').textContent=signup?'إنشاء حساب':'تسجيل الدخول';document.getElementById('authPassword').autocomplete=signup?'new-password':'current-password';authMessage('')}
-function renderWishAuth(session){document.getElementById('authGuest').style.display=session?'none':'block';document.getElementById('authSigned').style.display=session?'block':'none';if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session)}
+function renderWishAuth(session){document.getElementById('authGuest').style.display=session?'none':'block';document.getElementById('authSigned').style.display=session?'block':'none';if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session)}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
