@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>WISH | ويش — فيديوهات ومتاجر ومنتجات منشورة</title>
+<title>WISH | ويش — سوق ومنتجات وروابط مسوقين تجريبية</title>
 <style>
 :root{--bg:#070a12;--panel:#121827;--line:#273248;--txt:#f4f7fb;--muted:#a3b0c3;--pink:#ff4e87;--gold:#ffdc85;--teal:#2cddca}
 *{box-sizing:border-box}html,body{padding:0;margin:0;background:#050711;color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;min-height:100%;}button,input,select{font:inherit}button{cursor:pointer} .app{max-width:460px;margin:0 auto;min-height:100dvh;background:var(--bg);position:relative;box-shadow:0 0 30px #0008}
@@ -58,6 +58,11 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .seller-link-editor input{margin:7px 0 9px;font-size:13px;direction:ltr;text-align:left}
 .seller-link-editor button{margin-top:3px}
 .seller-link-editor small{font-size:11px;color:#adbac9}
+.affiliate-editor{border:1px solid #40566b;border-radius:14px;padding:12px;margin:12px 0;background:#0b1b2b}
+.affiliate-editor small{font-size:11px;color:#b8cadc;line-height:1.8}.affiliate-editor .btn{margin-top:10px}
+.affiliate-off{color:#bac9d8;font-size:12px;margin-top:8px}.affiliate-on{color:#80ead0;font-size:12px;margin-top:8px}
+.affiliate-market{margin-top:12px;padding:12px;border-radius:13px;border:1px dashed #43606a;background:#101e2b}
+.affiliate-market p{color:#a9becf;font-size:11px;line-height:1.8;margin:8px 0 0}.affiliate-ref-product{outline:2px solid #ff4e87;outline-offset:2px}
 
 /* WISH merchant-only analytics, loaded via owner-scoped Supabase RPC. */
 .merchant-stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
@@ -102,6 +107,7 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <div class="h1">🛍️ سوق WISH</div>
   <div class="sub">تصفح منتجات التجار الذين اختاروا نشرها للعامة. المنتجات الخاصة لا تظهر هنا.</div>
   <div class="notice">🧪 سوق تجريبي: قد تجد رابطًا خارجيًا يضعه التاجر بنفسه؛ تحقّق من الموقع قبل الشراء. WISH لا يستقبل مدفوعات أو يشحن منتجات، ولا يتحقّق حاليًا من المبيعات أو يحتسب عمولات. المنتجات والعروض غير موثّقة من WISH.</div>
+  <div class="notice">🤝 التسويق بالعمولة هنا تجريبي: التاجر يختار المنتجات المسموح بتسويقها، والمسوق المسجّل ينشئ رابط مشاركة. الرابط لا يثبت المبيعات ولا يمنح عمولات بعد.</div>
   <label for="marketSearch">ابحث عن منتج منشور</label>
   <input id="marketSearch" class="market-search" placeholder="مثال: سماعة بلوتوث" maxlength="70" oninput="renderMarketProducts()">
   <div class="row"><button type="button" class="btn secondary small" onclick="loadMarketProducts()">↻ تحديث المنتجات</button></div>
@@ -145,7 +151,7 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <button class="seller-back" type="button" onclick="openPage('profile')">← العودة إلى حسابي</button>
   <div class="h1">🏪 ابدأ تجارتك</div>
   <div class="sub">أنشئ واجهة متجر تجريبية في WISH. عندنا طريقان: تبيع منتجاتك أو تسوّق منتجات مورّدين بعد اتفاق رسمي معهم.</div>
-  <div class="notice"><b>نسخة تجريبية:</b> منتجاتك محفوظة في حسابك على Supabase. تظل خاصة افتراضيًا حتى تضغط «نشر المنتج» وتؤكد النشر. سيظهر المنشور في سوق WISH للعامة. لا توجد مدفوعات أو شحن أو عمولات حقيقية بعد.</div>
+  <div class="notice"><b>نسخة تجريبية:</b> منتجاتك محفوظة في حسابك على Supabase. تظل خاصة افتراضيًا حتى تضغط «نشر المنتج» وتؤكد النشر. سيظهر المنشور في سوق WISH للعامة. لا توجد مدفوعات أو شحن أو عمولات حقيقية بعد. يمكنك السماح للمستخدمين بإنشاء روابط مشاركة لمنتجاتك المنشورة.</div>
   <div class="card">
     <h3 style="margin:0 0 12px">بيانات متجرك</h3>
     <div id="wishShopStatus" class="notice" aria-live="polite">جار التحقق من الحساب...</div>
@@ -286,7 +292,7 @@ function renderMarketProducts(){
  const query=(document.getElementById('marketSearch')?.value||'').trim().toLocaleLowerCase('ar');
  const filtered=marketProducts.map((p,i)=>({...p,_index:i})).filter(p=>!query||(p.name+' '+p.description).toLocaleLowerCase('ar').includes(query));
  if(!filtered.length){el.innerHTML='<div class="seller-empty">'+(query?'ما لقينا منتجات منشورة تطابق بحثك.':'ما فيه منتجات منشورة للعامة للحين. التاجر يقدر ينشر منتجًا من صفحة «ابدأ تجارتك».')+'</div>';return}
- el.innerHTML=filtered.map(p=>`<div class="market-product"><h3>${escapeHtml(p.name)}</h3><div class="market-label">🌍 منتج نشره أحد تجار WISH · عرض تجريبي</div><p class="market-desc">${escapeHtml(p.description||'بدون وصف إضافي')}</p><div class="market-actions"><div class="market-price">${Number(p.price).toLocaleString('ar-SA',{maximumFractionDigits:2})} ر.س</div><button type="button" class="btn market-wish" data-index="${p._index}" onclick="openMarketWish(Number(this.dataset.index))">❤️ أبيها</button></div>${validMerchantUrl(p.purchase_url)?`<div style="margin-top:13px"><a class="wish-buy-link" href="${escapeHtml(p.purchase_url)}" target="_blank" rel="noopener noreferrer nofollow" data-product-id="${escapeHtml(p.id)}" onclick="return confirmMerchantLink(this)">🔗 فتح رابط التاجر الخارجي</a><p class="wish-buy-link-notice">رابط خارجي يضيفه التاجر. للمستخدم المسجّل قد تُسجَّل ضغطة لأغراض الإحصاء فقط؛ لم نتحقق من التاجر، والضغط لا يعني بيعًا أو استحقاق عمولة.</p></div>`:''}</div>`).join('');
+ el.innerHTML=filtered.map(p=>`<div class="market-product" data-product-id="${escapeHtml(p.id)}"><h3>${escapeHtml(p.name)}</h3><div class="market-label">🌍 منتج نشره أحد تجار WISH · عرض تجريبي</div><p class="market-desc">${escapeHtml(p.description||'بدون وصف إضافي')}</p><div class="market-actions"><div class="market-price">${Number(p.price).toLocaleString('ar-SA',{maximumFractionDigits:2})} ر.س</div><button type="button" class="btn market-wish" data-index="${p._index}" onclick="openMarketWish(Number(this.dataset.index))">❤️ أبيها</button></div>${validMerchantUrl(p.purchase_url)?`<div style="margin-top:13px"><a class="wish-buy-link" href="${escapeHtml(p.purchase_url)}" target="_blank" rel="noopener noreferrer nofollow" data-product-id="${escapeHtml(p.id)}" onclick="return confirmMerchantLink(this)">🔗 فتح رابط التاجر الخارجي</a><p class="wish-buy-link-notice">رابط خارجي يضيفه التاجر. للمستخدم المسجّل قد تُسجَّل ضغطة لأغراض الإحصاء فقط؛ لم نتحقق من التاجر، والضغط لا يعني بيعًا أو استحقاق عمولة.</p></div>`:''}${p.affiliate_enabled===true?`<div class="affiliate-market"><b>🤝 التاجر يسمح بمشاركة هذا المنتج</b><p>للمستخدم المسجّل: أنشئ رابط مشاركة تجريبي باسم حسابك. لا يوجد اعتماد مبيعات أو أرباح، ولا يتم تتبع الإحالات آليًا بعد.</p><button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="createWishAffiliateLink(this.dataset.id)">🔗 سوّق هذا المنتج</button></div>`:''}</div>`).join('');
 }
 async function loadMarketProducts(){
  const requestId=++marketRequestId;
@@ -294,13 +300,14 @@ async function loadMarketProducts(){
  marketMessage('⏳ جار جلب المنتجات المنشورة...');
  try{
   const {data,error}=await wishAuthClient.from('wish_products')
-    .select('id,name,price,description,created_at,purchase_url')
+    .select('id,name,price,description,created_at,purchase_url,affiliate_enabled')
     .eq('is_published',true).eq('kind','own')
     .order('created_at',{ascending:false}).limit(60);
   if(requestId!==marketRequestId)return false;
   if(error)throw error;
   marketProducts=(data||[]).filter(p=>p.name&&Number.isFinite(Number(p.price))&&Number(p.price)>0);
   renderMarketProducts();
+  focusWishSharedProduct();
   marketMessage('🌍 '+marketProducts.length+' منتج منشور للعموم · لا يوجد شراء حقيقي في النسخة التجريبية.');
   return true;
  }catch(e){
@@ -308,6 +315,69 @@ async function loadMarketProducts(){
   marketProducts=[];renderMarketProducts();marketMessage('⚠️ تعذر تحميل السوق. تأكد من إعداد عمود is_published وسياسات القراءة، ثم اضغط تحديث. '+(e?.message||''));
   return false;
  }
+}
+function wishAffiliateShareUrl(productId,linkCode){
+ const u=new URL(window.location.origin+window.location.pathname);
+ u.searchParams.set('wish_product',productId);
+ u.searchParams.set('wish_ref',linkCode);
+ return u.toString();
+}
+function focusWishSharedProduct(){
+ const q=new URLSearchParams(window.location.search);
+ const productId=q.get('wish_product')||'';
+ if(!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(productId))return;
+ const found=marketProducts.some(p=>p.id===productId);
+ if(!found){marketMessage('هذا المنتج غير موجود في النتائج المنشورة حاليًا.');return}
+ const el=[...document.querySelectorAll('.market-product')].find(e=>e.dataset.productId===productId);
+ if(el){el.classList.add('affiliate-ref-product');setTimeout(()=>el.scrollIntoView({block:'center',behavior:'smooth'}),200)}
+}
+async function copyWishAffiliateUrl(url){
+ try{
+  if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);return true;}
+ }catch(e){}
+ const field=document.createElement('textarea');
+ field.value=url;field.style.position='fixed';field.style.opacity='0';
+ document.body.appendChild(field);field.select();
+ let copied=false;try{copied=document.execCommand('copy')}catch(e){}
+ field.remove();
+ if(!copied)window.prompt('انسخ رابط المشاركة يدويًا:',url);
+ return copied;
+}
+let wishAffiliateCreating=false;
+async function createWishAffiliateLink(productId){
+ if(wishAffiliateCreating)return;
+ const product=marketProducts.find(p=>p.id===productId);
+ if(!product||product.affiliate_enabled!==true){showToast('التاجر لم يفعّل تسويق هذا المنتج');return}
+ if(!wishAuthClient){showToast('تعذر الاتصال بحساب WISH');return}
+ wishAffiliateCreating=true;
+ try{
+  const {data:sessionData,error:sessionError}=await wishAuthClient.auth.getSession();
+  if(sessionError)throw sessionError;
+  const uid=sessionData?.session?.user?.id;
+  if(!uid){showToast('سجّل دخولك من صفحة حسابي أولًا حتى تنشئ رابط تسويق');return}
+  const query=()=>wishAuthClient.from('wish_affiliate_links').select('link_code')
+       .eq('product_id',productId).eq('promoter_id',uid).maybeSingle();
+  let {data,error}=await query();
+  if(error)throw error;
+  let code=data?.link_code;
+  if(!code){
+   const created=await wishAuthClient.from('wish_affiliate_links')
+     .insert({product_id:productId,promoter_id:uid}).select('link_code').single();
+   if(created.error){
+    // If two taps created the same unique product/promoter link, read the existing one.
+    if(created.error.code==='23505'){
+     const existing=await query();if(existing.error)throw existing.error;
+     code=existing.data?.link_code;
+    }else{throw created.error}
+   }else{code=created.data?.link_code}
+  }
+  if(!/^[0-9a-f]{32}$/i.test(code||''))throw new Error('تعذر قراءة رمز الرابط');
+  const url=wishAffiliateShareUrl(productId,code);
+  const copied=await copyWishAffiliateUrl(url);
+  showToast(copied?'✅ تم نسخ رابط المشاركة التجريبي':'تم تجهيز رابط المشاركة');
+  window.alert('رابط مشاركة تجريبي لمنتج «'+product.name+'»'+(copied?' تم نسخه.':' جاهز للنسخ.')+'\n\nالرابط يفتح صفحة المنتج في WISH. لم نفعّل بعد توثيق نسب الزيارات أو تأكيد المبيعات أو دفع عمولات.');
+ }catch(e){showToast('تعذر إنشاء الرابط: '+(e?.message||'تحقق من صلاحيات Supabase'))}
+ finally{wishAffiliateCreating=false}
 }
 function openMarketWish(index){
  const item=marketProducts[index];if(!item)return;
@@ -458,11 +528,11 @@ async function loadCloudShop(uid,version){
     if(uid!==wishShopUserId||version!==wishShopRevision)return;
     if(shop.error)throw shop.error;
     const products=await wishAuthClient.from('wish_products')
-      .select('id,name,price,description,kind,is_published,purchase_url').eq('owner_id',uid).order('created_at',{ascending:false});
+      .select('id,name,price,description,kind,is_published,purchase_url,affiliate_enabled').eq('owner_id',uid).order('created_at',{ascending:false});
     if(uid!==wishShopUserId||version!==wishShopRevision)return;
     if(products.error)throw products.error;
     sellerShop={name:shop.data?.name||'',products:(products.data||[]).map(p=>({
-      id:p.id,name:p.name,price:Number(p.price),description:p.description||'',type:p.kind==='supplier'?'supplier':'own',isPublished:p.is_published===true,purchaseUrl:p.purchase_url||''
+      id:p.id,name:p.name,price:Number(p.price),description:p.description||'',type:p.kind==='supplier'?'supplier':'own',isPublished:p.is_published===true,purchaseUrl:p.purchase_url||'',affiliateEnabled:p.affiliate_enabled===true
     }))};
     wishShopReady=true;
     shopStatus('✅ متجرك مرتبط بحسابك. المنتجات الخاصة لا تظهر للآخرين، والمنشورة تظهر في سوق WISH.');
@@ -607,11 +677,12 @@ async function toggleSellerProductPublication(id){
  wishShopBusy=true;
  try{
   const {data,error}=await wishAuthClient.from('wish_products')
-    .update({is_published:makePublic}).eq('id',id).eq('owner_id',uid)
-    .select('id,is_published').single();
+    .update(makePublic?{is_published:true}:{is_published:false,affiliate_enabled:false}).eq('id',id).eq('owner_id',uid)
+    .select('id,is_published,affiliate_enabled').single();
   if(error)throw error;
   if(uid!==wishShopUserId||rev!==wishShopRevision)return;
   item.isPublished=data.is_published===true;
+  item.affiliateEnabled=data.affiliate_enabled===true;
   renderSellerProducts();
   shopMessage(item.isPublished?'✅ نشرنا المنتج في سوق WISH للعامة':'🔒 أخفينا المنتج من سوق WISH');
   loadMarketProducts();
@@ -642,8 +713,31 @@ function renderSellerProducts(){
   list.innerHTML=sellerShop.products.map(p=>{
     const ownCloud=!!(wishShopUserId&&wishShopReady&&p.type==='own');
     const linkEditor=ownCloud?`<div class="seller-link-editor"><label for="wish-buy-${escapeHtml(p.id)}">🔗 رابط شراء خارجي للمنتج (اختياري)</label><input type="url" inputmode="url" id="wish-buy-${escapeHtml(p.id)}" maxlength="1500" placeholder="https://www.example.com/product" value="${escapeHtml(p.purchaseUrl||'')}"><small>ضع رابط صفحة المنتج على موقع التاجر الذي تملك صلاحية استخدامه، وليس رابطًا غير موثوق. الرابط يظهر للناس فقط إذا نشرت المنتج، والشراء خارج WISH.</small><button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="saveSellerPurchaseUrl(this.dataset.id)">💾 حفظ رابط الشراء</button></div>`:'';
-    return `<div class="seller-product"><b>${escapeHtml(p.name)}</b><small>${p.type==='supplier'?'🤝 نموذج مورد غير متعاقد':'📦 منتجك الخاص'}</small><small>${escapeHtml(p.description||'بدون وصف')}</small><span class="${p.isPublished?'market-public-tag':'market-private-tag'}">${p.isPublished?'🌍 منشور للعامة':'🔒 خاص'}</span>${linkEditor}<div class="row"><span class="price">${Number(p.price).toLocaleString('ar-SA')} ر.س (تجريبي)</span><div class="market-seller-actions">${ownCloud?`<button type="button" class="btn small ${p.isPublished?'secondary':''}" data-id="${escapeHtml(p.id)}" onclick="toggleSellerProductPublication(this.dataset.id)">${p.isPublished?'🔒 إخفاء المنتج':'🌍 نشر المنتج'}</button>`:''}<button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="removeSellerProduct(this.dataset.id)">حذف</button></div></div></div>`;
+    const affiliateEditor=ownCloud?`<div class="affiliate-editor"><b>🤝 التسويق بالعمولة (تجريبي)</b><div class="${p.affiliateEnabled&&p.isPublished?'affiliate-on':'affiliate-off'}">${p.affiliateEnabled&&p.isPublished?'✅ مسموح للمستخدمين إنشاء روابط مشاركة':'🔒 التسويق غير مفعّل لهذا المنتج'}</div><small>لن تُنشأ روابط للمسوّقين إلا بعد موافقتك ونشر المنتج للعامة. الروابط لا تتتبّع المبيعات أو تمنح أرباحًا حتى الآن.</small><button type="button" class="btn small ${p.affiliateEnabled?'secondary':''}" data-id="${escapeHtml(p.id)}" onclick="toggleWishSellerAffiliate(this.dataset.id)">${p.affiliateEnabled?'🔒 إيقاف التسويق':'🤝 السماح بالتسويق'}</button></div>`:'';
+    return `<div class="seller-product"><b>${escapeHtml(p.name)}</b><small>${p.type==='supplier'?'🤝 نموذج مورد غير متعاقد':'📦 منتجك الخاص'}</small><small>${escapeHtml(p.description||'بدون وصف')}</small><span class="${p.isPublished?'market-public-tag':'market-private-tag'}">${p.isPublished?'🌍 منشور للعامة':'🔒 خاص'}</span>${linkEditor}${affiliateEditor}<div class="row"><span class="price">${Number(p.price).toLocaleString('ar-SA')} ر.س (تجريبي)</span><div class="market-seller-actions">${ownCloud?`<button type="button" class="btn small ${p.isPublished?'secondary':''}" data-id="${escapeHtml(p.id)}" onclick="toggleSellerProductPublication(this.dataset.id)">${p.isPublished?'🔒 إخفاء المنتج':'🌍 نشر المنتج'}</button>`:''}<button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="removeSellerProduct(this.dataset.id)">حذف</button></div></div></div>`;
   }).join('');
+}
+async function toggleWishSellerAffiliate(id){
+ if(!shopCanEdit())return;
+ const uid=wishShopUserId,rev=wishShopRevision;
+ if(!uid||!wishShopReady){shopMessage('سجّل دخولك أولًا');return}
+ const item=sellerShop.products.find(p=>p.id===id);
+ if(!item||item.type!=='own'){shopMessage('الميزة مخصصة لمنتجاتك التي تملكها');return}
+ if(!item.isPublished){shopMessage('انشر المنتج للعامة قبل السماح بالتسويق');return}
+ const enabled=!item.affiliateEnabled;
+ if(enabled&&!window.confirm('هل تسمح للمستخدمين المسجّلين بإنشاء روابط مشاركة لمنتج «'+item.name+'»؟\n\nهذا اختبار، وليس اتفاق عمولات أو تفويض بيع أو دفع حقيقي.'))return;
+ wishShopBusy=true;
+ try{
+  const {data,error}=await wishAuthClient.from('wish_products')
+    .update({affiliate_enabled:enabled}).eq('id',id).eq('owner_id',uid)
+    .select('id,affiliate_enabled').single();
+  if(error)throw error;
+  if(uid!==wishShopUserId||rev!==wishShopRevision)return;
+  item.affiliateEnabled=data.affiliate_enabled===true;
+  renderSellerProducts();loadMarketProducts();
+  shopMessage(item.affiliateEnabled?'✅ سمحت بالتسويق التجريبي لهذا المنتج':'🔒 أوقفت إنشاء روابط تسويق جديدة لهذا المنتج');
+ }catch(e){shopMessage('❌ تعذر تحديث التسويق: '+(e?.message||'خطأ اتصال'))}
+ finally{wishShopBusy=false}
 }
 async function saveSellerPurchaseUrl(id){
  if(!shopCanEdit())return;
@@ -909,6 +1003,8 @@ async function initWishAuth(){
    renderWishAuth(data.session);
    wishAuthClient.auth.onAuthStateChange((event,session)=>{renderWishAuth(session)});
    loadCloudVideos();
+   const sharedProduct=new URLSearchParams(window.location.search).get('wish_product')||'';
+   if(/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(sharedProduct))openPage('market');
  }catch(e){setup.style.display='block';setup.textContent='تعذر الاتصال بنظام الحسابات. راجع إعدادات Supabase.';authMessage(e?.message||'خطأ بالاتصال',true)}
 }
 shopAuthChanged(null);initWishAuth();renderSellerProducts();populateSellerVideoSelect();renderWishCommissionCalculator();populateWishDemoProductSelect();
