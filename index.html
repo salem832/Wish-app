@@ -144,6 +144,18 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .wish-feedback-inbox-item p{margin:8px 0 0;white-space:pre-wrap;line-height:1.7;font-size:13px}
 .wish-feedback-form button:disabled{opacity:.6;cursor:wait}
 
+
+/* WISH: test-only multi-product cart, no payments, addresses or shipping. */
+.wish-cart-actions{margin:12px 0 8px;display:flex;gap:8px;flex-wrap:wrap}
+.wish-cart-item{padding:13px;border:1px solid #34445f;border-radius:14px;background:#131d30;margin:10px 0}
+.wish-cart-item b{display:block;color:#ffe3ec;font-size:16px;line-height:1.6}
+.wish-cart-item small{display:block;color:#bdd1e6;line-height:1.9;margin:5px 0 9px}
+.wish-cart-item button{margin-top:3px}
+.wish-cart-sum{padding:15px;margin:12px 0;background:#19332e;border:1px solid #397268;border-radius:14px;font-weight:800;color:#93f0db}
+.wish-cart-disclaimer{font-size:12px;color:#c6d6e6;line-height:1.9}
+#wishDemoCartCheckout:disabled{opacity:.55;cursor:wait}
+.wish-cart-status{line-height:1.9;font-size:13px;white-space:pre-wrap;margin-top:9px;color:#dbe9f6}
+
 </style>
 </head>
 <body><main class="app">
@@ -158,8 +170,38 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <label for="marketSearch">ابحث عن منتج منشور</label>
   <input id="marketSearch" class="market-search" placeholder="مثال: سماعة بلوتوث" maxlength="70" oninput="renderMarketProducts()">
   <div class="row"><button type="button" class="btn secondary small" onclick="loadMarketProducts()">↻ تحديث المنتجات</button></div>
+  <div class="wish-cart-actions"><button type="button" class="btn secondary" onclick="openPage('cart')">🛒 سلة المشتريات التجريبية (<span id="wishCartCountMarket">0</span>)</button></div>
   <p class="market-status" id="marketStatus" aria-live="polite">جار التحقق من المتجر...</p>
   <div id="marketProducts"></div>
+</div></section>
+
+<!-- WISH: test-only cart. Address selections are fictitious; never sent to merchants or Supabase. -->
+<section id="cart"><div class="content">
+  <button class="btn secondary small" type="button" onclick="openPage('market')">← الرجوع إلى السوق</button>
+  <div class="h1" style="margin-top:16px">🛒 سلة المشتريات التجريبية</div>
+  <div class="notice">🧪 هذه معاينة فقط: <b>لا يوجد دفع أو توصيل حقيقي</b>، ولا يلزم كتابة اسمك أو عنوان منزلك. تُحفظ أسماء المنتجات المختارة في هذا المتصفح لحسابك فقط.</div>
+  <p id="wishCartAccountStatus" class="market-status" aria-live="polite"></p>
+  <div id="wishCartItems"></div>
+  <div id="wishCartSum" class="wish-cart-sum">المجموع التجريبي: 0 ر.س</div>
+  <div class="card">
+    <h3 style="margin-top:0">📍 وجهة توصيل افتراضية</h3>
+    <p class="wish-cart-disclaimer">اختبار لشكل صفحة العنوان فقط. اختر خيارات افتراضية؛ <b>لا تدخل عنوانًا حقيقيًا</b>. اختيارات التوصيل لا تُرسل للتاجر ولا تُحفظ في Supabase.</p>
+    <label for="wishCartCity">مدينة تجريبية</label>
+    <select id="wishCartCity">
+      <option value="">اختر المدينة للتجربة</option>
+      <option value="جدة">جدة</option><option value="الرياض">الرياض</option>
+      <option value="مكة">مكة</option><option value="الدمام">الدمام</option>
+      <option value="المدينة">المدينة</option><option value="أخرى">مدينة أخرى</option>
+    </select>
+    <label for="wishCartZone">منطقة افتراضية (ليست عنوانًا حقيقيًا)</label>
+    <select id="wishCartZone">
+      <option value="">اختر منطقة افتراضية</option>
+      <option value="1">منطقة تجريبية (أ)</option><option value="2">منطقة تجريبية (ب)</option>
+    </select>
+    <p class="wish-cart-disclaimer">كل منتج في السلة يُنشئ <b>طلبًا تجريبيًا منفصلًا</b> لصاحب المتجر. حاليًا نسمح بقطعة واحدة من كل منتج. التاجر يمكنه قبول الطلب أو رفضه، لكن لا تحصل عملية بيع.</p>
+    <button class="btn" id="wishDemoCartCheckout" type="button" style="width:100%" onclick="submitWishDemoCart()">✅ إرسال الطلبات التجريبية — دون دفع</button>
+    <p id="wishCartCheckoutStatus" class="wish-cart-status" role="status" aria-live="polite"></p>
+  </div>
 </div></section>
 <section id="create"><div class="content">
 <div class="h1">🎬 انشر مقطعك</div>
@@ -225,6 +267,11 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <div id="wishAffiliateStatsTotals" class="merchant-stats-grid"></div>
   <div id="wishAffiliateStatsItems"></div>
   <button id="wishAffiliateStatsRefresh" type="button" class="btn secondary seller-full" onclick="loadWishAffiliateStats()">↻ تحديث زيارات روابط تسويقي</button>
+</div>
+<div class="card" id="wishDemoCartLinkCard">
+  <h3 style="margin:0 0 8px">🛒 سلة المشتريات التجريبية</h3>
+  <p class="hintline">اجمع المنتجات المنشورة في سلة واحدة، وجرّب وجهة توصيل افتراضية بدون دفع ولا شحن.</p>
+  <button class="btn secondary" type="button" onclick="openPage('cart')">افتح السلة (<span id="wishCartCountAccount">0</span>)</button>
 </div>
 <div class="card" id="wishDemoOrdersCard">
   <h3 style="margin:0 0 8px">🛒 طلبات WISH التجريبية</h3>
@@ -407,7 +454,7 @@ function renderFeed(){document.getElementById('posts').innerHTML=posts.map(p=>`<
 function syncVideoButton(id){const v=document.getElementById('video-'+id),b=document.getElementById('play-'+id);if(!v||!b)return;b.classList.toggle('is-playing',!v.paused&&!v.ended);b.textContent=v.ended?'↻':'▶'}
 function videoFailed(id){const el=document.getElementById('error-'+id),v=document.getElementById('video-'+id);if(!el)return;const code=v?.error?.code;el.textContent=code===4?'المتصفح لا يدعم صيغة الفيديو. جرّب مقطع MP4 بصيغة H.264 من كاميرا الجوال.':code===3?'تعذر فك ترميز الفيديو. جرّب فيديو MP4 آخر من كاميرا الجوال.':'تعذر تشغيل هذا الفيديو. جرّب مقطع MP4 قصير من كاميرا الجوال.';el.classList.add('show');syncVideoButton(id)}
 async function toggleVideo(id){const v=document.getElementById('video-'+id);if(!v)return;const error=document.getElementById('error-'+id);if(error)error.classList.remove('show');if(!v.paused&&!v.ended){v.pause();return}try{if(v.ended)v.currentTime=0;await v.play();syncVideoButton(id)}catch(e){videoFailed(id)}}
-function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();if(id==='seller')document.getElementById('nav-profile').classList.add('active');if(id==='create')populateSellerVideoSelect();if(id==='feed'&&wishAuthClient)loadCloudVideos();if(id==='market')loadMarketProducts();if(id==='profile'){loadWishAffiliateStats();loadWishDemoOrders();if(!document.getElementById('wishFeedbackAdminCard').hidden)loadWishFeedbackAdmin()}window.scrollTo({top:0,behavior:'instant'})}
+function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();if(id==='seller')document.getElementById('nav-profile').classList.add('active');if(id==='create')populateSellerVideoSelect();if(id==='feed'&&wishAuthClient)loadCloudVideos();if(id==='market')loadMarketProducts();if(id==='cart'){renderWishDemoCart();if(!marketProducts.length)loadMarketProducts()}if(id==='profile'){loadWishAffiliateStats();loadWishDemoOrders();if(!document.getElementById('wishFeedbackAdminCard').hidden)loadWishFeedbackAdmin()}window.scrollTo({top:0,behavior:'instant'})}
 function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function openWish(id){let p=posts.find(p=>p.id===id);if(!p?.product)return;currentProduct=p.product;document.getElementById('modalTitle').textContent='🔥 '+p.product;document.getElementById('modalDesc').textContent='اختر الطريقة اللي تناسبك';document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;document.getElementById('modal').classList.add('show')}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
@@ -420,7 +467,7 @@ function renderMarketProducts(){
  const query=(document.getElementById('marketSearch')?.value||'').trim().toLocaleLowerCase('ar');
  const filtered=marketProducts.map((p,i)=>({...p,_index:i})).filter(p=>!query||(p.name+' '+p.description).toLocaleLowerCase('ar').includes(query));
  if(!filtered.length){el.innerHTML='<div class="seller-empty">'+(query?'ما لقينا منتجات منشورة تطابق بحثك.':'ما فيه منتجات منشورة للعامة للحين. التاجر يقدر ينشر منتجًا من صفحة «ابدأ تجارتك».')+'</div>';return}
- el.innerHTML=filtered.map(p=>`<div class="market-product" data-product-id="${escapeHtml(p.id)}"><h3>${escapeHtml(p.name)}</h3><div class="market-label">🌍 منتج نشره أحد تجار WISH · عرض تجريبي</div><p class="market-desc">${escapeHtml(p.description||'بدون وصف إضافي')}</p><div class="market-actions"><div class="market-price">${Number(p.price).toLocaleString('ar-SA',{maximumFractionDigits:2})} ر.س</div><button type="button" class="btn market-wish" data-index="${p._index}" onclick="openMarketWish(Number(this.dataset.index))">❤️ أبيها</button></div><button type="button" class="wish-demo-order-btn" data-product-id="${escapeHtml(p.id)}" onclick="createWishDemoOrder(this.dataset.productId,this)">🛒 اطلب تجريبيًا — دون دفع</button>${validMerchantUrl(p.purchase_url)?`<div style="margin-top:13px"><a class="wish-buy-link" href="${escapeHtml(p.purchase_url)}" target="_blank" rel="noopener noreferrer nofollow" data-product-id="${escapeHtml(p.id)}" onclick="return confirmMerchantLink(this)">🔗 فتح رابط التاجر الخارجي</a><p class="wish-buy-link-notice">رابط خارجي يضيفه التاجر. للمستخدم المسجّل قد تُسجَّل ضغطة لأغراض الإحصاء فقط؛ لم نتحقق من التاجر، والضغط لا يعني بيعًا أو استحقاق عمولة.</p></div>`:''}${p.affiliate_enabled===true?`<div class="affiliate-market"><b>🤝 التاجر يسمح بمشاركة هذا المنتج</b><p>للمستخدم المسجّل: أنشئ رابط مشاركة تجريبي باسم حسابك. تُسجّل زيارة العضو المسجّل المؤهلة عند فتح رابط المشاركة، بعد تفعيل قاعدة البيانات. لا مبيعات أو أرباح حقيقية.</p><button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="createWishAffiliateLink(this.dataset.id)">🔗 سوّق هذا المنتج</button></div>`:''}</div>`).join('');
+ el.innerHTML=filtered.map(p=>`<div class="market-product" data-product-id="${escapeHtml(p.id)}"><h3>${escapeHtml(p.name)}</h3><div class="market-label">🌍 منتج نشره أحد تجار WISH · عرض تجريبي</div><p class="market-desc">${escapeHtml(p.description||'بدون وصف إضافي')}</p><div class="market-actions"><div class="market-price">${Number(p.price).toLocaleString('ar-SA',{maximumFractionDigits:2})} ر.س</div><button type="button" class="btn market-wish" data-index="${p._index}" onclick="openMarketWish(Number(this.dataset.index))">❤️ أبيها</button></div><button type="button" class="btn secondary small" style="margin-top:8px" data-product-id="${escapeHtml(p.id)}" onclick="addWishDemoCartItem(this.dataset.productId)" ${wishDemoCartIds.includes(p.id)?'disabled':''}>${wishDemoCartIds.includes(p.id)?'✅ موجود بالسلة':'➕ أضف إلى السلة التجريبية'}</button><button type="button" class="wish-demo-order-btn" data-product-id="${escapeHtml(p.id)}" onclick="createWishDemoOrder(this.dataset.productId,this)">🛒 اطلب تجريبيًا — دون دفع</button>${validMerchantUrl(p.purchase_url)?`<div style="margin-top:13px"><a class="wish-buy-link" href="${escapeHtml(p.purchase_url)}" target="_blank" rel="noopener noreferrer nofollow" data-product-id="${escapeHtml(p.id)}" onclick="return confirmMerchantLink(this)">🔗 فتح رابط التاجر الخارجي</a><p class="wish-buy-link-notice">رابط خارجي يضيفه التاجر. للمستخدم المسجّل قد تُسجَّل ضغطة لأغراض الإحصاء فقط؛ لم نتحقق من التاجر، والضغط لا يعني بيعًا أو استحقاق عمولة.</p></div>`:''}${p.affiliate_enabled===true?`<div class="affiliate-market"><b>🤝 التاجر يسمح بمشاركة هذا المنتج</b><p>للمستخدم المسجّل: أنشئ رابط مشاركة تجريبي باسم حسابك. تُسجّل زيارة العضو المسجّل المؤهلة عند فتح رابط المشاركة، بعد تفعيل قاعدة البيانات. لا مبيعات أو أرباح حقيقية.</p><button type="button" class="btn small secondary" data-id="${escapeHtml(p.id)}" onclick="createWishAffiliateLink(this.dataset.id)">🔗 سوّق هذا المنتج</button></div>`:''}</div>`).join('');
 }
 async function loadMarketProducts(){
  const requestId=++marketRequestId;
@@ -435,6 +482,7 @@ async function loadMarketProducts(){
   if(error)throw error;
   marketProducts=(data||[]).filter(p=>p.name&&Number.isFinite(Number(p.price))&&Number(p.price)>0);
   renderMarketProducts();
+  renderWishDemoCart();
   focusWishSharedProduct();
   marketMessage('🌍 '+marketProducts.length+' منتج منشور للعموم · لا يوجد شراء حقيقي في النسخة التجريبية.');
   return true;
@@ -1199,6 +1247,120 @@ async function updateWishDemoStatus(id,next){
 const WISH_SUPABASE_URL = 'https://ukavrxavasgqnehtouii.supabase.co';
 const WISH_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_dOGwI5TmoN3BWXtnP_aA1Q_skbPFxPn';
 
+// --------------------------------------------------------------
+// Test-only cart: one of each published product. Scoped to the
+// signed-in user + this browser. No personal address is collected.
+// Each item sends one existing wish_create_demo_order RPC request.
+// No actual payment, delivery, buyer commitments or commission.
+// --------------------------------------------------------------
+let wishDemoCartUid=null;
+let wishDemoCartIds=[];
+let wishDemoCartBusy=false;
+const WISH_CART_STORAGE_PREFIX='wish-demo-cart-v1:';
+const WISH_CART_UUID=/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i;
+function loadWishDemoCartForAccount(uid){
+ if(!uid)return [];
+ try{
+  const ids=JSON.parse(localStorage.getItem(WISH_CART_STORAGE_PREFIX+uid)||'[]');
+  return Array.isArray(ids)?[...new Set(ids.filter(id=>typeof id==='string'&&WISH_CART_UUID.test(id)))].slice(0,15):[];
+ }catch(e){return []}
+}
+function saveWishDemoCart(){
+ if(!wishDemoCartUid)return;
+ try{localStorage.setItem(WISH_CART_STORAGE_PREFIX+wishDemoCartUid,JSON.stringify(wishDemoCartIds))}catch(e){showToast('تعذر حفظ السلة على هذا الجهاز')}
+}
+function wishDemoCartAuthChanged(session){
+ const uid=session?.user?.id||null;
+ if(uid!==wishDemoCartUid){
+  wishDemoCartUid=uid;
+  wishDemoCartIds=loadWishDemoCartForAccount(uid);
+  const status=document.getElementById('wishCartCheckoutStatus');
+  if(status)status.textContent='';
+ }
+ refreshWishDemoCartCount();
+ if(document.getElementById('cart').classList.contains('active'))renderWishDemoCart();
+}
+function refreshWishDemoCartCount(){
+ for(const id of ['wishCartCountMarket','wishCartCountAccount']){
+  const el=document.getElementById(id);if(el)el.textContent=String(wishDemoCartIds.length);
+ }
+}
+function addWishDemoCartItem(productId){
+ if(!wishDemoCartUid){window.alert('سجّل دخولك من «حسابي» أولًا لإضافة منتجات للسلة التجريبية.');return}
+ if(!WISH_CART_UUID.test(productId)||!marketProducts.some(p=>p.id===productId)){
+  showToast('المنتج غير متاح الآن');return;
+ }
+ if(wishDemoCartIds.includes(productId)){showToast('المنتج موجود في السلة بالفعل');return}
+ if(wishDemoCartIds.length>=15){showToast('الحد الأقصى للسلة التجريبية 15 منتجًا');return}
+ wishDemoCartIds.push(productId);
+ saveWishDemoCart();refreshWishDemoCartCount();renderMarketProducts();
+ showToast('✅ أضفنا المنتج للسلة التجريبية');
+}
+function removeWishDemoCartItem(productId){
+ if(wishDemoCartBusy)return;
+ wishDemoCartIds=wishDemoCartIds.filter(id=>id!==productId);
+ saveWishDemoCart();refreshWishDemoCartCount();renderWishDemoCart();renderMarketProducts();
+}
+function renderWishDemoCart(){
+ const items=document.getElementById('wishCartItems');if(!items)return;
+ const status=document.getElementById('wishCartAccountStatus');
+ const send=document.getElementById('wishDemoCartCheckout');
+ refreshWishDemoCartCount();
+ status.textContent=wishDemoCartUid?'✅ أنت مسجّل الدخول. السلة خاصة بهذا الحساب على المتصفح الحالي.':'🔒 سجّل الدخول من «حسابي» قبل استخدام السلة التجريبية.';
+ if(!wishDemoCartUid||!wishDemoCartIds.length){
+  items.innerHTML='<div class="seller-empty">سلتك التجريبية فاضية. افتح «السوق» واختر «أضف إلى السلة التجريبية».</div>';
+  document.getElementById('wishCartSum').textContent='المجموع التجريبي: 0 ر.س';
+  send.disabled=true;return;
+ }
+ let sum=0,unavailable=0;
+ items.innerHTML=wishDemoCartIds.map(id=>{
+  const item=marketProducts.find(p=>p.id===id);
+  if(!item){unavailable++;return `<div class="wish-cart-item"><b>منتج غير متاح أو لم تُحدّث قائمة السوق بعد</b><small>حدّث السوق، أو احذف هذا المنتج من السلة.</small><button class="btn small secondary" type="button" data-id="${escapeHtml(id)}" onclick="removeWishDemoCartItem(this.dataset.id)">حذف من السلة</button></div>`}
+  const price=Number(item.price);sum+=price;
+  return `<div class="wish-cart-item"><b>${escapeHtml(item.name)}</b><small>قطعة واحدة تجريبية · ${price.toLocaleString('ar-SA',{maximumFractionDigits:2})} ر.س</small><button class="btn small secondary" type="button" data-id="${escapeHtml(id)}" onclick="removeWishDemoCartItem(this.dataset.id)">إزالة من السلة</button></div>`;
+ }).join('');
+ document.getElementById('wishCartSum').textContent='المجموع التقريبي للعرض فقط: '+sum.toLocaleString('ar-SA',{maximumFractionDigits:2})+' ر.س · '+wishDemoCartIds.length+' منتج';
+ send.disabled=wishDemoCartBusy||unavailable>0||!marketProducts.length;
+ if(unavailable>0)status.textContent+=' تأكد من تحديث «السوق»؛ بعض المنتجات لم تعد متاحة.';
+}
+async function submitWishDemoCart(){
+ if(wishDemoCartBusy)return;
+ const status=document.getElementById('wishCartCheckoutStatus');
+ if(!wishAuthClient||!wishDemoCartUid||!wishCurrentAuthSession?.user){status.textContent='🔒 سجّل الدخول أولًا من «حسابي».\n';return}
+ if(!wishDemoCartIds.length){status.textContent='السلة فاضية.';return}
+ const city=document.getElementById('wishCartCity').value;
+ const zone=document.getElementById('wishCartZone').value;
+ if(!city||!zone){status.textContent='⚠️ اختر مدينة ومنطقة افتراضية للتجربة فقط.';return}
+ const missing=wishDemoCartIds.filter(id=>!marketProducts.some(p=>p.id===id));
+ if(missing.length){status.textContent='⚠️ بعض المنتجات غير متاحة. حدّث السوق أو احذفها من السلة.';return}
+ const pending=[...wishDemoCartIds];
+ if(!window.confirm('هل ترسل '+pending.length+' طلب/طلبات تجريبية منفصلة إلى أصحاب المنتجات؟\n\nالمدينة والمنطقة للاختبار فقط ولا تُرسلان للتاجر. لا يوجد دفع أو شحن أو عمولة أو شراء حقيقي.'))return;
+ wishDemoCartBusy=true;renderWishDemoCart();
+ let completed=0;const failed=[];
+ status.textContent='⏳ جار إرسال الطلبات التجريبية...';
+ try{
+  const {data,error}=await wishAuthClient.auth.getUser();
+  if(error||data?.user?.id!==wishDemoCartUid)throw new Error('انتهت جلسة تسجيل الدخول. افتح «حسابي» وسجّل الدخول مرة أخرى.');
+  for(const id of pending){
+   try{
+    const result=await wishAuthClient.rpc('wish_create_demo_order',{p_product_id:id});
+    if(result.error)throw result.error;
+    if(!result.data)throw new Error('لم يرجع رقم الطلب');
+    completed++;
+    wishDemoCartIds=wishDemoCartIds.filter(p=>p!==id);
+    saveWishDemoCart();
+   }catch(e){
+    const item=marketProducts.find(p=>p.id===id);
+    failed.push((item?.name||'منتج')+': '+String(e?.message||'لم يكتمل الطلب').slice(0,120));
+   }
+  }
+  if(completed)status.textContent='✅ أُرسل '+completed+' طلب تجريبي إلى صاحب/أصحاب المنتجات. تقدر تتابع الحالة في «حسابي ← طلبات WISH التجريبية».\nلا يوجد دفع أو شحن حقيقي.';
+  if(failed.length)status.textContent+='\n⚠️ لم تُرسل '+failed.length+' طلبات، وبقيت في السلة:\n'+failed.join('\n');
+  if(!completed&&!failed.length)status.textContent='لم تُرسل أي طلبات.';
+ }catch(e){status.textContent='⚠️ تعذّر الإرسال: '+(e?.message||'تحقق من تسجيل الدخول.');}
+ finally{wishDemoCartBusy=false;refreshWishDemoCartCount();renderWishDemoCart();}
+}
+
 // WISH orders are a separate, clearly labeled demo from wish_demo_sales and real commerce.
 let wishDemoOrdersUid=null;
 let wishDemoOrdersRequest=0;
@@ -1469,7 +1631,7 @@ async function loadWishFeedbackAdmin(){
   }
 }
 
-function renderWishAuth(session){wishCurrentAuthSession=session;updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session)}
+function renderWishAuth(session){wishCurrentAuthSession=session;updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session)}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
