@@ -128,6 +128,22 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .wish-demo-order-btn{margin-top:10px;width:100%;background:#174c57;color:#e9ffff;border:1px solid #347c81;border-radius:13px;padding:12px;font-weight:700}
 .wish-order-title{margin:19px 0 8px;font-weight:800}
 
+
+/* WISH private user feedback + admin inbox (demo stage) */
+.wish-feedback-form{display:grid;gap:10px;margin-top:12px}
+.wish-feedback-form textarea{background:#080e1c;border:1px solid #34415a;border-radius:12px;color:var(--txt);padding:11px;width:100%;min-height:105px;resize:vertical;line-height:1.7;box-sizing:border-box}
+.wish-feedback-form select{background:#080e1c;border:1px solid #34415a;border-radius:12px;color:var(--txt);padding:11px;width:100%}
+.wish-feedback-stars{display:flex;gap:5px;justify-content:flex-start;direction:ltr;margin:6px 0}
+.wish-feedback-star{font-size:26px;border:1px solid #33425b;border-radius:10px;color:#8392a8;background:#101827;padding:2px 9px;min-width:42px;min-height:44px}
+.wish-feedback-star.selected{color:#ffdc85;border-color:#f1bf58;background:#49341e}
+.wish-feedback-note{font-size:12px;color:var(--muted);line-height:1.8}
+.wish-feedback-status{font-size:12px;line-height:1.8;min-height:18px;color:#b7e8d7;margin-top:7px}
+.wish-feedback-status.error{color:#ff9fac}
+.wish-feedback-inbox-item{border:1px solid #33415b;border-radius:12px;margin:10px 0;padding:12px;overflow-wrap:anywhere}
+.wish-feedback-inbox-item small{display:block;color:var(--muted);margin:6px 0;font-size:11px}
+.wish-feedback-inbox-item p{margin:8px 0 0;white-space:pre-wrap;line-height:1.7;font-size:13px}
+.wish-feedback-form button:disabled{opacity:.6;cursor:wait}
+
 </style>
 </head>
 <body><main class="app">
@@ -219,6 +235,43 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <div class="wish-order-title">🏪 الطلبات الواردة لمتجري</div>
   <div id="wishDemoSellerOrders" class="wish-order-list"></div>
   <button id="wishDemoOrdersRefresh" type="button" class="btn secondary seller-full" onclick="loadWishDemoOrders()">↻ تحديث الطلبات التجريبية</button>
+</div>
+
+<!-- WISH: feedback from testers; inbox visible to database-authorized admin only. -->
+<div class="card" id="wishFeedbackCard">
+  <h3 style="margin:0 0 7px">⭐ صوّتك يطوّر ويش</h3>
+  <div class="notice">ساعدنا نطوّر WISH قبل الإطلاق: قيّم تجربتك، اقترح ميزة، أو بلّغ عن مشكلة. رسالتك وبريد حسابك يطلع عليها فريق إدارة WISH فقط، وليست منشورًا عامًا.</div>
+  <div id="wishFeedbackGuest" class="wish-feedback-note">🔒 سجّل دخولك إلى WISH عشان ترسل تقييمك.</div>
+  <form id="wishFeedbackForm" class="wish-feedback-form" onsubmit="event.preventDefault();submitWishFeedback()" hidden>
+    <label for="wishFeedbackKind">نوع الرسالة</label>
+    <select id="wishFeedbackKind" onchange="updateWishFeedbackKind()" required>
+      <option value="rating">⭐ تقييم التطبيق</option>
+      <option value="idea">💡 اقتراح ميزة</option>
+      <option value="bug">🐛 الإبلاغ عن مشكلة</option>
+    </select>
+    <div id="wishFeedbackStarsRow">
+      <label>كم نجمة تعطي تجربة WISH؟</label>
+      <div class="wish-feedback-stars" role="group" aria-label="التقييم من نجمة إلى خمس نجوم">
+        <button class="wish-feedback-star" type="button" data-star="1" aria-label="نجمة واحدة" onclick="setWishFeedbackStars(1)">☆</button>
+        <button class="wish-feedback-star" type="button" data-star="2" aria-label="نجمتان" onclick="setWishFeedbackStars(2)">☆</button>
+        <button class="wish-feedback-star" type="button" data-star="3" aria-label="ثلاث نجوم" onclick="setWishFeedbackStars(3)">☆</button>
+        <button class="wish-feedback-star" type="button" data-star="4" aria-label="أربع نجوم" onclick="setWishFeedbackStars(4)">☆</button>
+        <button class="wish-feedback-star" type="button" data-star="5" aria-label="خمس نجوم" onclick="setWishFeedbackStars(5)">☆</button>
+      </div>
+    </div>
+    <label for="wishFeedbackMessage">رسالتك <span id="wishFeedbackMessageHint" class="wish-feedback-note">(اختيارية للتقييم)</span></label>
+    <textarea id="wishFeedbackMessage" maxlength="1500" placeholder="قول لنا وش أعجبك ووش يحتاج تحسين، بدون معلومات حساسة"></textarea>
+    <div class="wish-feedback-note">لا تكتب كلمة المرور أو رقم الهوية أو عنوان منزلك. نعرض رسالتك لإدارة التطبيق فقط.</div>
+    <button id="wishFeedbackSend" class="btn" type="submit">📩 أرسل رأيك إلى إدارة WISH</button>
+    <div id="wishFeedbackStatus" class="wish-feedback-status" aria-live="polite"></div>
+  </form>
+</div>
+<div class="card" id="wishFeedbackAdminCard" hidden>
+  <h3 style="margin:0 0 7px">📬 صندوق آراء المستخدمين — للإدارة فقط</h3>
+  <div class="notice">هذا الصندوق خاص بالحساب الإداري المعتمد في Supabase. تُعرض أحدث 100 رسالة، ولا تُنشر للآخرين.</div>
+  <button type="button" class="btn secondary seller-full" onclick="loadWishFeedbackAdmin()">↻ تحديث آراء المستخدمين</button>
+  <div id="wishFeedbackAdminStatus" class="wish-feedback-status" aria-live="polite"></div>
+  <div id="wishFeedbackAdminItems"></div>
 </div>
 <div class="card"><h3 style="margin-top:0">منصة ترفيه + تسوق ذكي</h3><p style="color:#b2c2d9;line-height:1.8">أي شخص يقدر ينشر مقاطع. زر «أبيها» يظهر فقط على الفيديوهات المرتبطة بمنتجات. المستخدم يحفظ المنتج أو يحدد نية الشراء.</p></div><div class="card"><b>💰 خطة الأرباح المستقبلية</b><p style="color:#b2c2d9;line-height:1.8">إذا وافق المتجر على عمولة 10% من عملية بيع مؤهلة: 2% لصانع المحتوى و8% للمنصة، قبل التكاليف والضرائب. لا توجد مدفوعات فعلية في هذه النسخة.</p></div><div class="card seller-cta"><div class="seller-cta-icon">🏪</div><h3>حوّل حسابك إلى متجر في WISH</h3><p>عندك منتجات تبي تبيعها؟ أو تبي تسوّق منتجات الموردين بدون مخزون؟ جرّب واجهة «ابدأ تجارتك» الآن.</p><button class="btn" type="button" onclick="openSeller()">🚀 ابدأ تجارتك</button><small>المتاجر محفوظة في Supabase • المنتجات لا تظهر إلا بعد نشرها • لا مبيعات فعلية</small></div>
 <div class="card"><b>💰 خطة الأرباح المستقبلية</b><p style="color:#b2c2d9;line-height:1.8">في المبيعات المؤهلة القادمة، ننوي اختبار عمولة متجر 10%: 2% لصانع المحتوى و8% للمنصة، قبل التكاليف والضرائب. النسب ليست مفعّلة حاليًا.</p></div></div></section>
@@ -354,7 +407,7 @@ function renderFeed(){document.getElementById('posts').innerHTML=posts.map(p=>`<
 function syncVideoButton(id){const v=document.getElementById('video-'+id),b=document.getElementById('play-'+id);if(!v||!b)return;b.classList.toggle('is-playing',!v.paused&&!v.ended);b.textContent=v.ended?'↻':'▶'}
 function videoFailed(id){const el=document.getElementById('error-'+id),v=document.getElementById('video-'+id);if(!el)return;const code=v?.error?.code;el.textContent=code===4?'المتصفح لا يدعم صيغة الفيديو. جرّب مقطع MP4 بصيغة H.264 من كاميرا الجوال.':code===3?'تعذر فك ترميز الفيديو. جرّب فيديو MP4 آخر من كاميرا الجوال.':'تعذر تشغيل هذا الفيديو. جرّب مقطع MP4 قصير من كاميرا الجوال.';el.classList.add('show');syncVideoButton(id)}
 async function toggleVideo(id){const v=document.getElementById('video-'+id);if(!v)return;const error=document.getElementById('error-'+id);if(error)error.classList.remove('show');if(!v.paused&&!v.ended){v.pause();return}try{if(v.ended)v.currentTime=0;await v.play();syncVideoButton(id)}catch(e){videoFailed(id)}}
-function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();if(id==='seller')document.getElementById('nav-profile').classList.add('active');if(id==='create')populateSellerVideoSelect();if(id==='feed'&&wishAuthClient)loadCloudVideos();if(id==='market')loadMarketProducts();if(id==='profile'){loadWishAffiliateStats();loadWishDemoOrders()}window.scrollTo({top:0,behavior:'instant'})}
+function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();if(id==='seller')document.getElementById('nav-profile').classList.add('active');if(id==='create')populateSellerVideoSelect();if(id==='feed'&&wishAuthClient)loadCloudVideos();if(id==='market')loadMarketProducts();if(id==='profile'){loadWishAffiliateStats();loadWishDemoOrders();if(!document.getElementById('wishFeedbackAdminCard').hidden)loadWishFeedbackAdmin()}window.scrollTo({top:0,behavior:'instant'})}
 function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function openWish(id){let p=posts.find(p=>p.id===id);if(!p?.product)return;currentProduct=p.product;document.getElementById('modalTitle').textContent='🔥 '+p.product;document.getElementById('modalDesc').textContent='اختر الطريقة اللي تناسبك';document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;document.getElementById('modal').classList.add('show')}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
@@ -1308,7 +1361,115 @@ async function finishWishPasswordRecovery(){
 
 function authMessage(message,isError=false){const el=document.getElementById('authFeedback');el.textContent=message;el.classList.toggle('error',isError)}
 function setAuthMode(mode){wishAuthMode=mode;const signup=mode==='signup';document.getElementById('nameRow').style.display=signup?'block':'none';document.getElementById('tabSignup').className=signup?'btn small selected':'btn small secondary';document.getElementById('tabSignin').className=!signup?'btn small selected':'btn small secondary';document.getElementById('authSubmit').textContent=signup?'إنشاء حساب':'تسجيل الدخول';document.getElementById('authPassword').autocomplete=signup?'new-password':'current-password';document.getElementById('wishForgotTrigger').hidden=signup;authMessage('')}
-function renderWishAuth(session){wishCurrentAuthSession=session;updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session)}
+
+// WISH feedback: no user inbox reading, only admin RPC can list submitted messages.
+let wishFeedbackStars=0;
+let wishFeedbackViewerId=null;
+let wishFeedbackAdminRequest=0;
+let wishFeedbackSending=false;
+function setWishFeedbackStars(number){
+  wishFeedbackStars=Number(number)||0;
+  document.querySelectorAll('.wish-feedback-star').forEach(btn=>{
+    const selected=Number(btn.dataset.star)<=wishFeedbackStars;
+    btn.textContent=selected?'★':'☆';
+    btn.classList.toggle('selected',selected);
+    btn.setAttribute('aria-pressed',String(Number(btn.dataset.star)===wishFeedbackStars));
+  });
+}
+function updateWishFeedbackKind(){
+  const kind=document.getElementById('wishFeedbackKind').value;
+  document.getElementById('wishFeedbackStarsRow').hidden=(kind!=='rating');
+  document.getElementById('wishFeedbackMessageHint').textContent=kind==='rating'?'(اختيارية للتقييم)':'(مطلوبة، 8 أحرف على الأقل)';
+  document.getElementById('wishFeedbackMessage').required=(kind!=='rating');
+  document.getElementById('wishFeedbackMessage').placeholder=kind==='bug'
+    ?'صف المشكلة والخطوات اللي سببتها بدون بيانات خاصة'
+    :kind==='idea'?'وش الميزة اللي تبي نضيفها؟':'قول لنا وش أعجبك ووش يحتاج تحسين';
+}
+function wishFeedbackStatus(message,isError=false){
+  const el=document.getElementById('wishFeedbackStatus');
+  el.textContent=message;
+  el.classList.toggle('error',isError);
+}
+async function submitWishFeedback(){
+  if(wishFeedbackSending)return;
+  if(!wishAuthClient || !wishCurrentAuthSession?.user){wishFeedbackStatus('سجّل دخولك أولًا.',true);return;}
+  const kind=document.getElementById('wishFeedbackKind').value;
+  const message=document.getElementById('wishFeedbackMessage').value.trim();
+  if(kind==='rating' && (wishFeedbackStars<1||wishFeedbackStars>5)){
+    wishFeedbackStatus('اختر من نجمة إلى خمس نجوم.',true);return;
+  }
+  if(kind!=='rating' && message.length<8){
+    wishFeedbackStatus('اكتب وصفًا من 8 أحرف على الأقل.',true);return;
+  }
+  if(message.length>1500){wishFeedbackStatus('الرسالة طويلة جدًا.',true);return;}
+  wishFeedbackSending=true;
+  const button=document.getElementById('wishFeedbackSend');button.disabled=true;
+  wishFeedbackStatus('⏳ جار إرسال رأيك...');
+  try{
+    const {error}=await wishAuthClient.rpc('wish_feedback_submit',{
+      p_kind:kind,p_stars:kind==='rating'?wishFeedbackStars:null,p_message:message
+    });
+    if(error)throw error;
+    document.getElementById('wishFeedbackMessage').value='';
+    setWishFeedbackStars(0);
+    wishFeedbackStatus('✅ وصل رأيك إلى صندوق إدارة WISH. شكرًا لمساعدتنا!');
+    if(document.getElementById('wishFeedbackAdminCard').hidden===false)loadWishFeedbackAdmin();
+  }catch(e){
+    const msg=String(e?.message||'');
+    wishFeedbackStatus(msg.includes('انتظر')||msg.includes('limit')||msg.includes('rate')
+      ?'⚠️ حاول بعد قليل، فيه حد مؤقت لعدد الرسائل.'
+      :'❌ تعذر إرسال الرسالة. تأكد أن كود الملاحظات مُفعّل في Supabase. '+msg,true);
+  }finally{wishFeedbackSending=false;button.disabled=false;}
+}
+function wishFeedbackAuthChanged(session){
+  const uid=session?.user?.id||null;
+  document.getElementById('wishFeedbackGuest').hidden=!!uid;
+  document.getElementById('wishFeedbackForm').hidden=!uid;
+  document.getElementById('wishFeedbackAdminCard').hidden=true;
+  document.getElementById('wishFeedbackAdminItems').innerHTML='';
+  const request=++wishFeedbackAdminRequest;
+  wishFeedbackViewerId=uid;
+  if(!uid||!wishAuthClient)return;
+  // defer RPC until the auth event callback finishes
+  setTimeout(async()=>{
+    if(request!==wishFeedbackAdminRequest)return;
+    try{
+      const {data,error}=await wishAuthClient.rpc('wish_feedback_admin_check');
+      if(request!==wishFeedbackAdminRequest||uid!==wishFeedbackViewerId)return;
+      if(!error && data===true){
+        document.getElementById('wishFeedbackAdminCard').hidden=false;
+        loadWishFeedbackAdmin();
+      }
+    }catch(e){}
+  },0);
+}
+async function loadWishFeedbackAdmin(){
+  const panel=document.getElementById('wishFeedbackAdminCard');
+  if(panel.hidden||!wishAuthClient||!wishFeedbackViewerId)return;
+  const uid=wishFeedbackViewerId;
+  const request=++wishFeedbackAdminRequest;
+  const status=document.getElementById('wishFeedbackAdminStatus');
+  const items=document.getElementById('wishFeedbackAdminItems');
+  status.textContent='⏳ جار تحميل آراء المستخدمين...';
+  try{
+    const {data,error}=await wishAuthClient.rpc('wish_feedback_admin_list');
+    if(error)throw error;
+    if(request!==wishFeedbackAdminRequest||uid!==wishFeedbackViewerId||panel.hidden)return;
+    const rows=Array.isArray(data)?data:[];
+    const names={rating:'⭐ تقييم',idea:'💡 اقتراح',bug:'🐛 بلاغ مشكلة'};
+    items.innerHTML=rows.length?rows.map(r=>{
+      let date='';try{date=new Date(r.sent_at).toLocaleString('ar-SA',{dateStyle:'medium',timeStyle:'short'});}catch(e){}
+      return `<div class="wish-feedback-inbox-item"><b>${names[r.feedback_kind]||'رأي مستخدم'}${r.feedback_kind==='rating'?' · '+('★'.repeat(Math.max(0,Math.min(5,Number(r.stars)||0)))):''}</b><small>${escapeHtml(date)} · ${escapeHtml(r.sender_email||'عضو WISH')}</small><p>${escapeHtml(r.details||'بدون تعليق')}</p></div>`;
+    }).join(''):'<p class="wish-feedback-note">ما وصلت أي تقييمات أو رسائل حتى الآن.</p>';
+    status.textContent='✅ أحدث '+rows.length+' رسالة من Supabase.';
+  }catch(e){
+    if(request!==wishFeedbackAdminRequest)return;
+    status.textContent='❌ تعذر قراءة صندوق الرسائل. راجع إعدادات الإدارة في Supabase.';
+    items.innerHTML='';
+  }
+}
+
+function renderWishAuth(session){wishCurrentAuthSession=session;updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session)}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
