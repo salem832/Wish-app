@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "enabled": false,
+  "placement": {
+    "afterPosts": 3,
+    "everyPosts": 8,
+    "maxAds": 2
+  },
+  "ads": []
+}

@@ -1,0 +1,16 @@
+.feedpost.wish-app-ad{display:flex;flex-direction:column;justify-content:space-between;height:auto;min-height:min(78dvh,760px);overflow:visible;gap:24px;padding:24px;background:radial-gradient(ellipse at 85% 12%,#7b326755,transparent 55%),linear-gradient(150deg,#17243e,#111526 55%,#25203c);color:#f4f7fb}
+.wish-ad-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.wish-ad-badge{display:inline-flex;border:1px solid #ffb2ca80;background:#ff4e871a;color:#ffc8d9;border-radius:100px;padding:7px 13px;font-size:13px;font-weight:800}
+.wish-ad-store{color:#ced7e7;font-size:12px}
+.wish-ad-body{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:10px 0}
+.wish-ad-icon{display:grid;place-items:center;width:84px;height:84px;flex-shrink:0;border:1px solid #ffffff40;border-radius:23px;background:linear-gradient(145deg,#684b99,#aa3f70);color:#fff;font-size:36px;font-weight:900;box-shadow:0 12px 35px #0004;object-fit:cover}
+.wish-ad-title{font-size:27px;line-height:1.45;margin:0;font-weight:900;overflow-wrap:anywhere}
+.wish-ad-sponsor{font-size:13px;line-height:1.7;color:#c1cde0;margin:0;overflow-wrap:anywhere}
+.wish-ad-description{font-size:15px;line-height:1.9;color:#e0e7f2;margin:0;overflow-wrap:anywhere}
+.wish-ad-preview{font-size:12px;line-height:1.8;color:#ffe0a3;border:1px solid #94733e;border-radius:12px;background:#332819;padding:10px 12px;margin:0;text-align:center}
+.wish-ad-actions{display:flex;flex-direction:column;gap:12px}
+.wish-ad-install{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:15px;border:1px solid #ffb1ca;background:#ff4e87;color:#fff;text-decoration:none;text-align:center;font-size:17px;font-weight:900;padding:13px 18px;box-shadow:0 5px 22px #ff4e872b}
+.wish-ad-install:focus-visible,.wish-ad-skip:focus-visible{outline:3px solid #ffdc85;outline-offset:4px}
+.wish-ad-note{font-size:12px;line-height:1.7;color:#bcc9dc;margin:0;text-align:center}
+.wish-ad-skip{align-self:center;border:0;background:transparent;color:#e0e7f2;font:inherit;font-size:13px;text-decoration:underline;text-underline-offset:4px;min-height:44px;padding:8px 18px;cursor:pointer}
+@media(max-height:650px){.wish-app-ad{gap:14px;padding:20px}.wish-ad-body{gap:11px}.wish-ad-icon{width:64px;height:64px;border-radius:18px;font-size:29px}.wish-ad-title{font-size:23px}.wish-ad-description{font-size:13px}}

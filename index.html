@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>WISH | ويش — سوق واتفاق عمولات تجريبي واضح للتاجر</title>
+<link rel="stylesheet" href="app-install-ads.css">
+<script src="app-install-ads.js" defer></script>
 <style>
 :root{--bg:#070a12;--panel:#121827;--line:#273248;--txt:#f4f7fb;--muted:#a3b0c3;--pink:#ff4e87;--gold:#ffdc85;--teal:#2cddca}
 *{box-sizing:border-box}html,body{padding:0;margin:0;background:#050711;color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;min-height:100%;}button,input,select{font:inherit}button{cursor:pointer} .app{max-width:460px;margin:0 auto;min-height:100dvh;background:var(--bg);position:relative;box-shadow:0 0 30px #0008}
@@ -190,6 +192,9 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 @media(prefers-reduced-motion:reduce){.wish-onboard-video{scroll-behavior:auto}}
 .wish-welcome-account-controls{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 @media(min-height:840px){.wish-onboard-overlay{align-items:center}}
+/* Feed autoplay keeps one visible clip active and leaves sound under user control. */
+.video-audio{position:absolute;top:12px;left:12px;z-index:7;min-width:48px;min-height:48px;padding:8px 12px;border:1px solid #ffffff70;border-radius:15px;background:#101624dc;color:#fff;font-size:18px;box-shadow:0 4px 16px #0008}
+.video-audio:focus-visible{outline:3px solid #ffdc85;outline-offset:2px}
 </style>
 </head>
 <body><main class="app">
@@ -527,6 +532,14 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 const demoPosts=[{id:'d1',name:'@جديد_التقنية',caption:'هذي السماعة شكلها رهيب! وش رأيكم؟ 🎧',product:'سماعة بلوتوث',emoji:'🎧',from:'#052c4b',to:'#44309d'}, {id:'d2',name:'@يوميات_جدة',caption:'طلعة بحر وأجواء جميلة 🌊',emoji:'🌴',from:'#0b5360',to:'#303b8c'}, {id:'d3',name:'@عطور_وتجارب',caption:'تجربة عطر جديد، وش أكثر عطر تحبونه؟',product:'عطر شرقي',emoji:'🌹',from:'#561c4e',to:'#ad473a'}, {id:'d4',name:'@ضحك_وتحديات',caption:'تحدي اليوم 😂 اكتبوا أفكاركم!',emoji:'😂',from:'#54307d',to:'#9b2958'}, {id:'d5',name:'@ألعاب',caption:'تجربة يد تحكم جديدة 🎮',product:'يد تحكم للألعاب',emoji:'🎮',from:'#17365d',to:'#036f7b'}];
 let posts=[...demoPosts], localVideoPosts=[], cloudVideoPosts=[];
 let cloudVideoLoadVersion=0, wishVideoUploading=false;
+const WISH_FEED_AUDIO_KEY='wish-feed-audio-enabled-v1';
+let wishFeedAudioEnabled=false;
+try{
+ const savedWishFeedAudio=localStorage.getItem(WISH_FEED_AUDIO_KEY);
+ if(savedWishFeedAudio==='0')wishFeedAudioEnabled=false;
+ else if(savedWishFeedAudio==='1')wishFeedAudioEnabled=true;
+}catch(e){}
+let wishFeedIntersectionObserver=null,wishFeedVisibility=new Map(),wishActiveFeedVideo=null,wishFeedScrollFallback=null;
 let marketProducts=[],marketRequestId=0;
 let currentProduct=null;let wishes=[];try{wishes=JSON.parse(localStorage.getItem('wish-demo-wishes')||'[]')}catch(e){};
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -557,12 +570,173 @@ function confirmMerchantLink(el){
  if(confirmed)logWishMerchantClick(el.dataset.productId||'');
  return confirmed;
 }
-function renderFeed(){document.getElementById('posts').innerHTML=posts.map(p=>`<article class="feedpost"><div class="art" style="--from:${p.from};--to:${p.to}">${p.video?`<video class="video" id="video-${p.id}" src="${escapeHtml(p.video)}" controls playsinline webkit-playsinline preload="metadata" onplay="syncVideoButton('${p.id}')" onpause="syncVideoButton('${p.id}')" onended="syncVideoButton('${p.id}')" onerror="videoFailed('${p.id}')"></video><button class="video-play" id="play-${p.id}" onclick="toggleVideo('${p.id}')" aria-label="تشغيل الفيديو">▶</button><div class="video-error" id="error-${p.id}"></div>`:`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div><div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side"><button onclick="showToast('❤️ تفاعل تجريبي')">♡</button><span class="label">أعجبني</span><button onclick="showToast('التعليقات تحتاج خادمًا في النسخة القادمة')">💬</button><span class="label">تعليق</span>${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}<button onclick="shareDemo()">↗</button><span class="label">مشاركة</span></div></article>`).join('')}
+function renderFeed(){
+ stopWishFeedPlayback();
+ document.getElementById('posts').innerHTML=posts.map(p=>{
+  const mutedAttribute=wishFeedAudioEnabled?'':'muted';
+  return `<article class="feedpost"><div class="art" style="--from:${p.from};--to:${p.to}">${p.video
+   ?`<video class="video" id="video-${p.id}" src="${escapeHtml(p.video)}" controls playsinline webkit-playsinline preload="metadata" ${mutedAttribute} onplay="syncVideoButton('${p.id}')" onpause="syncVideoButton('${p.id}')" onended="syncVideoButton('${p.id}')" onvolumechange="syncFeedVideoAudio('${p.id}')" onerror="videoFailed('${p.id}')"></video><button class="video-play" id="play-${p.id}" onclick="toggleVideo('${p.id}')" aria-label="تشغيل الفيديو">▶</button><button class="video-audio" id="audio-${p.id}" type="button" onclick="toggleFeedVideoAudio('${p.id}')" aria-label="${wishFeedAudioEnabled?'الصوت يعمل':'الصوت مكتوم'}" aria-pressed="${wishFeedAudioEnabled?'true':'false'}">${wishFeedAudioEnabled?'🔊':'🔇'}</button><div class="video-error" id="error-${p.id}"></div>`
+   :`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div><div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side"><button onclick="showToast('❤️ تفاعل تجريبي')">♡</button><span class="label">أعجبني</span><button onclick="showToast('التعليقات تحتاج خادمًا في النسخة القادمة')">💬</button><span class="label">تعليق</span>${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}<button onclick="shareDemo()">↗</button><span class="label">مشاركة</span></div></article>`;
+ }).join('');
+ if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay();
+}
 
-function syncVideoButton(id){const v=document.getElementById('video-'+id),b=document.getElementById('play-'+id);if(!v||!b)return;b.classList.toggle('is-playing',!v.paused&&!v.ended);b.textContent=v.ended?'↻':'▶'}
+function disconnectWishFeedObserver(){
+ if(wishFeedIntersectionObserver){wishFeedIntersectionObserver.disconnect();wishFeedIntersectionObserver=null}
+ if(wishFeedScrollFallback){window.removeEventListener('scroll',wishFeedScrollFallback);window.removeEventListener('resize',wishFeedScrollFallback);wishFeedScrollFallback=null}
+ wishFeedVisibility.clear();
+}
+function pauseWishFeedVideo(video){
+ if(video&&!video.paused){video.dataset.wishAutoPause='1';video.pause()}
+}
+function stopWishFeedPlayback(){
+ disconnectWishFeedObserver();
+ wishActiveFeedVideo=null;
+ document.querySelectorAll('#posts video.video').forEach(pauseWishFeedVideo);
+}
+function feedVideoVisibility(video){
+ const card=video.closest('.feedpost');
+ if(!card)return 0;
+ const rect=card.getBoundingClientRect(),height=window.innerHeight||document.documentElement.clientHeight;
+ if(rect.height<=0||height<=0)return 0;
+ const visible=Math.max(0,Math.min(rect.bottom,height)-Math.max(rect.top,0));
+ return visible/rect.height;
+}
+function updateWishFeedAutoplay(){
+ const feed=document.getElementById('feed');
+ const welcome=document.getElementById('wishOnboard');
+ if(!feed?.classList.contains('active')||document.hidden||(welcome&&!welcome.hidden)){stopWishFeedPlayback();return}
+ let selected=null,bestRatio=0;
+ for(const [video,ratio] of wishFeedVisibility){
+  if(!video.isConnected)continue;
+  if(ratio<0.15)delete video.dataset.wishPausedByUser;
+  if(ratio>bestRatio){selected=video;bestRatio=ratio}
+ }
+ if(!selected||bestRatio<0.55){
+  if(wishActiveFeedVideo){pauseWishFeedVideo(wishActiveFeedVideo);wishActiveFeedVideo=null}
+  return;
+ }
+ if(selected.dataset.wishPausedByUser==='1'){
+  if(wishActiveFeedVideo){pauseWishFeedVideo(wishActiveFeedVideo);wishActiveFeedVideo=null}
+  return;
+ }
+ if(selected!==wishActiveFeedVideo||selected.paused)playWishFeedVideo(selected);
+}
+function setupWishFeedAutoplay(){
+ const feed=document.getElementById('feed');
+ const welcome=document.getElementById('wishOnboard');
+ if(!feed?.classList.contains('active')||document.hidden||(welcome&&!welcome.hidden))return;
+ disconnectWishFeedObserver();
+ const videos=Array.from(document.querySelectorAll('#posts video.video'));
+ if(!videos.length)return;
+ if(typeof window.IntersectionObserver==='function'){
+  wishFeedIntersectionObserver=new window.IntersectionObserver(entries=>{
+   entries.forEach(entry=>wishFeedVisibility.set(entry.target,entry.isIntersecting?entry.intersectionRatio:0));
+   updateWishFeedAutoplay();
+  },{threshold:[0,0.15,0.55,0.75,1]});
+  videos.forEach(video=>wishFeedIntersectionObserver.observe(video));
+ }else{
+  wishFeedScrollFallback=()=>{
+   videos.forEach(video=>wishFeedVisibility.set(video,feedVideoVisibility(video)));
+   updateWishFeedAutoplay();
+  };
+  window.addEventListener('scroll',wishFeedScrollFallback,{passive:true});
+  window.addEventListener('resize',wishFeedScrollFallback,{passive:true});
+  wishFeedScrollFallback();
+ }
+}
+function syncFeedAudioButton(video){
+ const button=document.getElementById('audio-'+video.id.replace(/^video-/,''));
+ if(!button)return;
+ button.textContent=video.muted?'🔇':'🔊';
+ button.setAttribute('aria-label',video.muted?'الصوت مكتوم':'الصوت يعمل');
+ button.setAttribute('aria-pressed',String(!video.muted));
+}
+function syncFeedVideoAudio(id){
+ const video=document.getElementById('video-'+id);
+ if(!video)return;
+ syncFeedAudioButton(video);
+ if(video.dataset.wishBrowserFallbackMuted==='1'&&video.muted&&wishFeedAudioEnabled)return;
+ delete video.dataset.wishBrowserFallbackMuted;
+ const enabled=!video.muted;
+ if(enabled===wishFeedAudioEnabled)return;
+ wishFeedAudioEnabled=enabled;
+ try{localStorage.setItem(WISH_FEED_AUDIO_KEY,enabled?'1':'0')}catch(e){}
+}
+function syncVideoButton(id){
+ const v=document.getElementById('video-'+id),b=document.getElementById('play-'+id);
+ if(!v||!b)return;
+ if(v.dataset.wishAutoPause==='1')delete v.dataset.wishAutoPause;
+ else if(v.paused&&!v.ended&&wishActiveFeedVideo===v){v.dataset.wishPausedByUser='1';wishActiveFeedVideo=null}
+ else if(v.ended&&wishActiveFeedVideo===v)wishActiveFeedVideo=null;
+ else if(!v.paused&&!v.ended&&wishActiveFeedVideo!==v){
+  document.querySelectorAll('#posts video.video').forEach(other=>{if(other!==v)pauseWishFeedVideo(other)});
+  wishActiveFeedVideo=v;
+ }
+ b.classList.toggle('is-playing',!v.paused&&!v.ended);
+ b.textContent=v.ended?'↻':'▶';
+ syncFeedAudioButton(v);
+}
+async function playWishFeedVideo(video){
+ if(!video||!document.getElementById('feed').classList.contains('active'))return false;
+ const error=document.getElementById('error-'+video.id.replace(/^video-/,''));
+ if(error)error.classList.remove('show');
+ document.querySelectorAll('#posts video.video').forEach(other=>{if(other!==video)pauseWishFeedVideo(other)});
+ if(wishActiveFeedVideo&&wishActiveFeedVideo!==video)pauseWishFeedVideo(wishActiveFeedVideo);
+ wishActiveFeedVideo=video;
+ delete video.dataset.wishPausedByUser;
+ if(video.ended)video.currentTime=0;
+ video.muted=!wishFeedAudioEnabled;
+ syncFeedAudioButton(video);
+ try{await video.play();syncVideoButton(video.id.replace(/^video-/,''));return true}
+ catch(e){
+  if(wishActiveFeedVideo!==video||!document.getElementById('feed').classList.contains('active'))return false;
+  if(!video.muted&&wishFeedAudioEnabled){
+   video.dataset.wishBrowserFallbackMuted='1';
+   video.muted=true;
+   syncFeedAudioButton(video);
+   try{await video.play();syncVideoButton(video.id.replace(/^video-/,''));return true}
+   catch(mutedError){}
+  }
+  if(wishActiveFeedVideo===video)wishActiveFeedVideo=null;
+  videoFailed(video.id.replace(/^video-/,''));
+  return false;
+ }
+}
+async function toggleFeedVideoAudio(id){
+ const video=document.getElementById('video-'+id);
+ if(!video)return;
+ wishFeedAudioEnabled=video.muted;
+ try{localStorage.setItem(WISH_FEED_AUDIO_KEY,wishFeedAudioEnabled?'1':'0')}catch(e){}
+ document.querySelectorAll('#posts video.video').forEach(other=>{other.muted=!wishFeedAudioEnabled;syncFeedAudioButton(other)});
+ if(!wishFeedAudioEnabled)return;
+ if(video.paused||video.ended){await playWishFeedVideo(video);return}
+ try{await video.play()}
+ catch(e){video.dataset.wishBrowserFallbackMuted='1';video.muted=true;syncFeedAudioButton(video);showToast('تعذر تفعيل الصوت تلقائيًا. اضغط زر الصوت للمحاولة مجددًا.')}
+}
 function videoFailed(id){const el=document.getElementById('error-'+id),v=document.getElementById('video-'+id);if(!el)return;const code=v?.error?.code;el.textContent=code===4?'المتصفح لا يدعم صيغة الفيديو. جرّب مقطع MP4 بصيغة H.264 من كاميرا الجوال.':code===3?'تعذر فك ترميز الفيديو. جرّب فيديو MP4 آخر من كاميرا الجوال.':'تعذر تشغيل هذا الفيديو. جرّب مقطع MP4 قصير من كاميرا الجوال.';el.classList.add('show');syncVideoButton(id)}
-async function toggleVideo(id){const v=document.getElementById('video-'+id);if(!v)return;const error=document.getElementById('error-'+id);if(error)error.classList.remove('show');if(!v.paused&&!v.ended){v.pause();return}try{if(v.ended)v.currentTime=0;await v.play();syncVideoButton(id)}catch(e){videoFailed(id)}}
-function openPage(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));if(id==='wishes')renderWishes();if(id==='seller')document.getElementById('nav-profile').classList.add('active');if(id==='create')populateSellerVideoSelect();if(id==='feed'&&wishAuthClient)loadCloudVideos();if(id==='market')loadMarketProducts();if(id==='cart'){renderWishDemoCart();if(!marketProducts.length)loadMarketProducts()}if(id==='profile'){loadWishAffiliateStats();loadWishDemoOrders();loadWishInterestMine();if(!document.getElementById('wishFeedbackAdminCard').hidden)loadWishFeedbackAdmin()}window.scrollTo({top:0,behavior:'instant'})}
+async function toggleVideo(id){
+ const video=document.getElementById('video-'+id);if(!video)return;
+ if(!video.paused&&!video.ended){video.dataset.wishPausedByUser='1';video.pause();return}
+ video.dataset.wishPausedByUser='';
+ await playWishFeedVideo(video);
+}
+function openPage(id){
+ if(id!=='feed')stopWishFeedPlayback();
+ document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));
+ if(id==='wishes')renderWishes();
+ if(id==='seller')document.getElementById('nav-profile').classList.add('active');
+ if(id==='create')populateSellerVideoSelect();
+ if(id==='feed'&&wishAuthClient)loadCloudVideos();
+ if(id==='market')loadMarketProducts();
+ if(id==='cart'){renderWishDemoCart();if(!marketProducts.length)loadMarketProducts()}
+ if(id==='profile'){loadWishAffiliateStats();loadWishDemoOrders();loadWishInterestMine();if(!document.getElementById('wishFeedbackAdminCard').hidden)loadWishFeedbackAdmin()}
+ window.scrollTo({top:0,behavior:'instant'});
+ if(id==='feed')setupWishFeedAutoplay();
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWishFeedPlayback();else if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay()});
+window.addEventListener('pagehide',stopWishFeedPlayback);
 function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function openWish(id){let p=posts.find(p=>p.id===id);if(!p?.product)return;currentProduct=p.product;document.getElementById('modalTitle').textContent='🔥 '+p.product;document.getElementById('modalDesc').textContent='اختر الطريقة اللي تناسبك';document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;document.getElementById('modal').classList.add('show')}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
@@ -803,7 +977,7 @@ async function publishToWISH(){
  if(!consent){cloudPublishMessage('لازم توافق أولًا على أن الفيديو سيكون متاحًا للجميع.',true);return}
  const button=document.getElementById('wishPublishCloudBtn');
  wishVideoUploading=true;button.disabled=true;button.textContent='⏳ جار نشر الفيديو...';
- let uploaded=false;
+ let uploaded=false,published=false,uploadPath='',databaseRejected=false;
  try{
   const {data:authData,error:authError}=await wishAuthClient.auth.getUser();
   if(authError)throw authError;
@@ -811,6 +985,7 @@ async function publishToWISH(){
   if(!uid)throw new Error('سجّل دخولك من صفحة حسابي، ثم جرّب مرة ثانية.');
   if(!globalThis.crypto?.randomUUID)throw new Error('المتصفح يحتاج تحديثًا ليعمل رفع الفيديو بأمان.');
   const path=uid+'/'+crypto.randomUUID()+'.mp4';
+  uploadPath=path;
   cloudPublishMessage('⏳ جار رفع الفيديو إلى WISH. أبقِ الصفحة مفتوحة حتى تكتمل العملية.');
   const {error:uploadError}=await wishAuthClient.storage.from('wish-videos')
     .upload(path,f,{cacheControl:'3600',upsert:false,contentType:'video/mp4'});
@@ -819,7 +994,8 @@ async function publishToWISH(){
   cloudPublishMessage('⏳ اكتمل رفع الملف. جار حفظ بياناته في WISH...');
   const {error:insertError}=await wishAuthClient.from('wish_videos')
     .insert({owner_id:uid,storage_path:path,caption:desc});
-  if(insertError)throw insertError;
+  if(insertError){databaseRejected=!!insertError.code;throw insertError}
+  published=true;
   cloudPublishMessage('✅ نُشر الفيديو في WISH! يمكن للآخرين مشاهدته.');
   document.getElementById('vfile').value='';
   document.getElementById('caption').value='';
@@ -829,9 +1005,22 @@ async function publishToWISH(){
   else cloudPublishMessage('✅ تم نشر الفيديو، لكن تعذر تحديث صفحة «لك» الآن. افتحها واضغط تحديث المقاطع.');
  }catch(e){
   const message=(e?.message||'خطأ اتصال غير معروف');
-  cloudPublishMessage(uploaded
-    ?'⚠️ رُفع الملف لكن تعذر تسجيل الفيديو في قاعدة البيانات. لا تكرر الرفع الآن. احتفظ بصورة الخطأ وأرسلها لنا: '+message
-    :'❌ لم يكتمل رفع الفيديو. تأكد من تسجيل الدخول وصلاحية التخزين والإنترنت: '+message,true);
+  if(uploaded&&!published&&databaseRejected){
+   try{
+    const {error:removeError}=await wishAuthClient.storage.from('wish-videos').remove([uploadPath]);
+    cloudPublishMessage(removeError
+      ?'⚠️ رفضت قاعدة البيانات حفظ الفيديو، وتعذر حذف الملف المؤقت من التخزين. لا تعاود رفعه الآن؛ أرسل هذه الرسالة للدعم: '+message
+      :'❌ رفضت قاعدة البيانات حفظ الفيديو، وحُذف الملف المؤقت. يمكنك مراجعة البيانات والمحاولة مجددًا: '+message,true);
+   }catch(cleanupError){
+    cloudPublishMessage('⚠️ رفضت قاعدة البيانات حفظ الفيديو وتعذر تأكيد حذف الملف المؤقت. لا تعاود رفعه الآن؛ أرسل هذه الرسالة للدعم: '+message,true);
+   }
+  }else if(uploaded&&!published){
+   cloudPublishMessage('⚠️ انقطع الاتصال أثناء حفظ سجل الفيديو، ولا يمكن تأكيد النتيجة. لا تعاود الرفع الآن؛ حدّث الخلاصة أو تواصل مع الدعم. '+message,true);
+  }else if(/NoSuchBucket|bucket not found/i.test(message)){
+   cloudPublishMessage('❌ تخزين الفيديو غير مُجهز في Supabase: مساحة wish-videos غير موجودة. يلزم إعدادها قبل النشر العام.',true);
+  }else{
+   cloudPublishMessage('❌ لم يكتمل رفع الفيديو. تأكد من تسجيل الدخول وصلاحية التخزين والإنترنت: '+message,true);
+  }
  }finally{
   wishVideoUploading=false;button.disabled=false;button.textContent='🌐 نشر الفيديو للجميع (تجريبي)';
  }
@@ -1922,6 +2111,7 @@ const WISH_WELCOME_SEEN_KEY='wish-beta-welcome-video-v2-seen';
 function openWishWelcome(){
   const overlay=document.getElementById('wishOnboard');
   if(!overlay)return;
+  stopWishFeedPlayback();
   overlay.hidden=false;
   document.body.style.overflow='hidden';
   document.getElementById('wishOnboardPanel')?.focus();
@@ -1938,6 +2128,7 @@ function dismissWishWelcome(){
   if(video)video.pause();
   document.body.style.overflow='';
   try{localStorage.setItem(WISH_WELCOME_SEEN_KEY,'1')}catch(e){}
+  if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay();
 }
 function initWishWelcome(){
   let seen=false;
