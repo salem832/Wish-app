@@ -201,6 +201,34 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .wish-video-delete:focus-visible{outline:3px solid #ffdc85;outline-offset:2px}
 .wish-video-delete-status{max-width:100%;border-radius:10px;padding:6px 9px;background:#07101ddd;color:#fff;font-size:12px;line-height:1.5}
 .wish-video-delete-status:empty{display:none}
+
+/* Account-owned video library, separate from the public feed. */
+.wish-my-videos-entry h2{font-size:20px;margin:0 0 8px}
+.wish-my-videos-entry p{font-size:14px;color:var(--muted);line-height:1.8;margin:0 0 14px}
+.wish-my-videos-entry .btn{width:100%;min-height:44px;font-size:16px}
+.wish-my-videos-back{background:none;border:0;color:#ffb4ce;padding:8px 0 16px;font-weight:750;font-size:16px;min-height:44px}
+.wish-my-videos-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.wish-my-videos-heading h1{font-size:27px;margin:0}
+.wish-my-videos-heading .btn{font-size:14px;min-height:44px}
+.wish-my-videos-count{font-size:14px;color:#b9cbdf;margin:7px 0 0}
+.wish-my-videos-status{font-size:14px;line-height:1.8;min-height:26px;color:#bfd9ec;margin:14px 0;overflow-wrap:anywhere}
+.wish-my-videos-status.error{color:#ffb4c6}
+.wish-my-videos-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.wish-my-video-card{min-width:0;overflow:hidden;border:1px solid #35435b;border-radius:16px;background:#121b2c}
+.wish-my-video-player{display:block;width:100%;aspect-ratio:3/4;background:#050711;object-fit:contain}
+.wish-my-video-meta{padding:12px;overflow-wrap:anywhere}
+.wish-my-video-caption{font-size:16px;line-height:1.7;margin:0 0 8px;white-space:pre-wrap}
+.wish-my-video-date{display:block;font-size:13px;color:#aebfd3;margin:0 0 12px}
+.wish-my-video-meta .wish-video-delete{width:100%;min-height:44px;font-size:14px;padding:9px 6px}
+.wish-my-video-meta .wish-video-delete-status{display:block;font-size:14px;margin:10px 0 0}
+.wish-my-video-meta .wish-video-delete-status:empty{display:none}
+.wish-my-videos-grid .empty{grid-column:1/-1;font-size:16px;margin:0;padding:25px 15px}
+.wish-my-videos-grid .empty .btn{display:block;margin:15px auto 0;min-height:44px;font-size:16px}
+.wish-my-videos-more{width:100%;min-height:44px;font-size:16px;margin-top:18px}
+#wishMyVideosMore[hidden]{display:none}
+#my-videos button:focus-visible,.wish-my-videos-entry button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+#my-videos button:disabled{opacity:.6;cursor:wait}
+@media(max-width:340px){.wish-my-videos-grid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body><main class="app">
@@ -265,6 +293,18 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 </div>
 <div class="notice">🔒 حسابك ومنتجات متجرك وأمنياتك ما زالت كما هي. الإعجابات والتعليقات وروابط الشراء على المقاطع المنشورة لم تُفعّل بعد.</div>
 </div></section>
+<section id="my-videos"><div class="content">
+  <button class="wish-my-videos-back" type="button" onclick="openPage('profile')">العودة إلى حسابي</button>
+  <div class="wish-my-videos-heading">
+    <div><h1>🎬 مقاطعي</h1><p id="wishMyVideosCount" class="wish-my-videos-count"></p></div>
+    <button id="wishMyVideosRefresh" class="btn secondary" type="button" onclick="loadWishMyVideos()">تحديث</button>
+  </div>
+  <p class="sub">مقاطع نشرتها من هذا الحساب، من الأحدث إلى الأقدم. تظهر أيضًا للناس في صفحة «لك».</p>
+  <p id="wishMyVideosStatus" class="wish-my-videos-status" role="status" aria-live="polite">سجّل دخولك لعرض مقاطعك.</p>
+  <div id="wishMyVideosList" class="wish-my-videos-grid" aria-busy="false"></div>
+  <button id="wishMyVideosMore" class="btn secondary wish-my-videos-more" type="button" onclick="loadWishMyVideos(true)" hidden>عرض المزيد</button>
+</div></section>
+
 <section id="profile"><div class="content"><div class="h1">👤 حسابي</div><div class="sub">حسابات WISH التجريبية مرتبطة بخدمة Supabase. تقدر تتابع طلباتك واهتماماتك وترسل ملاحظاتك من هنا.</div>
 <div class="card" id="accountCard"><h3 style="margin-top:0">🔐 حساب WISH</h3>
 <div id="authSetup" class="notice">الحسابات الحقيقية غير مفعّلة بعد. سنربطها بخدمة Supabase، ولا نخزّن كلمات المرور في GitHub.</div>
@@ -307,6 +347,12 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 <div class="auth-feedback" id="authFeedback" aria-live="polite"></div>
 </div>
 
+
+<div class="card wish-my-videos-entry">
+  <h2>🎬 مقاطعي</h2>
+  <p>شاهد فيديوهاتك المنشورة، وشغّلها أو احذفها من مكان واحد.</p>
+  <button class="btn" type="button" onclick="openPage('my-videos')">عرض مقاطعي</button>
+</div>
 
 <!-- WISH beta tester guide, privacy summary, and access to existing feedback. -->
 <div class="card" id="wishBetaGuideCard">
@@ -539,6 +585,10 @@ const demoPosts=[{id:'d1',name:'@جديد_التقنية',caption:'هذي الس
 let posts=[...demoPosts], localVideoPosts=[], cloudVideoPosts=[];
 let wishFeedCurrentUserId=null,wishVideoDeleteAuthEpoch=0;
 const wishVideoDeleteMessages=new Map(),wishVideoDeleteInProgress=new Set();
+const WISH_MY_VIDEOS_PAGE_SIZE=12;
+let wishMyVideoPosts=[],wishMyVideosOffset=0,wishMyVideosTotal=null;
+let wishMyVideosHasMore=false,wishMyVideosLoading=false,wishMyVideosLoaded=false;
+let wishMyVideosError='',wishMyVideosRequest=0;
 let cloudVideoLoadVersion=0, wishVideoUploading=false;
 const WISH_FEED_AUDIO_KEY='wish-feed-audio-enabled-v1';
 let wishFeedAudioEnabled=false;
@@ -583,7 +633,7 @@ function renderFeed(){
  document.getElementById('posts').innerHTML=posts.map(p=>{
   const mutedAttribute=wishFeedAudioEnabled?'':'muted';
   const deleteActions=wishCanDeleteCloudVideo(p)
-   ?`<div class="wish-video-owner-actions"><button class="wish-video-delete" type="button" data-video-id="${escapeHtml(p.id)}" onclick="deleteWishCloudVideo(this.dataset.videoId)">🗑 حذف الفيديو</button><span class="wish-video-delete-status" id="wish-video-delete-status-${escapeHtml(p.id)}" role="status" aria-live="polite">${escapeHtml(wishVideoDeleteMessages.get(p.id)||'')}</span></div>`
+   ?`<div class="wish-video-owner-actions"><button class="wish-video-delete" type="button" data-video-id="${escapeHtml(p.id)}" onclick="deleteWishCloudVideo(this.dataset.videoId)"${wishVideoDeleteInProgress.has(p.id)?' disabled':''}>${wishVideoDeleteInProgress.has(p.id)?'⏳ جار الحذف...':'🗑 حذف الفيديو'}</button><span class="wish-video-delete-status" id="wish-video-delete-status-${escapeHtml(p.id)}" role="status" aria-live="polite">${escapeHtml(wishVideoDeleteMessages.get(p.id)||'')}</span></div>`
    :'';
   return `<article class="feedpost"><div class="art" style="--from:${p.from};--to:${p.to}">${p.video
    ?`<video class="video" id="video-${p.id}" src="${escapeHtml(p.video)}" controls playsinline webkit-playsinline preload="metadata" ${mutedAttribute} onplay="syncVideoButton('${p.id}')" onpause="syncVideoButton('${p.id}')" onended="syncVideoButton('${p.id}')" onvolumechange="syncFeedVideoAudio('${p.id}')" onerror="videoFailed('${p.id}')"></video><button class="video-play" id="play-${p.id}" onclick="toggleVideo('${p.id}')" aria-label="تشغيل الفيديو">▶</button><button class="video-audio" id="audio-${p.id}" type="button" onclick="toggleFeedVideoAudio('${p.id}')" aria-label="${wishFeedAudioEnabled?'الصوت يعمل':'الصوت مكتوم'}" aria-pressed="${wishFeedAudioEnabled?'true':'false'}">${wishFeedAudioEnabled?'🔊':'🔇'}</button><div class="video-error" id="error-${p.id}"></div>`
@@ -600,8 +650,17 @@ function wishCanDeleteCloudVideo(post){
 }
 function wishVideoDeleteStatus(id,message){
  wishVideoDeleteMessages.set(id,message);
- const status=document.getElementById('wish-video-delete-status-'+id);
- if(status)status.textContent=message;
+ for(const prefix of ['wish-video-delete-status-','wish-my-video-delete-status-']){
+  const status=document.getElementById(prefix+id);
+  if(status)status.textContent=message;
+ }
+}
+function wishSyncVideoDeleteButtons(id){
+ const pending=wishVideoDeleteInProgress.has(id);
+ document.querySelectorAll('.wish-video-delete[data-video-id="'+id+'"]').forEach(button=>{
+  button.disabled=pending;
+  button.textContent=pending?'⏳ جار الحذف...':'🗑 حذف الفيديو';
+ });
 }
 function wishAssertVideoDeleteSession(uid,epoch){
  if(epoch!==wishVideoDeleteAuthEpoch||uid!==wishFeedCurrentUserId){
@@ -623,7 +682,7 @@ async function wishCheckVideoDeleteOwner(uid,epoch){
 }
 async function deleteWishCloudVideo(videoId){
  if(wishVideoDeleteInProgress.has(videoId))return false;
- const post=cloudVideoPosts.find(item=>item.id===videoId);
+ const post=cloudVideoPosts.find(item=>item.id===videoId)||wishMyVideoPosts.find(item=>item.id===videoId);
  if(!wishCanDeleteCloudVideo(post)){
   showToast('لا تملك صلاحية حذف هذا الفيديو.');
   return false;
@@ -635,8 +694,7 @@ async function deleteWishCloudVideo(videoId){
  const uid=post.owner_id;
  const authEpoch=wishVideoDeleteAuthEpoch;
  wishVideoDeleteInProgress.add(videoId);
- const button=document.querySelector('.wish-video-delete[data-video-id="'+videoId+'"]');
- if(button){button.disabled=true;button.textContent='⏳ جار الحذف...'}
+ wishSyncVideoDeleteButtons(videoId);
  let stage='auth',storageRemovalAttempted=false,storageAbsenceVerified=false,recordDeleteAttempted=false;
  try{
   await wishCheckVideoDeleteOwner(uid,authEpoch);
@@ -699,7 +757,9 @@ async function deleteWishCloudVideo(videoId){
 
   wishAssertVideoDeleteSession(uid,authEpoch);
   wishVideoDeleteMessages.delete(videoId);
+  cloudVideoLoadVersion++;
   cloudVideoPosts=cloudVideoPosts.filter(item=>item.id!==videoId);
+  wishRemoveMyVideo(videoId);
   refreshWISHPosts();
   cloudFeedMessage('✅ تم حذف ملف الفيديو وسجله من WISH.');
   return true;
@@ -730,7 +790,7 @@ async function deleteWishCloudVideo(videoId){
   return false;
  }finally{
   wishVideoDeleteInProgress.delete(videoId);
-  if(button?.isConnected){button.disabled=false;button.textContent='🗑 حذف الفيديو'}
+  wishSyncVideoDeleteButtons(videoId);
  }
 }
 
@@ -876,10 +936,12 @@ async function toggleVideo(id){
 }
 function openPage(id){
  if(id!=='feed')stopWishFeedPlayback();
+ if(id!=='my-videos')stopWishMyVideosPlayback();
  document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));
  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));
  if(id==='wishes')renderWishes();
- if(id==='seller')document.getElementById('nav-profile').classList.add('active');
+ if(id==='seller'||id==='my-videos')document.getElementById('nav-profile').classList.add('active');
+ if(id==='my-videos')loadWishMyVideos();
  if(id==='create')populateSellerVideoSelect();
  if(id==='feed'&&wishAuthClient)loadCloudVideos();
  if(id==='market')loadMarketProducts();
@@ -888,8 +950,8 @@ function openPage(id){
  window.scrollTo({top:0,behavior:'instant'});
  if(id==='feed')setupWishFeedAutoplay();
 }
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWishFeedPlayback();else if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay()});
-window.addEventListener('pagehide',stopWishFeedPlayback);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stopWishFeedPlayback();stopWishMyVideosPlayback()}else if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay()});
+window.addEventListener('pagehide',()=>{stopWishFeedPlayback();stopWishMyVideosPlayback()});
 function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function openWish(id){let p=posts.find(p=>p.id===id);if(!p?.product)return;currentProduct=p.product;document.getElementById('modalTitle').textContent='🔥 '+p.product;document.getElementById('modalDesc').textContent='اختر الطريقة اللي تناسبك';document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;document.getElementById('modal').classList.add('show')}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
@@ -1116,6 +1178,145 @@ async function loadCloudVideos(){
   return false;
  }
 }
+function stopWishMyVideosPlayback(){
+ document.querySelectorAll('#wishMyVideosList video').forEach(video=>{
+  if(!video.paused)video.pause();
+ });
+}
+function playWishMyVideo(video){
+ if(document.hidden||!document.getElementById('my-videos').classList.contains('active')){
+  video.pause();return;
+ }
+ stopWishFeedPlayback();
+ document.querySelectorAll('#wishMyVideosList video').forEach(other=>{
+  if(other!==video&&!other.paused)other.pause();
+ });
+}
+function resetWishMyVideos(){
+ wishMyVideosRequest++;
+ wishMyVideoPosts=[];
+ wishMyVideosOffset=0;
+ wishMyVideosTotal=null;
+ wishMyVideosHasMore=false;
+ wishMyVideosLoading=false;
+ wishMyVideosLoaded=false;
+ wishMyVideosError='';
+ renderWishMyVideos();
+}
+function wishMyVideosRequestIsCurrent(request,uid,epoch){
+ return request===wishMyVideosRequest&&uid===wishFeedCurrentUserId&&epoch===wishVideoDeleteAuthEpoch;
+}
+function renderWishMyVideos(){
+ const box=document.getElementById('wishMyVideosList');
+ if(!box)return;
+ stopWishMyVideosPlayback();
+ const signedIn=wishVideoUuid(wishFeedCurrentUserId);
+ const canLoad=signedIn&&!!wishAuthClient;
+ const visible=signedIn?wishMyVideoPosts.filter(post=>post.owner_id===wishFeedCurrentUserId):[];
+ const status=document.getElementById('wishMyVideosStatus');
+ const count=document.getElementById('wishMyVideosCount');
+ const refresh=document.getElementById('wishMyVideosRefresh');
+ const more=document.getElementById('wishMyVideosMore');
+ box.setAttribute('aria-busy',String(wishMyVideosLoading));
+ refresh.disabled=!canLoad||wishMyVideosLoading;
+ more.hidden=!canLoad||!wishMyVideosHasMore;
+ more.disabled=wishMyVideosLoading;
+ more.textContent=wishMyVideosLoading?'جار التحميل...':'عرض المزيد';
+ count.textContent=signedIn&&wishMyVideosLoaded
+  ?String(wishMyVideosTotal??visible.length)+' مقطع منشور':'';
+ status.classList.toggle('error',!!wishMyVideosError);
+ if(!signedIn){
+  status.textContent='سجّل دخولك لعرض مقاطعك.';
+  box.innerHTML='<div class="empty">مقاطعك تظهر هنا بعد تسجيل الدخول.<button class="btn" type="button" onclick="openPage(\'profile\')">تسجيل الدخول</button></div>';
+  return;
+ }
+ if(!wishAuthClient){
+  status.textContent='تعذر الاتصال بخدمة المقاطع. أعد فتح التطبيق وحاول مرة أخرى.';
+  box.innerHTML='';return;
+ }
+ status.textContent=wishMyVideosError||(wishMyVideosLoading
+  ?(wishMyVideosLoaded?'جار تحميل المزيد من مقاطعك...':'جار تحميل مقاطعك...')
+  :wishMyVideosLoaded?(visible.length?'معروض '+visible.length+(wishMyVideosTotal!==null?' من '+wishMyVideosTotal:'')+' مقطع.':'لا توجد مقاطع منشورة لعرضها.')
+  :'افتح هذه الصفحة لعرض مقاطعك.');
+ if(!visible.length){
+  box.innerHTML=wishMyVideosLoaded&&!wishMyVideosLoading&&!wishMyVideosError
+   ?'<div class="empty">ما عندك مقاطع منشورة الآن.<button class="btn" type="button" onclick="openPage(\'create\')">نشر فيديو</button></div>':'';
+  return;
+ }
+ box.innerHTML=visible.map(post=>{
+  const date=new Date(post.created_at);
+  const dateText=Number.isNaN(date.getTime())?'':date.toLocaleDateString('ar-SA');
+  const pending=wishVideoDeleteInProgress.has(post.id);
+  return `<article class="wish-my-video-card" data-my-video-id="${escapeHtml(post.id)}">
+   <video class="wish-my-video-player" src="${escapeHtml(post.video)}" controls playsinline webkit-playsinline preload="metadata" onplay="playWishMyVideo(this)" aria-label="${escapeHtml(post.caption||'فيديو منشور')}"></video>
+   <div class="wish-my-video-meta">
+    <p class="wish-my-video-caption">${escapeHtml(post.caption||'بدون وصف')}</p>
+    ${dateText?`<time class="wish-my-video-date" datetime="${escapeHtml(post.created_at)}">${escapeHtml(dateText)}</time>`:''}
+    <button class="wish-video-delete" type="button" data-video-id="${escapeHtml(post.id)}" onclick="deleteWishCloudVideo(this.dataset.videoId)"${pending?' disabled':''}>${pending?'⏳ جار الحذف...':'🗑 حذف الفيديو'}</button>
+    <p class="wish-video-delete-status" id="wish-my-video-delete-status-${escapeHtml(post.id)}" role="status" aria-live="polite">${escapeHtml(wishVideoDeleteMessages.get(post.id)||'')}</p>
+   </div>
+  </article>`;
+ }).join('');
+}
+async function loadWishMyVideos(loadMore=false){
+ const uid=wishFeedCurrentUserId,epoch=wishVideoDeleteAuthEpoch;
+ if(!wishVideoUuid(uid)||!wishAuthClient){resetWishMyVideos();return false}
+ if(loadMore&&(wishMyVideosLoading||!wishMyVideosHasMore))return false;
+ const request=++wishMyVideosRequest;
+ const offset=loadMore?wishMyVideosOffset:0;
+ if(!loadMore){
+  wishMyVideoPosts=[];wishMyVideosOffset=0;wishMyVideosTotal=null;
+  wishMyVideosHasMore=false;wishMyVideosLoaded=false;
+ }
+ wishMyVideosLoading=true;wishMyVideosError='';renderWishMyVideos();
+ try{
+  const {data,error,count}=await wishAuthClient.from('wish_videos')
+   .select('id,owner_id,caption,storage_path,created_at',{count:'exact'})
+   .eq('owner_id',uid)
+   .order('created_at',{ascending:false})
+   .order('id',{ascending:false})
+   .range(offset,offset+WISH_MY_VIDEOS_PAGE_SIZE-1);
+  if(!wishMyVideosRequestIsCurrent(request,uid,epoch))return false;
+  if(error)throw error;
+  const rows=Array.isArray(data)?data:[];
+  const known=new Set(wishMyVideoPosts.map(post=>post.id));
+  for(const row of rows){
+   if(row.owner_id!==uid||!wishVideoUuid(row.id)||known.has(row.id))continue;
+   const parts=String(row.storage_path||'').split('/');
+   if(parts.length!==2||parts[0]!==uid||!parts[1].toLowerCase().endsWith('.mp4')||!wishVideoUuid(parts[1].slice(0,-4)))continue;
+   const video=wishAuthClient.storage.from('wish-videos').getPublicUrl(row.storage_path).data.publicUrl;
+   wishMyVideoPosts.push({id:row.id,owner_id:uid,caption:row.caption||'',storage_path:row.storage_path,created_at:row.created_at,video,cloud:true});
+   known.add(row.id);
+  }
+  wishMyVideosOffset=offset+rows.length;
+  wishMyVideosTotal=Number.isInteger(count)&&count>=0?count:null;
+  wishMyVideosHasMore=rows.length>0&&(wishMyVideosTotal!==null
+   ?wishMyVideosOffset<wishMyVideosTotal:rows.length===WISH_MY_VIDEOS_PAGE_SIZE);
+  wishMyVideosLoaded=true;
+  return true;
+ }catch(error){
+  if(!wishMyVideosRequestIsCurrent(request,uid,epoch))return false;
+  wishMyVideosError='تعذر تحميل مقاطعك. تحقق من الاتصال ثم حاول مرة أخرى.';
+  return false;
+ }finally{
+  if(wishMyVideosRequestIsCurrent(request,uid,epoch)){
+   wishMyVideosLoading=false;renderWishMyVideos();
+  }
+ }
+}
+function wishRemoveMyVideo(videoId){
+ const wasLoaded=wishMyVideoPosts.some(post=>post.id===videoId);
+ wishMyVideosRequest++;
+ wishMyVideosLoading=false;
+ wishMyVideosError='';
+ wishMyVideoPosts=wishMyVideoPosts.filter(post=>post.id!==videoId);
+ if(wasLoaded)wishMyVideosOffset=Math.max(0,wishMyVideosOffset-1);
+ if(wishMyVideosTotal!==null)wishMyVideosTotal=Math.max(0,wishMyVideosTotal-1);
+ if(wishMyVideosTotal!==null)wishMyVideosHasMore=wishMyVideosOffset<wishMyVideosTotal;
+ renderWishMyVideos();
+ showToast('✅ تم حذف الفيديو من WISH.');
+}
+
 async function publishToWISH(){
  if(wishVideoUploading)return;
  const f=document.getElementById('vfile').files[0],desc=document.getElementById('caption').value.trim();
@@ -2206,7 +2407,7 @@ async function toggleWishInterest(productId,button){
   }
 }
 
-function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;refreshWISHPosts()}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
+function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishMyVideos();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
@@ -2266,6 +2467,7 @@ function openWishWelcome(){
   const overlay=document.getElementById('wishOnboard');
   if(!overlay)return;
   stopWishFeedPlayback();
+  stopWishMyVideosPlayback();
   overlay.hidden=false;
   document.body.style.overflow='hidden';
   document.getElementById('wishOnboardPanel')?.focus();
