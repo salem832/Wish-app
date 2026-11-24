@@ -219,6 +219,14 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .wish-my-video-meta{padding:12px;overflow-wrap:anywhere}
 .wish-my-video-caption{font-size:16px;line-height:1.7;margin:0 0 8px;white-space:pre-wrap}
 .wish-my-video-date{display:block;font-size:13px;color:#aebfd3;margin:0 0 12px}
+.wish-video-like.is-liked{color:#ff6c9b;border-color:#ff9fbd;background:#54213c}
+.wish-video-like:disabled{opacity:.65;cursor:wait}
+.wish-video-like:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.side .wish-video-like-label{font-size:14px;line-height:1.5;max-width:90px;overflow-wrap:anywhere}
+.wish-my-video-like{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.wish-my-video-like button{width:44px;min-height:44px;border:1px solid #8e6c84;border-radius:12px;background:#202c43;color:#fff;font-size:24px}
+.wish-my-video-like button.is-liked{color:#ff8fb4;border-color:#ff9fbd;background:#54213c}
+.wish-my-video-like .wish-video-like-label{font-size:14px;color:#d4dfed;line-height:1.6}
 .wish-my-video-meta .wish-video-delete{width:100%;min-height:44px;font-size:14px;padding:9px 6px}
 .wish-my-video-meta .wish-video-delete-status{display:block;font-size:14px;margin:10px 0 0}
 .wish-my-video-meta .wish-video-delete-status:empty{display:none}
@@ -589,6 +597,8 @@ const WISH_MY_VIDEOS_PAGE_SIZE=12;
 let wishMyVideoPosts=[],wishMyVideosOffset=0,wishMyVideosTotal=null;
 let wishMyVideosHasMore=false,wishMyVideosLoading=false,wishMyVideosLoaded=false;
 let wishMyVideosError='',wishMyVideosRequest=0;
+const wishVideoLikeStates=new Map(),wishVideoLikePending=new Map(),wishVideoLikeReads=new Map(),wishVideoLikeRevisions=new Map();
+let wishVideoLikeTimer=null;
 let cloudVideoLoadVersion=0, wishVideoUploading=false;
 const WISH_FEED_AUDIO_KEY='wish-feed-audio-enabled-v1';
 let wishFeedAudioEnabled=false;
@@ -637,9 +647,118 @@ function renderFeed(){
    :'';
   return `<article class="feedpost"><div class="art" style="--from:${p.from};--to:${p.to}">${p.video
    ?`<video class="video" id="video-${p.id}" src="${escapeHtml(p.video)}" controls playsinline webkit-playsinline preload="metadata" ${mutedAttribute} onplay="syncVideoButton('${p.id}')" onpause="syncVideoButton('${p.id}')" onended="syncVideoButton('${p.id}')" onvolumechange="syncFeedVideoAudio('${p.id}')" onerror="videoFailed('${p.id}')"></video><button class="video-play" id="play-${p.id}" onclick="toggleVideo('${p.id}')" aria-label="تشغيل الفيديو">▶</button><button class="video-audio" id="audio-${p.id}" type="button" onclick="toggleFeedVideoAudio('${p.id}')" aria-label="${wishFeedAudioEnabled?'الصوت يعمل':'الصوت مكتوم'}" aria-pressed="${wishFeedAudioEnabled?'true':'false'}">${wishFeedAudioEnabled?'🔊':'🔇'}</button><div class="video-error" id="error-${p.id}"></div>`
-   :`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div>${deleteActions}<div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side"><button onclick="showToast('❤️ تفاعل تجريبي')">♡</button><span class="label">أعجبني</span><button onclick="showToast('التعليقات تحتاج خادمًا في النسخة القادمة')">💬</button><span class="label">تعليق</span>${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}<button onclick="shareDemo()">↗</button><span class="label">مشاركة</span></div></article>`;
+   :`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div>${deleteActions}<div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side">${wishVideoLikeMarkup(p)}<button onclick="showToast('التعليقات تحتاج خادمًا في النسخة القادمة')">💬</button><span class="label">تعليق</span>${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}<button onclick="shareDemo()">↗</button><span class="label">مشاركة</span></div></article>`;
  }).join('');
  if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay();
+}
+
+function wishVideoLikeIds(){
+ return [...new Set([...cloudVideoPosts,...wishMyVideoPosts].filter(post=>post.cloud&&wishVideoUuid(post.id)).map(post=>post.id))];
+}
+function wishVideoLikeMarkup(post){
+ if(!post.cloud||!wishVideoUuid(post.id))return '<button type="button" onclick="showToast(\'الإعجابات متاحة للمقاطع المنشورة في WISH.\')">♡</button><span class="label">أعجبني</span>';
+ const state=wishVideoLikeStates.get(post.id)||{};
+ const liked=!!state.loaded&&!!state.liked,pending=wishVideoLikePending.has(post.id);
+ const label=state.loaded?Number(state.count).toLocaleString('ar-SA')+' إعجاب':state.error?'أعد المحاولة':'— إعجاب';
+ return `<button class="wish-video-like${liked?' is-liked':''}" type="button" data-like-video-id="${escapeHtml(post.id)}" onclick="toggleWishVideoLike(this.dataset.likeVideoId)" aria-pressed="${liked}" aria-busy="${pending}" aria-label="${liked?'إلغاء الإعجاب':'أعجبني'}"${pending?' disabled':''}><span class="wish-video-like-icon" aria-hidden="true">${liked?'♥':'♡'}</span></button><span class="label wish-video-like-label" data-like-label-for="${escapeHtml(post.id)}" role="status" aria-live="polite">${escapeHtml(label)}</span>`;
+}
+function wishSyncVideoLikeUI(ids=wishVideoLikeIds()){
+ for(const id of ids){
+  const state=wishVideoLikeStates.get(id)||{},pending=wishVideoLikePending.has(id),liked=!!state.loaded&&!!state.liked;
+  document.querySelectorAll('.wish-video-like[data-like-video-id="'+id+'"]').forEach(button=>{
+   button.disabled=pending;button.classList.toggle('is-liked',liked);
+   button.setAttribute('aria-pressed',String(liked));button.setAttribute('aria-busy',String(pending));
+   button.setAttribute('aria-label',liked?'إلغاء الإعجاب':'أعجبني');
+   const icon=button.querySelector('.wish-video-like-icon');if(icon)icon.textContent=liked?'♥':'♡';
+  });
+  const label=state.loaded?Number(state.count).toLocaleString('ar-SA')+' إعجاب':state.error?'أعد المحاولة':'— إعجاب';
+  document.querySelectorAll('.wish-video-like-label[data-like-label-for="'+id+'"]').forEach(el=>{el.textContent=label});
+ }
+}
+function scheduleWishVideoLikesLoad(){
+ if(wishVideoLikeTimer!==null)clearTimeout(wishVideoLikeTimer);
+ wishVideoLikeTimer=setTimeout(()=>{wishVideoLikeTimer=null;loadWishVideoLikeStates()},0);
+}
+function resetWishVideoLikes(){
+ if(wishVideoLikeTimer!==null)clearTimeout(wishVideoLikeTimer);
+ wishVideoLikeTimer=null;
+ wishVideoLikeStates.clear();wishVideoLikePending.clear();wishVideoLikeReads.clear();wishVideoLikeRevisions.clear();
+ wishSyncVideoLikeUI();
+}
+function wishForgetVideoLikes(id){
+ wishVideoLikeStates.delete(id);wishVideoLikePending.delete(id);wishVideoLikeReads.delete(id);
+ wishVideoLikeRevisions.set(id,(wishVideoLikeRevisions.get(id)||0)+1);
+}
+function wishParseVideoLikeState(row,uid,id){
+ const count=Number(row?.like_count);
+ if(row?.video_id!==id||row?.viewer_id!==uid||typeof row?.liked!=='boolean'||!Number.isSafeInteger(count)||count<0)return null;
+ return {count,liked:row.liked,loaded:true,error:false};
+}
+function wishVideoLikeContextCurrent(context){
+ return context.uid===wishFeedCurrentUserId&&context.epoch===wishVideoDeleteAuthEpoch;
+}
+async function loadWishVideoLikeStates(requestedIds=wishVideoLikeIds()){
+ if(!wishAuthClient)return false;
+ const ids=[...new Set(requestedIds.filter(wishVideoUuid))].filter(id=>!wishVideoLikePending.has(id));
+ if(!ids.length)return true;
+ if(ids.length>100){
+  const chunks=[];for(let i=0;i<ids.length;i+=100)chunks.push(loadWishVideoLikeStates(ids.slice(i,i+100)));
+  return (await Promise.all(chunks)).every(Boolean);
+ }
+ const context={uid:wishFeedCurrentUserId,epoch:wishVideoDeleteAuthEpoch};
+ const tokens=new Map(ids.map(id=>[id,{...context,revision:wishVideoLikeRevisions.get(id)||0}]));
+ for(const [id,token] of tokens)wishVideoLikeReads.set(id,token);
+ const current=id=>wishVideoLikeContextCurrent(context)&&wishVideoLikeReads.get(id)===tokens.get(id)&&!wishVideoLikePending.has(id)&&(wishVideoLikeRevisions.get(id)||0)===tokens.get(id).revision;
+ try{
+  const {data,error}=await wishAuthClient.rpc('wish_video_like_state',{p_video_ids:ids});
+  if(error)throw error;
+  const rows=new Map((Array.isArray(data)?data:[]).map(row=>[row.video_id,row]));
+  for(const id of ids){
+   if(!current(id))continue;
+   const state=wishParseVideoLikeState(rows.get(id),context.uid,id);
+   wishVideoLikeStates.set(id,state||{loaded:false,error:true});
+  }
+  return wishVideoLikeContextCurrent(context);
+ }catch(error){
+  for(const id of ids)if(current(id))wishVideoLikeStates.set(id,{loaded:false,error:true});
+  return false;
+ }finally{
+  for(const id of ids)if(wishVideoLikeReads.get(id)===tokens.get(id))wishVideoLikeReads.delete(id);
+  wishSyncVideoLikeUI(ids);
+ }
+}
+async function toggleWishVideoLike(videoId){
+ if(!wishVideoUuid(videoId)||![...cloudVideoPosts,...wishMyVideoPosts].some(post=>post.cloud&&post.id===videoId))return false;
+ if(!wishVideoUuid(wishFeedCurrentUserId)){showToast('سجّل دخولك من «حسابي» لحفظ إعجابك.');return false}
+ if(!wishAuthClient||wishVideoLikePending.has(videoId))return false;
+ const state=wishVideoLikeStates.get(videoId);
+ if(!state?.loaded){scheduleWishVideoLikesLoad();showToast('جار تحديث الإعجابات؛ حاول بعد اكتمال التحميل.');return false}
+ const context={uid:wishFeedCurrentUserId,epoch:wishVideoDeleteAuthEpoch};
+ wishVideoLikePending.set(videoId,context);
+ wishVideoLikeRevisions.set(videoId,(wishVideoLikeRevisions.get(videoId)||0)+1);
+ wishSyncVideoLikeUI([videoId]);
+ const current=()=>wishVideoLikeContextCurrent(context)&&wishVideoLikePending.get(videoId)===context;
+ try{
+  const desired=!state.liked;
+  const {data,error}=await wishAuthClient.rpc('wish_video_like_set',{p_video_id:videoId,p_liked:desired,p_expected_user_id:context.uid});
+  if(!current())return false;
+  if(error)throw error;
+  const updated=wishParseVideoLikeState(Array.isArray(data)?data.find(row=>row.video_id===videoId):null,context.uid,videoId);
+  if(!updated)throw new Error('Unconfirmed video like response');
+  wishVideoLikeStates.set(videoId,updated);
+  return true;
+ }catch(error){
+  if(current()){
+   wishVideoLikeStates.set(videoId,{loaded:false,error:true});
+   showToast('تعذر تأكيد حفظ الإعجاب. نحدّث حالته قبل المحاولة مرة أخرى.');
+  }
+  return false;
+ }finally{
+  if(wishVideoLikePending.get(videoId)===context){
+   wishVideoLikePending.delete(videoId);wishSyncVideoLikeUI([videoId]);
+   if(!wishVideoLikeStates.get(videoId)?.loaded)scheduleWishVideoLikesLoad();
+  }
+ }
 }
 
 function wishVideoUuid(value){
@@ -758,6 +877,7 @@ async function deleteWishCloudVideo(videoId){
   wishAssertVideoDeleteSession(uid,authEpoch);
   wishVideoDeleteMessages.delete(videoId);
   cloudVideoLoadVersion++;
+  wishForgetVideoLikes(videoId);
   cloudVideoPosts=cloudVideoPosts.filter(item=>item.id!==videoId);
   wishRemoveMyVideo(videoId);
   refreshWISHPosts();
@@ -1149,7 +1269,7 @@ function publish(){
  refreshWISHPosts();openPage('feed');showToast('✅ تمت إضافته للمعاينة على جهازك فقط');
  document.getElementById('vfile').value='';document.getElementById('caption').value='';document.getElementById('pname').value='';document.getElementById('hasprod').checked=false;toggleProduct();
 }
-function refreshWISHPosts(){posts=[...localVideoPosts,...cloudVideoPosts,...demoPosts];renderFeed()}
+function refreshWISHPosts(){posts=[...localVideoPosts,...cloudVideoPosts,...demoPosts];renderFeed();scheduleWishVideoLikesLoad()}
 function cloudFeedMessage(t){const el=document.getElementById('wishCloudFeedStatus');if(el)el.textContent=t}
 function cloudPublishMessage(t,isError=false){const el=document.getElementById('wishCloudPublishStatus');el.textContent=t;el.classList.toggle('error',isError)}
 async function loadCloudVideos(){
@@ -1251,6 +1371,7 @@ function renderWishMyVideos(){
    <video class="wish-my-video-player" src="${escapeHtml(post.video)}" controls playsinline webkit-playsinline preload="metadata" onplay="playWishMyVideo(this)" aria-label="${escapeHtml(post.caption||'فيديو منشور')}"></video>
    <div class="wish-my-video-meta">
     <p class="wish-my-video-caption">${escapeHtml(post.caption||'بدون وصف')}</p>
+    <div class="wish-my-video-like">${wishVideoLikeMarkup(post)}</div>
     ${dateText?`<time class="wish-my-video-date" datetime="${escapeHtml(post.created_at)}">${escapeHtml(dateText)}</time>`:''}
     <button class="wish-video-delete" type="button" data-video-id="${escapeHtml(post.id)}" onclick="deleteWishCloudVideo(this.dataset.videoId)"${pending?' disabled':''}>${pending?'⏳ جار الحذف...':'🗑 حذف الفيديو'}</button>
     <p class="wish-video-delete-status" id="wish-my-video-delete-status-${escapeHtml(post.id)}" role="status" aria-live="polite">${escapeHtml(wishVideoDeleteMessages.get(post.id)||'')}</p>
@@ -1300,7 +1421,7 @@ async function loadWishMyVideos(loadMore=false){
   return false;
  }finally{
   if(wishMyVideosRequestIsCurrent(request,uid,epoch)){
-   wishMyVideosLoading=false;renderWishMyVideos();
+   wishMyVideosLoading=false;renderWishMyVideos();scheduleWishVideoLikesLoad();
   }
  }
 }
@@ -2407,7 +2528,7 @@ async function toggleWishInterest(productId,button){
   }
 }
 
-function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishMyVideos();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
+function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishVideoLikes();resetWishMyVideos();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
