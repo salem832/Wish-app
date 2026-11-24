@@ -297,6 +297,32 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .wish-share-dialog .error{color:#ffb4c6}
 .wish-share-dialog button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 @media(max-height:450px){.wish-share-dialog{padding:12px 16px;max-height:98dvh}.wish-share-dialog p{margin:8px 0}.wish-share-dialog label{margin-top:8px}.wish-share-dialog .wish-share-copy{margin-top:8px}}
+/* Public publisher identity and the publisher's public video gallery. */
+.details .wish-author-trigger{pointer-events:auto}
+.wish-author-trigger{color:var(--txt);background:transparent;border:0;padding:2px 0;font:inherit;font-weight:800;text-align:right;text-shadow:inherit;max-width:100%;overflow-wrap:anywhere;text-decoration:underline;text-decoration-color:#ff8eb155;text-underline-offset:4px}
+.wish-author-trigger:focus-visible{outline:3px solid var(--gold);outline-offset:4px;border-radius:4px}
+.wish-public-author-back{font-size:16px;min-height:44px;margin-bottom:20px}
+.wish-public-author-heading{display:flex;gap:14px;align-items:center;margin:8px 0 18px}
+.wish-public-author-avatar{width:68px;height:68px;flex:0 0 68px;display:grid;place-items:center;border-radius:50%;background:#492340;border:1px solid #bc6d98;color:#ffd9e7;font-size:25px;font-weight:800;overflow:hidden}
+.wish-public-author-identity{min-width:0;flex:1}
+.wish-public-author-identity h1{font-size:24px;line-height:1.5;margin:0 0 6px;overflow-wrap:anywhere}
+.wish-public-author-identity p{font-size:14px;line-height:1.7;color:var(--muted);margin:0}
+.wish-public-author-actions{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.wish-public-author-actions .btn{font-size:16px;min-height:44px}
+.wish-public-author-count{font-size:16px;color:#dce7f6;line-height:1.7}
+.wish-public-author-status,.wish-public-author-name-status{font-size:14px;line-height:1.8;color:#c7d8ee;overflow-wrap:anywhere}
+.wish-public-author-status.error,.wish-public-author-name-status.error{color:#ffb4c6}
+.wish-public-author-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
+.wish-public-author-grid>.empty{grid-column:1/-1}
+.wish-public-author-card{min-width:0;overflow:hidden;background:#131b2d;border:1px solid #354660;border-radius:18px}
+.wish-public-author-player{display:block;width:100%;aspect-ratio:9/16;background:#03060c;object-fit:contain}
+.wish-public-author-meta{padding:12px}
+.wish-public-author-caption{margin:0 0 14px;font-size:16px;line-height:1.7;overflow-wrap:anywhere}
+.wish-public-author-meta .wish-video-delete{width:100%;font-size:14px;min-height:44px}
+.wish-public-author-more{width:100%;min-height:44px;font-size:16px;margin-top:20px}
+#wishPublicAuthorMore[hidden]{display:none!important}
+.wish-public-author-entry{display:block;width:100%;margin-top:10px;font-size:14px;min-height:44px}
+@media(max-width:340px){.wish-public-author-grid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body><main class="app">
@@ -353,13 +379,13 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 <label for="caption">وصف الفيديو</label><input id="caption" maxlength="160" placeholder="مثال: طلعة بحر في جدة 🌊">
 <div class="switch"><input type="checkbox" id="hasprod" onchange="toggleProduct()"><label for="hasprod">هذا الفيديو يحتوي على منتج</label></div>
 <div id="productFields" style="display:none"><label for="sellerVideoSelect">اختر من منتجات متجرك (اختياري)</label><select id="sellerVideoSelect" onchange="useSellerProductInVideo()"><option value="">اكتب اسم المنتج بنفسك</option></select><label for="pname">اسم المنتج</label><input id="pname" placeholder="مثال: سماعة بلوتوث"><label for="ptype">نوع المنتج</label><select id="ptype"><option value="🎧">سماعات</option><option value="📱">جوالات</option><option value="🌹">عطور</option><option value="⌚">ساعات</option><option value="🎮">ألعاب</option><option value="🛍️">أخرى</option></select></div>
-<div class="notice">🌐 النشر العام التجريبي: سجّل دخولك واختر فيديو MP4 لا يتجاوز 15 ميجابايت. سيظهر الفيديو للجميع ويمكن مشاركته، ويستطيع صاحبه حذفه من حسابه. لا تنشر معلومات شخصية أو مقاطع خاصة. ربط «أبيها» بالمنتجات المنشورة لم يكتمل بعد.</div>
+<div class="notice">🌐 النشر العام التجريبي: سجّل دخولك واختر فيديو MP4 لا يتجاوز 15 ميجابايت. سيظهر الفيديو واسم حسابك للجميع ويمكن مشاركته، ويستطيع صاحبه حذفه من حسابه. لا تنشر معلومات شخصية أو مقاطع خاصة. ربط «أبيها» بالمنتجات المنشورة لم يكتمل بعد.</div>
 <label class="cloud-publish-confirm" for="wishPublicConsent"><input id="wishPublicConsent" type="checkbox"><span>أفهم أن الفيديو سيُنشر للعامة، ويمكنني حذفه من حسابي بعد تأكيد الحذف.</span></label>
 <button id="wishPublishCloudBtn" type="button" class="btn seller-full cloud-publish-btn" onclick="publishToWISH()">🌐 نشر الفيديو للجميع (تجريبي)</button>
 <div id="wishCloudPublishStatus" class="cloud-publish-status" aria-live="polite"></div>
 <button type="button" class="btn secondary seller-full" onclick="publish()">📱 معاينة محلية على جوالي فقط</button>
 </div>
-<div class="notice">🔒 حسابك ومنتجات متجرك وأمنياتك ما زالت كما هي. الإعجابات والتعليقات وروابط الشراء على المقاطع المنشورة لم تُفعّل بعد.</div>
+<div class="notice">🔒 حسابك ومنتجات متجرك وأمنياتك ما زالت كما هي. الإعجابات والتعليقات ومشاركة الروابط متاحة للمقاطع المنشورة. ربط المقاطع بالمنتجات قيد التجهيز.</div>
 </div></section>
 <section id="my-videos"><div class="content">
   <button class="wish-my-videos-back" type="button" onclick="openPage('profile')">العودة إلى حسابي</button>
@@ -373,13 +399,22 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <button id="wishMyVideosMore" class="btn secondary wish-my-videos-more" type="button" onclick="loadWishMyVideos(true)" hidden>عرض المزيد</button>
 </div></section>
 
+<section id="public-author"><div class="content">
+  <button type="button" class="btn secondary wish-public-author-back" onclick="leaveWishPublicAuthor()">العودة</button>
+  <div class="wish-public-author-heading"><div id="wishPublicAuthorAvatar" class="wish-public-author-avatar" aria-hidden="true">👤</div><div class="wish-public-author-identity"><h1 id="wishPublicAuthorName">حساب صاحب المقطع</h1><p>المقاطع المنشورة للعموم</p></div></div>
+  <div class="wish-public-author-actions"><p id="wishPublicAuthorCount" class="wish-public-author-count"></p><button id="wishPublicAuthorRefresh" class="btn secondary" type="button" onclick="loadWishPublicAuthor()">تحديث</button></div>
+  <p id="wishPublicAuthorNameStatus" class="wish-public-author-name-status" role="status" aria-live="polite"></p>
+  <p id="wishPublicAuthorStatus" class="wish-public-author-status" role="status" aria-live="polite"></p>
+  <div id="wishPublicAuthorVideos" class="wish-public-author-grid" aria-busy="false"></div>
+  <button id="wishPublicAuthorMore" class="btn secondary wish-public-author-more" type="button" onclick="loadWishPublicAuthor(true)" hidden>عرض المزيد</button>
+</div></section>
 <section id="profile"><div class="content"><div class="h1">👤 حسابي</div><div class="sub">حسابات WISH التجريبية مرتبطة بخدمة Supabase. تقدر تتابع طلباتك واهتماماتك وترسل ملاحظاتك من هنا.</div>
 <div class="card" id="accountCard"><h3 style="margin-top:0">🔐 حساب WISH</h3>
 <div id="authSetup" class="notice">الحسابات الحقيقية غير مفعّلة بعد. سنربطها بخدمة Supabase، ولا نخزّن كلمات المرور في GitHub.</div>
 <div id="authGuest" style="display:none">
   <div class="auth-toggle"><button class="btn small selected" id="tabSignup" type="button" onclick="setAuthMode('signup')">حساب جديد</button><button class="btn small secondary" id="tabSignin" type="button" onclick="setAuthMode('signin')">تسجيل الدخول</button></div>
   <form id="wishAuthForm" onsubmit="event.preventDefault();submitWishAuth()">
-    <div id="nameRow"><label for="authName">اسمك الظاهر في WISH</label><input id="authName" maxlength="35" autocomplete="nickname" placeholder="مثال: سالم"></div>
+    <div id="nameRow"><label for="authName">اسمك الظاهر للجميع في WISH</label><input id="authName" maxlength="35" autocomplete="nickname" placeholder="مثال: سالم"></div>
     <label for="authEmail">البريد الإلكتروني</label><input id="authEmail" type="email" required autocomplete="email" inputmode="email" placeholder="name@example.com">
     <label for="authPassword">كلمة المرور</label><input id="authPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="8 أحرف على الأقل">
     <button id="authSubmit" class="btn" type="submit" style="margin-top:18px;width:100%">إنشاء حساب</button>
@@ -420,6 +455,7 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <h2>🎬 مقاطعي</h2>
   <p>شاهد فيديوهاتك المنشورة، وشغّلها أو احذفها من مكان واحد.</p>
   <button class="btn" type="button" onclick="openPage('my-videos')">عرض مقاطعي</button>
+  <button class="btn secondary wish-public-author-entry" type="button" onclick="openWishOwnPublicAuthor()">معاينة صفحتي العامة</button>
 </div>
 
 <!-- WISH beta tester guide, privacy summary, and access to existing feedback. -->
@@ -690,6 +726,11 @@ let wishSharedVideoRoute=readWishSharedVideoRoute(),wishSharedVideoRequest=0;
 let wishVideoSharePending=false,wishVideoShareRequest=0;
 let wishVideoShareState={videoId:null,url:'',serial:0},wishVideoShareCopyPending=null;
 let wishVideoShareReturnFocus=null,wishVideoSharePreviousOverflow=null;
+const WISH_PUBLIC_AUTHOR_PAGE_SIZE=12;
+const wishPublicAuthorStates=new Map(),wishPublicAuthorReads=new Map(),wishPublicAuthorRevisions=new Map();
+let wishPublicAuthorTimer=null,wishPublicAuthorId=null,wishPublicAuthorPosts=[],wishPublicAuthorRequest=0;
+let wishPublicAuthorOffset=0,wishPublicAuthorTotal=null,wishPublicAuthorLoaded=false,wishPublicAuthorLoading=false,wishPublicAuthorHasMore=false,wishPublicAuthorError='';
+let wishPublicAuthorReturn={page:'feed',top:0,focus:null};
 let cloudVideoLoadVersion=0, wishVideoUploading=false;
 const WISH_FEED_AUDIO_KEY='wish-feed-audio-enabled-v1';
 let wishFeedAudioEnabled=false;
@@ -738,14 +779,14 @@ function renderFeed(){
    :'';
   return `<article class="feedpost"><div class="art" style="--from:${p.from};--to:${p.to}">${p.video
    ?`<video class="video" id="video-${p.id}" src="${escapeHtml(p.video)}" controls playsinline webkit-playsinline preload="metadata" ${mutedAttribute} onplay="syncVideoButton('${p.id}')" onpause="syncVideoButton('${p.id}')" onended="syncVideoButton('${p.id}')" onvolumechange="syncFeedVideoAudio('${p.id}')" onerror="videoFailed('${p.id}')"></video><button class="video-play" id="play-${p.id}" onclick="toggleVideo('${p.id}')" aria-label="تشغيل الفيديو">▶</button><button class="video-audio" id="audio-${p.id}" type="button" onclick="toggleFeedVideoAudio('${p.id}')" aria-label="${wishFeedAudioEnabled?'الصوت يعمل':'الصوت مكتوم'}" aria-pressed="${wishFeedAudioEnabled?'true':'false'}">${wishFeedAudioEnabled?'🔊':'🔇'}</button><div class="video-error" id="error-${p.id}"></div>`
-   :`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div>${deleteActions}<div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side">${wishVideoLikeMarkup(p)}${wishCommentMarkup(p)}${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}${wishVideoShareMarkup(p)}</div></article>`;
+   :`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div>${deleteActions}<div class="shadow"></div><div class="details"><div class="handle">${wishPublicAuthorMarkup(p)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side">${wishVideoLikeMarkup(p)}${wishCommentMarkup(p)}${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}${wishVideoShareMarkup(p)}</div></article>`;
  }).join('');
  syncWishSharedVideoRoute();
  if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay();
 }
 
 function wishVideoLikeIds(){
- return [...new Set([...cloudVideoPosts,...wishMyVideoPosts].filter(post=>post.cloud&&wishVideoUuid(post.id)).map(post=>post.id))];
+ return [...new Set([...cloudVideoPosts,...wishMyVideoPosts,...wishPublicAuthorPosts].filter(post=>post.cloud&&wishVideoUuid(post.id)).map(post=>post.id))];
 }
 function wishVideoLikeMarkup(post){
  if(!post.cloud||!wishVideoUuid(post.id))return '<button type="button" onclick="showToast(\'الإعجابات متاحة للمقاطع المنشورة في WISH.\')">♡</button><span class="label">أعجبني</span>';
@@ -820,7 +861,7 @@ async function loadWishVideoLikeStates(requestedIds=wishVideoLikeIds()){
  }
 }
 async function toggleWishVideoLike(videoId){
- if(!wishVideoUuid(videoId)||![...cloudVideoPosts,...wishMyVideoPosts].some(post=>post.cloud&&post.id===videoId))return false;
+ if(!wishVideoUuid(videoId)||![...cloudVideoPosts,...wishMyVideoPosts,...wishPublicAuthorPosts].some(post=>post.cloud&&post.id===videoId))return false;
  if(!wishVideoUuid(wishFeedCurrentUserId)){showToast('سجّل دخولك من «حسابي» لحفظ إعجابك.');return false}
  if(!wishAuthClient||wishVideoLikePending.has(videoId))return false;
  const state=wishVideoLikeStates.get(videoId);
@@ -853,8 +894,8 @@ async function toggleWishVideoLike(videoId){
  }
 }
 
-function wishCommentVideoIds(){return [...new Set([...cloudVideoPosts,...wishMyVideoPosts].filter(p=>p.cloud&&wishVideoUuid(p.id)).map(p=>p.id))]}
-function wishCommentKnownVideo(id){return [...cloudVideoPosts,...wishMyVideoPosts].find(p=>p.cloud&&p.id===id&&wishVideoUuid(p.id))}
+function wishCommentVideoIds(){return [...new Set([...cloudVideoPosts,...wishMyVideoPosts,...wishPublicAuthorPosts].filter(p=>p.cloud&&wishVideoUuid(p.id)).map(p=>p.id))]}
+function wishCommentKnownVideo(id){return [...cloudVideoPosts,...wishMyVideoPosts,...wishPublicAuthorPosts].find(p=>p.cloud&&p.id===id&&wishVideoUuid(p.id))}
 function wishCommentContext(videoId){return {videoId,uid:wishFeedCurrentUserId,epoch:wishVideoDeleteAuthEpoch,panel:wishCommentPanelSerial}}
 function wishCommentContextCurrent(ctx,panel=false){return ctx.uid===wishFeedCurrentUserId&&ctx.epoch===wishVideoDeleteAuthEpoch&&(!panel||(ctx.panel===wishCommentPanelSerial&&ctx.videoId===wishCommentPanel.videoId))}
 function wishCommentVideoBusy(id){return wishCommentAddPending.has(id)||[...wishCommentDeletePending.values()].some(ctx=>ctx.videoId===id)}
@@ -899,7 +940,7 @@ function openWishVideoComments(videoId){
  if(!wishCommentKnownVideo(videoId)){showToast('هذا المقطع غير متاح للتعليقات.');return false}
  closeWishVideoShareDialog(false);
  const dialog=document.getElementById('wishCommentsDialog');
- stopWishFeedPlayback();stopWishMyVideosPlayback();
+ stopWishFeedPlayback();stopWishMyVideosPlayback();stopWishPublicAuthorPlayback();
  if(!dialog.open){wishCommentReturnFocus=document.activeElement;wishCommentPreviousOverflow=document.body.style.overflow;document.body.style.overflow='hidden'}
  wishCommentPanelSerial++;wishCommentListRequest++;
  wishCommentPanel={videoId,rows:[],hasMore:false,loaded:false,loading:false,status:'',loadError:false,formStatus:'',formError:false};
@@ -1035,7 +1076,7 @@ function wishCanDeleteCloudVideo(post){
 }
 function wishVideoDeleteStatus(id,message){
  wishVideoDeleteMessages.set(id,message);
- for(const prefix of ['wish-video-delete-status-','wish-my-video-delete-status-']){
+ for(const prefix of ['wish-video-delete-status-','wish-my-video-delete-status-','wish-public-author-delete-status-']){
   const status=document.getElementById(prefix+id);
   if(status)status.textContent=message;
  }
@@ -1067,7 +1108,7 @@ async function wishCheckVideoDeleteOwner(uid,epoch){
 }
 async function deleteWishCloudVideo(videoId){
  if(wishVideoDeleteInProgress.has(videoId))return false;
- const post=cloudVideoPosts.find(item=>item.id===videoId)||wishMyVideoPosts.find(item=>item.id===videoId);
+ const post=cloudVideoPosts.find(item=>item.id===videoId)||wishMyVideoPosts.find(item=>item.id===videoId)||wishPublicAuthorPosts.find(item=>item.id===videoId);
  if(!wishCanDeleteCloudVideo(post)){
   showToast('لا تملك صلاحية حذف هذا الفيديو.');
   return false;
@@ -1148,6 +1189,7 @@ async function deleteWishCloudVideo(videoId){
   wishForgetVideoComments(videoId);
   cloudVideoPosts=cloudVideoPosts.filter(item=>item.id!==videoId);
   wishRemoveMyVideo(videoId);
+   wishPublicAuthorVideoChanged(post.owner_id,videoId,-1);
   refreshWISHPosts();
   cloudFeedMessage('✅ تم حذف ملف الفيديو وسجله من WISH.');
   return true;
@@ -1325,6 +1367,7 @@ async function toggleVideo(id){
 function openPage(id){
  closeWishVideoShareDialog(false);
  closeWishVideoComments(false);
+ if(id!=='public-author')closeWishPublicAuthorView();
  if(id!=='feed')stopWishFeedPlayback();
  if(id!=='my-videos')stopWishMyVideosPlayback();
  document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));
@@ -1332,6 +1375,7 @@ function openPage(id){
  if(id==='wishes')renderWishes();
  if(id==='seller'||id==='my-videos')document.getElementById('nav-profile').classList.add('active');
  if(id==='my-videos')loadWishMyVideos();
+ if(id==='public-author')document.getElementById(['profile','my-videos'].includes(wishPublicAuthorReturn.page)?'nav-profile':'nav-feed').classList.add('active');
  if(id==='create')populateSellerVideoSelect();
  if(id==='feed'&&wishAuthClient)loadCloudVideos();
  if(id==='market')loadMarketProducts();
@@ -1340,8 +1384,8 @@ function openPage(id){
  window.scrollTo({top:0,behavior:'instant'});
  if(id==='feed')setupWishFeedAutoplay();
 }
-document.addEventListener('visibilitychange',()=>{if(document.hidden){stopWishFeedPlayback();stopWishMyVideosPlayback()}else if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay()});
-window.addEventListener('pagehide',()=>{stopWishFeedPlayback();stopWishMyVideosPlayback()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stopWishFeedPlayback();stopWishMyVideosPlayback();stopWishPublicAuthorPlayback()}else if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay()});
+window.addEventListener('pagehide',()=>{stopWishFeedPlayback();stopWishMyVideosPlayback();stopWishPublicAuthorPlayback()});
 function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
 function openWish(id){let p=posts.find(p=>p.id===id);if(!p?.product)return;currentProduct=p.product;document.getElementById('modalTitle').textContent='🔥 '+p.product;document.getElementById('modalDesc').textContent='اختر الطريقة اللي تناسبك';document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;document.getElementById('modal').classList.add('show')}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
@@ -1543,7 +1587,7 @@ function refreshWISHPosts(){
  const shared=wishSharedVideoRoute.requested&&wishSharedVideoRoute.status==='ready'?wishSharedVideoRoute.post:null;
  if(shared){shared.name=shared.owner_id===wishFeedCurrentUserId?'@أنا':'@عضو_WISH';cloudVideoPosts=[shared,...cloudVideoPosts.filter(p=>p.id!==shared.id)]}
  posts=shared?[shared,...localVideoPosts,...cloudVideoPosts.filter(p=>p.id!==shared.id),...demoPosts]:[...localVideoPosts,...cloudVideoPosts,...demoPosts];
- renderFeed();scheduleWishVideoLikesLoad();scheduleWishCommentCounts();
+ renderFeed();scheduleWishVideoLikesLoad();scheduleWishCommentCounts();scheduleWishPublicAuthorNames();
 }
 function cloudFeedMessage(t){const el=document.getElementById('wishCloudFeedStatus');if(el)el.textContent=t}
 function cloudPublishMessage(t,isError=false){const el=document.getElementById('wishCloudPublishStatus');el.textContent=t;el.classList.toggle('error',isError)}
@@ -1583,7 +1627,7 @@ function playWishMyVideo(video){
  if(wishVideoSharePending||document.getElementById('wishVideoShareDialog')?.open||document.getElementById('wishCommentsDialog')?.open||document.hidden||!document.getElementById('my-videos').classList.contains('active')){
   video.pause();return;
  }
- stopWishFeedPlayback();
+ stopWishFeedPlayback();stopWishPublicAuthorPlayback();
  document.querySelectorAll('#wishMyVideosList video').forEach(other=>{
   if(other!==video&&!other.paused)other.pause();
  });
@@ -1699,7 +1743,7 @@ async function loadWishMyVideos(loadMore=false){
   return false;
  }finally{
   if(wishMyVideosRequestIsCurrent(request,uid,epoch)){
-   wishMyVideosLoading=false;renderWishMyVideos();scheduleWishVideoLikesLoad();scheduleWishCommentCounts();
+   wishMyVideosLoading=false;renderWishMyVideos();scheduleWishVideoLikesLoad();scheduleWishCommentCounts();scheduleWishPublicAuthorNames();
   }
  }
 }
@@ -1750,6 +1794,7 @@ async function publishToWISH(){
     .insert({owner_id:uid,storage_path:path,caption:desc});
   if(insertError){databaseRejected=!!insertError.code;throw insertError}
   published=true;
+   wishPublicAuthorVideoChanged(uid,null,1);
   cloudPublishMessage('✅ نُشر الفيديو في WISH! يمكن للآخرين مشاهدته.');
   document.getElementById('vfile').value='';
   document.getElementById('caption').value='';
@@ -1779,6 +1824,169 @@ async function publishToWISH(){
   wishVideoUploading=false;button.disabled=false;button.textContent='🌐 نشر الفيديو للجميع (تجريبي)';
  }
 }
+function wishPublicAuthorIds(){
+ return [...new Set([...cloudVideoPosts,...wishMyVideoPosts,...wishPublicAuthorPosts].filter(p=>p.cloud&&wishVideoUuid(p.owner_id)).map(p=>p.owner_id))];
+}
+function wishPublicAuthorMarkup(post){
+ if(!post.cloud||!wishVideoUuid(post.owner_id))return escapeHtml(post.name);
+ const state=wishPublicAuthorStates.get(post.owner_id),name=state?.name||'عرض حساب صاحب المقطع';
+ return `<button class="wish-author-trigger" type="button" data-author-id="${escapeHtml(post.owner_id)}" onclick="openWishPublicAuthor(this.dataset.authorId)" aria-label="${escapeHtml('عرض حساب '+name)}" aria-busy="${!!state?.loading}"><span class="wish-author-name">${escapeHtml(name)}</span></button>`;
+}
+function wishSyncPublicAuthorNames(ids=wishPublicAuthorIds()){
+ for(const id of ids){
+  const state=wishPublicAuthorStates.get(id),name=state?.name||'عرض حساب صاحب المقطع';
+  document.querySelectorAll('.wish-author-trigger[data-author-id="'+id+'"]').forEach(button=>{
+   const text=button.querySelector('.wish-author-name');if(text)text.textContent=name;
+   button.setAttribute('aria-label','عرض حساب '+name);button.setAttribute('aria-busy',String(!!state?.loading));
+  });
+ }
+ renderWishPublicAuthorHeading();
+}
+function scheduleWishPublicAuthorNames(){
+ if(wishPublicAuthorTimer!==null)clearTimeout(wishPublicAuthorTimer);
+ wishPublicAuthorTimer=setTimeout(()=>{wishPublicAuthorTimer=null;loadWishPublicAuthorNames()},0);
+}
+async function loadWishPublicAuthorNames(requested=wishPublicAuthorIds(),force=false){
+ if(!wishAuthClient)return false;
+ const ids=[...new Set(requested.filter(wishVideoUuid))].filter(id=>{
+  if(!force&&wishPublicAuthorReads.has(id))return false;
+  const s=wishPublicAuthorStates.get(id);return force||!s?.loaded||s.error||Date.now()-(s.updatedAt||0)>30000;
+ });
+ if(!ids.length)return true;
+ if(ids.length>100){const chunks=[];for(let i=0;i<ids.length;i+=100)chunks.push(loadWishPublicAuthorNames(ids.slice(i,i+100),force));return (await Promise.all(chunks)).every(Boolean)}
+ const tokens=new Map(ids.map(id=>[id,{revision:wishPublicAuthorRevisions.get(id)||0}]));
+ for(const [id,token] of tokens){wishPublicAuthorReads.set(id,token);wishPublicAuthorStates.set(id,{...wishPublicAuthorStates.get(id),loading:true})}
+ wishSyncPublicAuthorNames(ids);
+ const current=id=>wishPublicAuthorReads.get(id)===tokens.get(id)&&(wishPublicAuthorRevisions.get(id)||0)===tokens.get(id).revision;
+ try{
+  const {data,error}=await wishAuthClient.rpc('wish_video_author_profiles',{p_owner_ids:ids});
+  if(error||!Array.isArray(data))throw error||new Error('invalid author response');
+  const rows=new Map();
+  for(const row of data){
+   if(!ids.includes(row?.owner_id)||rows.has(row.owner_id))throw new Error('unexpected author');
+   const name=typeof row.display_name==='string'?row.display_name.trim():'',count=Number(row.video_count);
+   if(!name||Array.from(name).length>35||!Number.isSafeInteger(count)||count<1)throw new Error('invalid public author');
+   rows.set(row.owner_id,{name,count});
+  }
+  for(const id of ids){if(!current(id))continue;const row=rows.get(id);wishPublicAuthorStates.set(id,{name:row?.name||'',count:row?.count||0,loaded:true,loading:false,error:false,missing:!row,updatedAt:Date.now()})}
+  return true;
+ }catch(error){
+  for(const id of ids)if(current(id))wishPublicAuthorStates.set(id,{...wishPublicAuthorStates.get(id),loading:false,error:true});
+  return false;
+ }finally{
+  for(const id of ids)if(wishPublicAuthorReads.get(id)===tokens.get(id))wishPublicAuthorReads.delete(id);
+  wishSyncPublicAuthorNames(ids);
+ }
+}
+function stopWishPublicAuthorPlayback(){document.querySelectorAll('#wishPublicAuthorVideos video').forEach(video=>{if(!video.paused)video.pause()})}
+function playWishPublicAuthorVideo(video){
+ if(wishVideoSharePending||document.getElementById('wishVideoShareDialog')?.open||document.getElementById('wishCommentsDialog')?.open||document.hidden||!document.getElementById('public-author').classList.contains('active')){video.pause();return}
+ stopWishFeedPlayback();stopWishMyVideosPlayback();
+ document.querySelectorAll('#wishPublicAuthorVideos video').forEach(other=>{if(other!==video&&!other.paused)other.pause()});
+}
+function openWishOwnPublicAuthor(){
+ if(!wishVideoUuid(wishFeedCurrentUserId)){showToast('سجّل دخولك لعرض صفحتك العامة.');return false}
+ return openWishPublicAuthor(wishFeedCurrentUserId);
+}
+function openWishPublicAuthor(ownerId){
+ if(!wishVideoUuid(ownerId))return false;
+ const page=document.querySelector('section.active')?.id||'feed';
+ if(page!=='public-author')wishPublicAuthorReturn={page,top:window.scrollY||0,focus:document.activeElement};
+ wishPublicAuthorRequest++;stopWishPublicAuthorPlayback();
+ wishPublicAuthorId=ownerId;wishPublicAuthorPosts=[];wishPublicAuthorOffset=0;wishPublicAuthorTotal=null;
+ wishPublicAuthorLoaded=false;wishPublicAuthorLoading=false;wishPublicAuthorHasMore=false;wishPublicAuthorError='';
+ openPage('public-author');renderWishPublicAuthor();loadWishPublicAuthor();return true;
+}
+function closeWishPublicAuthorView(){wishPublicAuthorRequest++;wishPublicAuthorLoading=false;stopWishPublicAuthorPlayback()}
+function leaveWishPublicAuthor(){
+ const back=wishPublicAuthorReturn,allowed=['feed','profile','my-videos','market','wishes'];
+ openPage(allowed.includes(back.page)?back.page:'feed');
+ requestAnimationFrame(()=>{window.scrollTo({top:back.top||0,behavior:'instant'});if(back.focus?.isConnected)back.focus.focus({preventScroll:true})});
+}
+function wishPublicAuthorRequestCurrent(request,owner,uid,epoch){
+ return request===wishPublicAuthorRequest&&owner===wishPublicAuthorId&&uid===wishFeedCurrentUserId&&epoch===wishVideoDeleteAuthEpoch&&document.getElementById('public-author').classList.contains('active');
+}
+function renderWishPublicAuthorHeading(){
+ const title=document.getElementById('wishPublicAuthorName');if(!title)return;
+ const state=wishPublicAuthorStates.get(wishPublicAuthorId),name=state?.name||'حساب صاحب المقطع';
+ title.textContent=name;
+ document.getElementById('wishPublicAuthorAvatar').textContent=state?.name?Array.from(state.name).slice(0,2).join(''):'👤';
+ const total=wishPublicAuthorTotal??(state?.loaded?state.count:null);
+ document.getElementById('wishPublicAuthorCount').textContent=total!==null?Number(total).toLocaleString('ar-SA')+' مقطع منشور':'';
+ const note=document.getElementById('wishPublicAuthorNameStatus');
+ note.textContent=state?.error?'تعذر تحديث اسم الحساب. حاول التحديث.':!state?.loaded?'جار تحميل اسم الحساب...':'';
+ note.classList.toggle('error',!!state?.error);
+}
+function renderWishPublicAuthor(){
+ const box=document.getElementById('wishPublicAuthorVideos');if(!box)return;
+ stopWishPublicAuthorPlayback();renderWishPublicAuthorHeading();
+ const valid=wishVideoUuid(wishPublicAuthorId),refresh=document.getElementById('wishPublicAuthorRefresh'),more=document.getElementById('wishPublicAuthorMore');
+ refresh.disabled=!valid||wishPublicAuthorLoading;more.hidden=!valid||!wishPublicAuthorHasMore;more.disabled=wishPublicAuthorLoading;
+ more.textContent=wishPublicAuthorLoading?'جار التحميل...':'عرض المزيد';
+ box.setAttribute('aria-busy',String(wishPublicAuthorLoading));
+ const status=document.getElementById('wishPublicAuthorStatus');status.classList.toggle('error',!!wishPublicAuthorError);
+ status.textContent=wishPublicAuthorError||(wishPublicAuthorLoading?'جار تحميل المقاطع المنشورة...':wishPublicAuthorLoaded?'':'اختر صاحب مقطع لعرض حسابه.');
+ const visible=wishPublicAuthorPosts.filter(post=>post.owner_id===wishPublicAuthorId);
+ if(!visible.length){box.innerHTML=wishPublicAuthorLoaded&&!wishPublicAuthorLoading&&!wishPublicAuthorError?'<div class="empty">لا توجد مقاطع منشورة لهذا الحساب حاليًا.</div>':'';return}
+ box.innerHTML=visible.map(post=>{
+  const pending=wishVideoDeleteInProgress.has(post.id),date=new Date(post.created_at),dateText=Number.isNaN(date.getTime())?'':date.toLocaleDateString('ar-SA');
+  return `<article class="wish-public-author-card" data-author-video-id="${escapeHtml(post.id)}">
+   <video class="wish-public-author-player" src="${escapeHtml(post.video)}" controls playsinline webkit-playsinline preload="metadata" onplay="playWishPublicAuthorVideo(this)" aria-label="${escapeHtml(post.caption||'فيديو منشور')}"></video>
+   <div class="wish-public-author-meta"><p class="wish-public-author-caption">${escapeHtml(post.caption||'بدون وصف')}</p>
+    <div class="wish-my-video-like">${wishVideoLikeMarkup(post)}</div><div class="wish-my-video-comments">${wishCommentMarkup(post)}</div><div class="wish-my-video-share">${wishVideoShareMarkup(post)}</div>
+    ${dateText?`<time class="wish-my-video-date" datetime="${escapeHtml(post.created_at)}">${escapeHtml(dateText)}</time>`:''}
+    ${wishCanDeleteCloudVideo(post)?`<button class="wish-video-delete" type="button" data-video-id="${escapeHtml(post.id)}" onclick="deleteWishCloudVideo(this.dataset.videoId)"${pending?' disabled':''}>${pending?'⏳ جار الحذف...':'🗑 حذف الفيديو'}</button><p class="wish-video-delete-status" id="wish-public-author-delete-status-${escapeHtml(post.id)}" role="status" aria-live="polite">${escapeHtml(wishVideoDeleteMessages.get(post.id)||'')}</p>`:''}
+   </div></article>`;
+ }).join('');
+}
+async function loadWishPublicAuthor(loadMore=false){
+ const owner=wishPublicAuthorId,uid=wishFeedCurrentUserId,epoch=wishVideoDeleteAuthEpoch;
+ if(!wishVideoUuid(owner)||!document.getElementById('public-author').classList.contains('active'))return false;
+ if(loadMore&&(wishPublicAuthorLoading||!wishPublicAuthorHasMore))return false;
+ const request=++wishPublicAuthorRequest,offset=loadMore?wishPublicAuthorOffset:0;
+ if(!loadMore){wishPublicAuthorPosts=[];wishPublicAuthorOffset=0;wishPublicAuthorTotal=null;wishPublicAuthorHasMore=false;wishPublicAuthorLoaded=false}
+ wishPublicAuthorLoading=true;wishPublicAuthorError='';renderWishPublicAuthor();
+ loadWishPublicAuthorNames([owner],true);
+ try{
+  if(!wishAuthClient)throw new Error('public videos unavailable');
+  const {data,error,count}=await wishAuthClient.from('wish_videos').select('id,owner_id,caption,storage_path,created_at',{count:'exact'})
+   .eq('owner_id',owner).order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+WISH_PUBLIC_AUTHOR_PAGE_SIZE-1);
+  if(!wishPublicAuthorRequestCurrent(request,owner,uid,epoch))return false;
+  if(error||!Array.isArray(data))throw error||new Error('invalid public videos');
+  const known=new Set(wishPublicAuthorPosts.map(post=>post.id));
+  for(const row of data){
+   if(row.owner_id!==owner||!wishVideoUuid(row.id)||known.has(row.id))continue;
+   const parts=String(row.storage_path||'').split('/');
+   if(parts.length!==2||parts[0]!==owner||!parts[1].toLowerCase().endsWith('.mp4')||!wishVideoUuid(parts[1].slice(0,-4)))continue;
+   const video=wishAuthClient.storage.from('wish-videos').getPublicUrl(row.storage_path).data.publicUrl;
+   wishPublicAuthorPosts.push({id:row.id,owner_id:owner,caption:typeof row.caption==='string'?row.caption:'',storage_path:row.storage_path,created_at:row.created_at,video,cloud:true});known.add(row.id);
+  }
+  wishPublicAuthorOffset=offset+data.length;wishPublicAuthorTotal=Number.isSafeInteger(count)&&count>=0?count:null;
+  wishPublicAuthorHasMore=data.length>0&&(wishPublicAuthorTotal!==null?wishPublicAuthorOffset<wishPublicAuthorTotal:data.length===WISH_PUBLIC_AUTHOR_PAGE_SIZE);
+  wishPublicAuthorLoaded=true;return true;
+ }catch(error){
+  if(!wishPublicAuthorRequestCurrent(request,owner,uid,epoch))return false;
+  wishPublicAuthorError='تعذر تحميل مقاطع هذا الحساب. تحقق من الاتصال ثم اضغط تحديث.';return false;
+ }finally{
+  if(wishPublicAuthorRequestCurrent(request,owner,uid,epoch)){wishPublicAuthorLoading=false;renderWishPublicAuthor();scheduleWishVideoLikesLoad();scheduleWishCommentCounts();scheduleWishPublicAuthorNames()}
+ }
+}
+function wishPublicAuthorVideoChanged(ownerId,videoId,delta){
+ wishPublicAuthorRevisions.set(ownerId,(wishPublicAuthorRevisions.get(ownerId)||0)+1);wishPublicAuthorReads.delete(ownerId);
+ const state=wishPublicAuthorStates.get(ownerId);
+ if(state)wishPublicAuthorStates.set(ownerId,{...state,count:Number.isSafeInteger(state.count)?Math.max(0,state.count+delta):null,loading:false,updatedAt:0});
+ if(ownerId===wishPublicAuthorId){
+  wishPublicAuthorRequest++;wishPublicAuthorLoading=false;wishPublicAuthorError='';
+  if(delta<0){const found=wishPublicAuthorPosts.some(p=>p.id===videoId);wishPublicAuthorPosts=wishPublicAuthorPosts.filter(p=>p.id!==videoId);if(found)wishPublicAuthorOffset=Math.max(0,wishPublicAuthorOffset-1);if(wishPublicAuthorTotal!==null)wishPublicAuthorTotal=Math.max(0,wishPublicAuthorTotal-1);if(wishPublicAuthorTotal!==null)wishPublicAuthorHasMore=wishPublicAuthorOffset<wishPublicAuthorTotal}
+  renderWishPublicAuthor();
+ }
+ loadWishPublicAuthorNames([ownerId],true);
+}
+function wishPublicAuthorAuthChanged(){
+ wishPublicAuthorRequest++;wishPublicAuthorLoading=false;renderWishPublicAuthor();
+ if(document.getElementById('public-author').classList.contains('active')&&wishVideoUuid(wishPublicAuthorId))setTimeout(()=>loadWishPublicAuthor(),0);
+}
+
 function failWishSharedVideoStartup(){
  if(wishSharedVideoRoute.requested&&wishSharedVideoRoute.status==='waiting'){wishSharedVideoRoute.status='error';syncWishSharedVideoRoute()}
 }
@@ -1802,12 +2010,12 @@ function wishVideoShareMarkup(post){
  if(!post.cloud||!wishVideoUuid(post.id))return '<button type="button" onclick="showToast(\'المشاركة متاحة للمقاطع المنشورة في WISH فقط.\')" aria-label="مشاركة">↗</button><span class="label">مشاركة</span>';
  return `<button type="button" data-share-video-id="${escapeHtml(post.id)}" onclick="shareWishVideo(this.dataset.shareVideoId)" aria-label="مشاركة المقطع">↗</button><span class="label">مشاركة</span>`;
 }
-function wishKnownShareVideo(videoId){return [...cloudVideoPosts,...wishMyVideoPosts].find(p=>p.cloud&&p.id===videoId&&wishVideoUuid(p.id))}
+function wishKnownShareVideo(videoId){return [...cloudVideoPosts,...wishMyVideoPosts,...wishPublicAuthorPosts].find(p=>p.cloud&&p.id===videoId&&wishVideoUuid(p.id))}
 async function shareWishVideo(videoId){
  if(!wishKnownShareVideo(videoId)||wishVideoDeleteInProgress.has(videoId)){showToast('هذا المقطع غير متاح للمشاركة الآن.');return false}
  if(wishVideoSharePending)return false;
  const url=wishVideoShareUrl(videoId),request=++wishVideoShareRequest;
- wishVideoSharePending=true;stopWishFeedPlayback();stopWishMyVideosPlayback();
+ wishVideoSharePending=true;stopWishFeedPlayback();stopWishMyVideosPlayback();stopWishPublicAuthorPlayback();
  try{
   if(typeof navigator.share==='function'){
    try{
@@ -1826,7 +2034,7 @@ async function shareWishVideo(videoId){
 function openWishVideoShareDialog(videoId,url){
  closeWishVideoComments(false);
  const dialog=document.getElementById('wishVideoShareDialog');
- stopWishFeedPlayback();stopWishMyVideosPlayback();
+ stopWishFeedPlayback();stopWishMyVideosPlayback();stopWishPublicAuthorPlayback();
  if(!dialog.open){wishVideoShareReturnFocus=document.activeElement;wishVideoSharePreviousOverflow=document.body.style.overflow;document.body.style.overflow='hidden'}
  wishVideoShareState={videoId,url,serial:wishVideoShareState.serial+1};wishVideoShareCopyPending=null;
  document.getElementById('wishVideoShareLink').value=url;
@@ -2943,7 +3151,7 @@ async function toggleWishInterest(productId,button){
   }
 }
 
-function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){closeWishVideoShareDialog(false);wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
+function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){closeWishVideoShareDialog(false);wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();wishPublicAuthorAuthChanged();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
@@ -3004,7 +3212,7 @@ function openWishWelcome(){
   const overlay=document.getElementById('wishOnboard');
   if(!overlay)return;
   stopWishFeedPlayback();
-  stopWishMyVideosPlayback();
+  stopWishMyVideosPlayback();stopWishPublicAuthorPlayback();
   overlay.hidden=false;
   document.body.style.overflow='hidden';
   document.getElementById('wishOnboardPanel')?.focus();
