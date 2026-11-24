@@ -227,6 +227,43 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 .wish-my-video-like button{width:44px;min-height:44px;border:1px solid #8e6c84;border-radius:12px;background:#202c43;color:#fff;font-size:24px}
 .wish-my-video-like button.is-liked{color:#ff8fb4;border-color:#ff9fbd;background:#54213c}
 .wish-my-video-like .wish-video-like-label{font-size:14px;color:#d4dfed;line-height:1.6}
+.side .wish-comment-count{font-size:14px;line-height:1.5;max-width:90px}
+.wish-my-video-comments{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+.wish-my-video-comments button{width:44px;min-height:44px;border:1px solid #526782;border-radius:12px;background:#202c43;color:white;font-size:23px}
+.wish-my-video-comments .wish-comment-count{font-size:14px;color:#d4dfed}
+.wish-comments-dialog{position:fixed;inset:auto 0 0;width:min(100%,460px);max-width:100%;max-height:90dvh;margin:0 auto;padding:0;color:var(--txt);background:#121b2c;border:1px solid #45536c;border-radius:24px 24px 0 0;overflow:auto;box-shadow:0 -12px 45px #0009}
+.wish-comments-dialog::backdrop{background:#03050bcc}
+.wish-comments-dialog[open]{display:flex;flex-direction:column;height:min(90dvh,720px);overflow:hidden}
+.wish-comments-dialog>.wish-comments-header,.wish-comments-dialog>.wish-comments-toolbar,.wish-comments-dialog>.wish-comments-more,.wish-comments-dialog>.wish-comments-form,.wish-comments-dialog>.wish-comments-guest{flex:0 0 auto}
+.wish-comments-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px;border-bottom:1px solid #344157;position:sticky;top:0;background:#121b2c;z-index:1}
+.wish-comments-header h2{margin:0;font-size:21px}.wish-comments-header p{margin:5px 0 0;font-size:14px;color:#bfd0e2}
+.wish-comments-close{width:44px;min-height:44px;border:1px solid #53647d;border-radius:12px;background:#28364e;color:white;font-size:25px}
+.wish-comments-toolbar{padding:12px 16px 0;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.wish-comments-toolbar p{font-size:14px;line-height:1.7;margin:0;color:#c4d9ec;overflow-wrap:anywhere}
+.wish-comments-dialog .btn{min-height:44px;font-size:14px}
+.wish-comments-list{padding:0 16px;flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}
+.wish-comment-item{padding:15px 0;border-bottom:1px solid #344157;overflow-wrap:anywhere}
+.wish-comment-item header{position:static;height:auto;padding:0;border:0;background:none;backdrop-filter:none;align-items:flex-start;gap:10px}
+.wish-comment-author{font-size:16px;line-height:1.6;font-weight:800;color:#ffe3ed}
+.wish-comment-date{display:block;color:#acbfd4;font-size:12px;margin-top:4px}
+.wish-comment-body{font-size:16px;line-height:1.9;white-space:pre-wrap;margin:10px 0 0}
+.wish-comment-delete{border:1px solid #a7617b;background:#52243b;color:#ffd9e7;border-radius:10px;min-height:44px;padding:7px 12px;font-size:14px}
+.wish-comments-empty{font-size:16px;line-height:1.8;color:#b7c8dc;text-align:center;padding:25px 10px}
+.wish-comments-more{display:block;width:calc(100% - 32px);margin:12px 16px}
+.wish-comments-form,.wish-comments-guest{padding:14px 16px max(18px,env(safe-area-inset-bottom));border-top:1px solid #344157}
+.wish-comments-form label{margin:0 0 7px;font-size:16px}
+.wish-comments-form textarea{display:block;width:100%;min-height:70px;max-height:140px;resize:vertical;background:#081322;color:white;border:1px solid #586b85;border-radius:12px;padding:11px;font:inherit;font-size:16px;line-height:1.7}
+.wish-comments-form textarea:focus{outline:2px solid var(--pink);outline-offset:2px}
+.wish-comments-form textarea:disabled,.wish-comments-dialog button:disabled{opacity:.6;cursor:wait}
+.wish-comments-form-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#b7c8dc;font-size:14px;line-height:1.7;margin:8px 0}
+.wish-comments-form-status{font-size:14px;line-height:1.8;color:#b4eedc;min-height:22px;margin:7px 0 0;overflow-wrap:anywhere}
+.wish-comments-form-status:empty{display:none}
+.wish-comments-dialog .error{color:#ffb4c6}
+.wish-comments-guest p{font-size:16px;line-height:1.8;margin:0 0 12px}.wish-comments-form .btn,.wish-comments-guest .btn{width:100%;font-size:16px}
+.wish-comments-dialog [hidden]{display:none!important}
+.wish-comments-dialog button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+@media(max-height:500px){.wish-comments-dialog[open]{height:96dvh;max-height:96dvh}.wish-comments-header{padding:8px 16px}.wish-comments-header h2{font-size:18px}.wish-comments-header p{font-size:12px;margin-top:3px}.wish-comments-toolbar{padding-top:6px}.wish-comments-toolbar .btn{min-height:36px;padding:6px 12px}.wish-comments-form,.wish-comments-guest{padding:8px 16px max(8px,env(safe-area-inset-bottom))}.wish-comments-form label{font-size:14px;margin-bottom:4px}.wish-comments-form textarea{min-height:48px;height:48px;max-height:80px;resize:none;padding:7px 10px}.wish-comments-form-meta{font-size:12px;margin:4px 0}.wish-comments-form .btn{min-height:40px;padding:7px 12px;font-size:14px}.wish-comments-form-status{font-size:12px;min-height:16px;margin-top:4px}}
+@media(max-height:340px){.wish-comments-toolbar{display:none}}
 .wish-my-video-meta .wish-video-delete{width:100%;min-height:44px;font-size:14px;padding:9px 6px}
 .wish-my-video-meta .wish-video-delete-status{display:block;font-size:14px;margin:10px 0 0}
 .wish-my-video-meta .wish-video-delete-status:empty{display:none}
@@ -554,6 +591,19 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 <nav class="nav"><button id="nav-feed" class="active" onclick="openPage('feed')"><span class="icon">▶</span>لك</button><button id="nav-wishes" onclick="openPage('wishes')"><span class="icon">❤️</span>أمنياتي</button><button id="nav-market" onclick="openPage('market')"><span class="icon">🛍️</span>السوق</button><button id="nav-create" class="add" onclick="openPage('create')"><span class="icon">＋</span>إضافة</button><button id="nav-profile" onclick="openPage('profile')"><span class="icon">👤</span>حسابي</button></nav>
 </main>
 <div class="modalback" id="modal"><div class="modal"><button class="close" onclick="closeModal()">×</button><h2 id="modalTitle">🔥 أبيها</h2><p id="modalDesc">اختر وش تبي تسوي بهذا المنتج</p><div id="modalOptions"><button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button></div></div></div>
+<dialog id="wishCommentsDialog" class="wish-comments-dialog" aria-labelledby="wishCommentsTitle" onclose="wishCommentsDialogClosed()" onclick="wishCommentsBackdrop(event)">
+  <div class="wish-comments-header"><div><h2 id="wishCommentsTitle">التعليقات</h2><p id="wishCommentsTotal">جار التحميل...</p></div><button class="wish-comments-close" type="button" onclick="closeWishVideoComments()" aria-label="إغلاق التعليقات" autofocus>×</button></div>
+  <div class="wish-comments-toolbar"><p id="wishCommentsStatus" role="status" aria-live="polite"></p><button id="wishCommentsRefresh" class="btn secondary" type="button" onclick="loadWishVideoComments()">تحديث</button></div>
+  <div id="wishCommentsList" class="wish-comments-list" aria-busy="false"></div>
+  <button id="wishCommentsMore" class="btn secondary wish-comments-more" type="button" onclick="loadWishVideoComments(true)" hidden>تعليقات أقدم</button>
+  <form id="wishCommentsForm" class="wish-comments-form" onsubmit="event.preventDefault();submitWishVideoComment()" hidden>
+    <label for="wishCommentText">تعليقك</label><textarea id="wishCommentText" rows="2" maxlength="1000" placeholder="اكتب تعليقك..." oninput="updateWishCommentDraft()"></textarea>
+    <div class="wish-comments-form-meta"><span>تعليقك سيظهر للجميع</span><span id="wishCommentLength">0 / 500</span></div>
+    <button id="wishCommentSubmit" class="btn" type="submit">نشر التعليق</button>
+    <p id="wishCommentFormStatus" class="wish-comments-form-status" role="status" aria-live="polite"></p>
+  </form>
+  <div id="wishCommentsGuest" class="wish-comments-guest"><p>سجّل دخولك لكتابة تعليق. تقدر تقرأ التعليقات بدون تسجيل.</p><button class="btn" type="button" onclick="closeWishVideoComments(false);openPage('profile')">تسجيل الدخول</button></div>
+</dialog>
 <div class="toast" id="toast"></div>
 
 <!-- WISH beta onboarding. Appears on the first visit in this browser. -->
@@ -599,6 +649,12 @@ let wishMyVideosHasMore=false,wishMyVideosLoading=false,wishMyVideosLoaded=false
 let wishMyVideosError='',wishMyVideosRequest=0;
 const wishVideoLikeStates=new Map(),wishVideoLikePending=new Map(),wishVideoLikeReads=new Map(),wishVideoLikeRevisions=new Map();
 let wishVideoLikeTimer=null;
+const WISH_COMMENTS_PAGE_SIZE=20;
+const wishCommentCounts=new Map(),wishCommentCountReads=new Map(),wishCommentRevisions=new Map();
+const wishCommentDrafts=new Map(),wishCommentAddPending=new Map(),wishCommentDeletePending=new Map();
+let wishCommentCountTimer=null,wishCommentListRequest=0,wishCommentPanelSerial=0;
+let wishCommentPanel={videoId:null,rows:[],hasMore:false,loaded:false,loading:false,status:'',loadError:false,formStatus:'',formError:false};
+let wishCommentReturnFocus=null,wishCommentPreviousOverflow=null;
 let cloudVideoLoadVersion=0, wishVideoUploading=false;
 const WISH_FEED_AUDIO_KEY='wish-feed-audio-enabled-v1';
 let wishFeedAudioEnabled=false;
@@ -647,7 +703,7 @@ function renderFeed(){
    :'';
   return `<article class="feedpost"><div class="art" style="--from:${p.from};--to:${p.to}">${p.video
    ?`<video class="video" id="video-${p.id}" src="${escapeHtml(p.video)}" controls playsinline webkit-playsinline preload="metadata" ${mutedAttribute} onplay="syncVideoButton('${p.id}')" onpause="syncVideoButton('${p.id}')" onended="syncVideoButton('${p.id}')" onvolumechange="syncFeedVideoAudio('${p.id}')" onerror="videoFailed('${p.id}')"></video><button class="video-play" id="play-${p.id}" onclick="toggleVideo('${p.id}')" aria-label="تشغيل الفيديو">▶</button><button class="video-audio" id="audio-${p.id}" type="button" onclick="toggleFeedVideoAudio('${p.id}')" aria-label="${wishFeedAudioEnabled?'الصوت يعمل':'الصوت مكتوم'}" aria-pressed="${wishFeedAudioEnabled?'true':'false'}">${wishFeedAudioEnabled?'🔊':'🔇'}</button><div class="video-error" id="error-${p.id}"></div>`
-   :`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div>${deleteActions}<div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side">${wishVideoLikeMarkup(p)}<button onclick="showToast('التعليقات تحتاج خادمًا في النسخة القادمة')">💬</button><span class="label">تعليق</span>${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}<button onclick="shareDemo()">↗</button><span class="label">مشاركة</span></div></article>`;
+   :`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div>${deleteActions}<div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side">${wishVideoLikeMarkup(p)}${wishCommentMarkup(p)}${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}<button onclick="shareDemo()">↗</button><span class="label">مشاركة</span></div></article>`;
  }).join('');
  if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay();
 }
@@ -759,6 +815,179 @@ async function toggleWishVideoLike(videoId){
    if(!wishVideoLikeStates.get(videoId)?.loaded)scheduleWishVideoLikesLoad();
   }
  }
+}
+
+function wishCommentVideoIds(){return [...new Set([...cloudVideoPosts,...wishMyVideoPosts].filter(p=>p.cloud&&wishVideoUuid(p.id)).map(p=>p.id))]}
+function wishCommentKnownVideo(id){return [...cloudVideoPosts,...wishMyVideoPosts].find(p=>p.cloud&&p.id===id&&wishVideoUuid(p.id))}
+function wishCommentContext(videoId){return {videoId,uid:wishFeedCurrentUserId,epoch:wishVideoDeleteAuthEpoch,panel:wishCommentPanelSerial}}
+function wishCommentContextCurrent(ctx,panel=false){return ctx.uid===wishFeedCurrentUserId&&ctx.epoch===wishVideoDeleteAuthEpoch&&(!panel||(ctx.panel===wishCommentPanelSerial&&ctx.videoId===wishCommentPanel.videoId))}
+function wishCommentVideoBusy(id){return wishCommentAddPending.has(id)||[...wishCommentDeletePending.values()].some(ctx=>ctx.videoId===id)}
+function wishCommentCountValue(row,id,uid){const count=Number(row?.comment_count);return row?.video_id===id&&row?.viewer_id===uid&&Number.isSafeInteger(count)&&count>=0?count:null}
+function wishCommentMarkup(post){
+ if(!post.cloud||!wishVideoUuid(post.id))return '<button type="button" onclick="showToast(\'التعليقات متاحة للمقاطع المنشورة في WISH.\')">💬</button><span class="label">تعليق</span>';
+ const state=wishCommentCounts.get(post.id),label=state?.loaded?state.count.toLocaleString('ar-SA')+' تعليق':'— تعليق';
+ return `<button class="wish-comment-open" type="button" data-comment-video-id="${escapeHtml(post.id)}" onclick="openWishVideoComments(this.dataset.commentVideoId)" aria-label="عرض التعليقات">💬</button><span class="label wish-comment-count" data-comment-count-for="${escapeHtml(post.id)}" role="status" aria-live="polite">${escapeHtml(label)}</span>`;
+}
+function wishSyncCommentCounts(ids=wishCommentVideoIds()){
+ for(const id of ids){const state=wishCommentCounts.get(id),label=state?.loaded?state.count.toLocaleString('ar-SA')+' تعليق':'— تعليق';document.querySelectorAll('.wish-comment-count[data-comment-count-for="'+id+'"]').forEach(el=>{el.textContent=label})}
+}
+function scheduleWishCommentCounts(){if(wishCommentCountTimer!==null)clearTimeout(wishCommentCountTimer);wishCommentCountTimer=setTimeout(()=>{wishCommentCountTimer=null;loadWishCommentCounts()},0)}
+async function loadWishCommentCounts(requested=wishCommentVideoIds()){
+ if(!wishAuthClient)return false;
+ const ids=[...new Set(requested.filter(wishVideoUuid))].filter(id=>!wishCommentVideoBusy(id));
+ if(!ids.length)return true;
+ if(ids.length>100){const chunks=[];for(let i=0;i<ids.length;i+=100)chunks.push(loadWishCommentCounts(ids.slice(i,i+100)));return (await Promise.all(chunks)).every(Boolean)}
+ const context=wishCommentContext(null),tokens=new Map(ids.map(id=>[id,{...context,revision:wishCommentRevisions.get(id)||0}]));
+ for(const [id,token] of tokens)wishCommentCountReads.set(id,token);
+ const current=id=>wishCommentContextCurrent(context)&&wishCommentCountReads.get(id)===tokens.get(id)&&!wishCommentVideoBusy(id)&&(wishCommentRevisions.get(id)||0)===tokens.get(id).revision;
+ try{
+  const {data,error}=await wishAuthClient.rpc('wish_video_comment_state',{p_video_ids:ids});if(error)throw error;
+  const rows=new Map((Array.isArray(data)?data:[]).map(row=>[row.video_id,row]));
+  for(const id of ids){if(!current(id))continue;const count=wishCommentCountValue(rows.get(id),id,context.uid);wishCommentCounts.set(id,count===null?{loaded:false}:{loaded:true,count})}
+  return wishCommentContextCurrent(context);
+ }catch(error){for(const id of ids)if(current(id))wishCommentCounts.set(id,{loaded:false});return false}
+ finally{for(const id of ids)if(wishCommentCountReads.get(id)===tokens.get(id))wishCommentCountReads.delete(id);wishSyncCommentCounts(ids)}
+}
+function resetWishVideoComments(){
+ closeWishVideoComments(false);
+ if(wishCommentCountTimer!==null)clearTimeout(wishCommentCountTimer);wishCommentCountTimer=null;
+ wishCommentCounts.clear();wishCommentCountReads.clear();wishCommentRevisions.clear();wishCommentDrafts.clear();wishCommentAddPending.clear();wishCommentDeletePending.clear();wishSyncCommentCounts();
+}
+function wishForgetVideoComments(id){
+ if(wishCommentPanel.videoId===id)closeWishVideoComments(false);
+ wishCommentCounts.delete(id);wishCommentCountReads.delete(id);wishCommentDrafts.delete(id);wishCommentAddPending.delete(id);
+ for(const [commentId,ctx] of wishCommentDeletePending)if(ctx.videoId===id)wishCommentDeletePending.delete(commentId);
+ wishCommentRevisions.set(id,(wishCommentRevisions.get(id)||0)+1);
+}
+function openWishVideoComments(videoId){
+ if(!wishCommentKnownVideo(videoId)){showToast('هذا المقطع غير متاح للتعليقات.');return false}
+ const dialog=document.getElementById('wishCommentsDialog');
+ stopWishFeedPlayback();stopWishMyVideosPlayback();
+ if(!dialog.open){wishCommentReturnFocus=document.activeElement;wishCommentPreviousOverflow=document.body.style.overflow;document.body.style.overflow='hidden'}
+ wishCommentPanelSerial++;wishCommentListRequest++;
+ wishCommentPanel={videoId,rows:[],hasMore:false,loaded:false,loading:false,status:'',loadError:false,formStatus:'',formError:false};
+ renderWishCommentsPanel();
+ if(!dialog.open)dialog.showModal();
+ document.getElementById('wishCommentsList').scrollTop=0;
+ loadWishVideoComments();return true;
+}
+function closeWishVideoComments(resume=true){
+ const dialog=document.getElementById('wishCommentsDialog');
+ const wasOpen=!!dialog?.open||wishCommentPanel.videoId!==null;
+ if(dialog?.open)dialog.close();
+ wishCommentPanelSerial++;wishCommentListRequest++;
+ wishCommentPanel={videoId:null,rows:[],hasMore:false,loaded:false,loading:false,status:'',loadError:false,formStatus:'',formError:false};
+ const text=document.getElementById('wishCommentText');if(text)text.value='';
+ const list=document.getElementById('wishCommentsList');if(list)list.innerHTML='';
+ if(wishCommentPreviousOverflow!==null){document.body.style.overflow=wishCommentPreviousOverflow;wishCommentPreviousOverflow=null}
+ if(wasOpen&&resume){wishCommentReturnFocus?.focus?.({preventScroll:true});if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay()}
+ wishCommentReturnFocus=null;
+}
+function wishCommentsDialogClosed(){if(!document.getElementById('wishCommentsDialog').open&&wishCommentPanel.videoId!==null)closeWishVideoComments()}
+function wishCommentsBackdrop(event){const d=document.getElementById('wishCommentsDialog');if(event.target!==d||!event.detail)return;const r=d.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeWishVideoComments()}
+function updateWishCommentDraft(){
+ const id=wishCommentPanel.videoId;if(!id||wishCommentVideoBusy(id))return;
+ const text=document.getElementById('wishCommentText').value,previous=wishCommentDrafts.get(id);
+ wishCommentDrafts.set(id,{text,requestId:previous?.text===text?previous.requestId:null,uncertain:false});
+ document.getElementById('wishCommentLength').textContent=Array.from(text).length+' / 500';
+}
+function wishParseComment(row){
+ if(!wishVideoUuid(row?.id)||typeof row.author_name!=='string'||!row.author_name.trim()||Array.from(row.author_name).length>35||typeof row.body!=='string'||!row.body.trim()||Array.from(row.body).length>500||typeof row.is_mine!=='boolean'||typeof row.created_at!=='string'||!Number.isFinite(new Date(row.created_at).getTime()))return null;
+ return {id:row.id,author_name:row.author_name,body:row.body,created_at:row.created_at,is_mine:row.is_mine};
+}
+function renderWishCommentsPanel(){
+ const id=wishCommentPanel.videoId;if(!id)return;
+ const box=document.getElementById('wishCommentsList'),count=wishCommentCounts.get(id),signedIn=wishVideoUuid(wishFeedCurrentUserId),busy=wishCommentVideoBusy(id);
+ document.getElementById('wishCommentsTotal').textContent=count?.loaded?count.count.toLocaleString('ar-SA')+' تعليق':'جار تحميل التعليقات';
+ const status=document.getElementById('wishCommentsStatus');status.textContent=wishCommentPanel.loading?'جار تحميل التعليقات...':wishCommentPanel.status;status.classList.toggle('error',wishCommentPanel.loadError);
+ box.setAttribute('aria-busy',String(wishCommentPanel.loading));
+ box.innerHTML=wishCommentPanel.rows.length?wishCommentPanel.rows.map(comment=>{
+  const date=new Date(comment.created_at).toLocaleString('ar-SA',{dateStyle:'short',timeStyle:'short'});
+  const remove=comment.is_mine&&signedIn?`<button class="wish-comment-delete" type="button" data-comment-id="${escapeHtml(comment.id)}" onclick="deleteWishVideoComment(this.dataset.commentId)"${busy?' disabled':''}>${wishCommentDeletePending.has(comment.id)?'جار الحذف...':'حذف'}</button>`:'';
+  return `<article class="wish-comment-item"><header><div><span class="wish-comment-author">${escapeHtml(comment.author_name)}</span><time class="wish-comment-date" datetime="${escapeHtml(comment.created_at)}">${escapeHtml(date)}</time></div>${remove}</header><p class="wish-comment-body">${escapeHtml(comment.body)}</p></article>`;
+ }).join(''):wishCommentPanel.loaded&&!wishCommentPanel.loadError?'<p class="wish-comments-empty">ما فيه تعليقات إلى الآن.</p>':'';
+ const more=document.getElementById('wishCommentsMore');more.hidden=!wishCommentPanel.hasMore;more.disabled=wishCommentPanel.loading||busy;
+ document.getElementById('wishCommentsRefresh').disabled=wishCommentPanel.loading||busy;
+ document.getElementById('wishCommentsForm').hidden=!signedIn;document.getElementById('wishCommentsGuest').hidden=signedIn;
+ const draft=wishCommentDrafts.get(id)||{text:''},text=document.getElementById('wishCommentText');if(text.value!==draft.text)text.value=draft.text;text.disabled=busy;
+ document.getElementById('wishCommentLength').textContent=Array.from(draft.text).length+' / 500';
+ const submit=document.getElementById('wishCommentSubmit');submit.disabled=busy;submit.textContent=wishCommentAddPending.has(id)?'جار النشر...':draft.uncertain?'إعادة محاولة النشر':'نشر التعليق';
+ const feedback=document.getElementById('wishCommentFormStatus');feedback.textContent=wishCommentPanel.formStatus||(draft.uncertain?'تعذر تأكيد النشر السابق. أعد المحاولة بنفس النص.':'');feedback.classList.toggle('error',wishCommentPanel.formError||!!draft.uncertain);
+}
+async function loadWishVideoComments(loadMore=false,keepExisting=false){
+ const id=wishCommentPanel.videoId;if(!id||!wishAuthClient)return false;
+ if(loadMore&&(wishCommentPanel.loading||!wishCommentPanel.hasMore))return false;
+ const ctx=wishCommentContext(id),request=++wishCommentListRequest,last=loadMore?wishCommentPanel.rows.at(-1):null;
+ if(!loadMore&&!keepExisting){wishCommentPanel.rows=[];wishCommentPanel.loaded=false;wishCommentPanel.hasMore=false}
+ wishCommentPanel.loading=true;wishCommentPanel.loadError=false;wishCommentPanel.status='';renderWishCommentsPanel();
+ const current=()=>wishCommentContextCurrent(ctx,true)&&request===wishCommentListRequest;
+ try{
+  const {data,error}=await wishAuthClient.rpc('wish_video_comment_list',{p_video_id:id,p_before_created_at:last?.created_at||null,p_before_id:last?.id||null,p_limit:WISH_COMMENTS_PAGE_SIZE+1});
+  if(!current())return false;if(error)throw error;
+  const row=Array.isArray(data)?data.find(item=>item.video_id===id):null,count=wishCommentCountValue(row,id,ctx.uid);
+  if(count===null||!Array.isArray(row?.comments)||row.comments.length>WISH_COMMENTS_PAGE_SIZE+1)throw new Error('Invalid comments page');
+  const page=row.comments.map(wishParseComment);if(page.some(item=>!item))throw new Error('Invalid comment');
+  const existing=loadMore?wishCommentPanel.rows:[],seen=new Set(existing.map(item=>item.id));
+  wishCommentPanel.rows=[...existing,...page.slice(0,WISH_COMMENTS_PAGE_SIZE).filter(item=>{if(seen.has(item.id))return false;seen.add(item.id);return true})];
+  wishCommentPanel.hasMore=page.length>WISH_COMMENTS_PAGE_SIZE;wishCommentPanel.loaded=true;
+  wishCommentCounts.set(id,{loaded:true,count});wishSyncCommentCounts([id]);
+  const draft=wishCommentDrafts.get(id);
+  if(draft?.uncertain&&page.some(item=>item.id===draft.requestId&&item.is_mine&&item.body===draft.text.trim())){wishCommentDrafts.delete(id);wishCommentPanel.formStatus='تم نشر تعليقك.';wishCommentPanel.formError=false}
+  return true;
+ }catch(error){if(current()){wishCommentPanel.loadError=true;wishCommentPanel.status='تعذر تحميل التعليقات. اضغط تحديث للمحاولة مرة أخرى.'}return false}
+ finally{if(current()){wishCommentPanel.loading=false;renderWishCommentsPanel()}}
+}
+function wishCommentStartMutation(ctx){wishCommentRevisions.set(ctx.videoId,(wishCommentRevisions.get(ctx.videoId)||0)+1);if(wishCommentContextCurrent(ctx,true)){wishCommentListRequest++;wishCommentPanel.loading=false;wishCommentPanel.formStatus='';wishCommentPanel.formError=false;renderWishCommentsPanel()}}
+function wishCommentSaveCount(row,ctx){const count=wishCommentCountValue(row,ctx.videoId,ctx.uid);if(count===null)throw new Error('Unconfirmed comment count');wishCommentCounts.set(ctx.videoId,{loaded:true,count});wishSyncCommentCounts([ctx.videoId]);return count}
+async function submitWishVideoComment(){
+ const id=wishCommentPanel.videoId;if(!id||!wishAuthClient||!wishCommentKnownVideo(id))return false;
+ if(!wishVideoUuid(wishFeedCurrentUserId)){showToast('سجّل دخولك لكتابة تعليق.');return false}
+ if(wishCommentVideoBusy(id))return false;
+ const body=document.getElementById('wishCommentText').value.trim();
+ if(!body||Array.from(body).length>500){wishCommentPanel.formStatus='اكتب تعليقًا بين حرف و500 حرف.';wishCommentPanel.formError=true;renderWishCommentsPanel();return false}
+ let draft=wishCommentDrafts.get(id);
+ if(!draft||draft.text.trim()!==body)draft={text:body,requestId:null,uncertain:false};
+ if(!draft.requestId)draft.requestId=crypto.randomUUID();wishCommentDrafts.set(id,draft);
+ const ctx={...wishCommentContext(id),requestId:draft.requestId,body};wishCommentAddPending.set(id,ctx);wishCommentStartMutation(ctx);
+ const current=()=>wishCommentContextCurrent(ctx)&&wishCommentAddPending.get(id)===ctx&&!!wishCommentKnownVideo(id);
+ let refresh=false;
+ try{
+  const {data,error}=await wishAuthClient.rpc('wish_video_comment_add',{p_video_id:id,p_comment_id:ctx.requestId,p_body:body,p_expected_user_id:ctx.uid});
+  if(!current())return false;if(error)throw error;
+  const row=Array.isArray(data)?data.find(item=>item.video_id===id):null,comment=wishParseComment(row?.comment);
+  if(!comment||comment.id!==ctx.requestId||comment.body!==body||!comment.is_mine)throw new Error('Unconfirmed comment');
+  wishCommentSaveCount(row,ctx);
+  if(wishCommentDrafts.get(id)?.requestId===ctx.requestId)wishCommentDrafts.delete(id);
+  if(wishCommentContextCurrent(ctx,true)){wishCommentPanel.rows=[comment,...wishCommentPanel.rows.filter(item=>item.id!==comment.id)];wishCommentPanel.loaded=true;wishCommentPanel.formStatus='تم نشر تعليقك.';wishCommentPanel.formError=false;document.getElementById('wishCommentsList').scrollTop=0}
+  refresh=true;return true;
+ }catch(error){
+  if(current()){
+   const pendingDraft=wishCommentDrafts.get(id);if(pendingDraft?.requestId===ctx.requestId)pendingDraft.uncertain=true;
+   if(wishCommentContextCurrent(ctx,true)){wishCommentPanel.formError=true;wishCommentPanel.formStatus=String(error?.message||'').includes('WISH_COMMENT_RATE_LIMIT')?'أرسلت تعليقات كثيرة. انتظر دقيقة ثم حاول.':'تعذر تأكيد النشر. يمكنك إعادة المحاولة بنفس النص؛ لن نكرر التعليق.'}
+   refresh=true;
+  }
+  return false;
+ }finally{
+  if(wishCommentAddPending.get(id)===ctx){wishCommentAddPending.delete(id);scheduleWishCommentCounts();if(wishCommentPanel.videoId===id&&wishCommentContextCurrent(ctx)){if(refresh){wishCommentListRequest++;wishCommentPanel.loading=false}renderWishCommentsPanel();if(refresh)loadWishVideoComments(false,true)}}
+ }
+}
+async function deleteWishVideoComment(commentId){
+ const id=wishCommentPanel.videoId,comment=wishCommentPanel.rows.find(item=>item.id===commentId);
+ if(!id||!comment?.is_mine||!wishVideoUuid(wishFeedCurrentUserId)||!wishAuthClient||wishCommentVideoBusy(id))return false;
+ const ctx={...wishCommentContext(id),commentId};
+ if(!window.confirm('هل تريد حذف تعليقك نهائيًا؟')||!wishCommentContextCurrent(ctx,true))return false;
+ wishCommentDeletePending.set(commentId,ctx);wishCommentStartMutation(ctx);
+ const current=()=>wishCommentContextCurrent(ctx)&&wishCommentDeletePending.get(commentId)===ctx&&!!wishCommentKnownVideo(id);
+ let refresh=false;
+ try{
+  const {data,error}=await wishAuthClient.rpc('wish_video_comment_delete',{p_video_id:id,p_comment_id:commentId,p_expected_user_id:ctx.uid});
+  if(!current())return false;if(error)throw error;
+  const row=Array.isArray(data)?data.find(item=>item.comment_id===commentId):null;
+  if(row?.deleted!==true)throw new Error('Unconfirmed comment deletion');wishCommentSaveCount(row,ctx);
+  if(wishCommentContextCurrent(ctx,true)){wishCommentPanel.rows=wishCommentPanel.rows.filter(item=>item.id!==commentId);wishCommentPanel.formStatus='تم حذف تعليقك.';wishCommentPanel.formError=false}
+  refresh=true;return true;
+ }catch(error){if(current()&&wishCommentContextCurrent(ctx,true)){wishCommentPanel.formStatus='تعذر تأكيد حذف التعليق. حدّث التعليقات قبل المحاولة مرة أخرى.';wishCommentPanel.formError=true;refresh=true}return false}
+ finally{if(wishCommentDeletePending.get(commentId)===ctx){wishCommentDeletePending.delete(commentId);scheduleWishCommentCounts();if(wishCommentPanel.videoId===id&&wishCommentContextCurrent(ctx)){if(refresh){wishCommentListRequest++;wishCommentPanel.loading=false}renderWishCommentsPanel();if(refresh)loadWishVideoComments(false,true)}}}
 }
 
 function wishVideoUuid(value){
@@ -878,6 +1107,7 @@ async function deleteWishCloudVideo(videoId){
   wishVideoDeleteMessages.delete(videoId);
   cloudVideoLoadVersion++;
   wishForgetVideoLikes(videoId);
+  wishForgetVideoComments(videoId);
   cloudVideoPosts=cloudVideoPosts.filter(item=>item.id!==videoId);
   wishRemoveMyVideo(videoId);
   refreshWISHPosts();
@@ -938,7 +1168,7 @@ function feedVideoVisibility(video){
 function updateWishFeedAutoplay(){
  const feed=document.getElementById('feed');
  const welcome=document.getElementById('wishOnboard');
- if(!feed?.classList.contains('active')||document.hidden||(welcome&&!welcome.hidden)){stopWishFeedPlayback();return}
+ if(document.getElementById('wishCommentsDialog')?.open||!feed?.classList.contains('active')||document.hidden||(welcome&&!welcome.hidden)){stopWishFeedPlayback();return}
  let selected=null,bestRatio=0;
  for(const [video,ratio] of wishFeedVisibility){
   if(!video.isConnected)continue;
@@ -958,7 +1188,7 @@ function updateWishFeedAutoplay(){
 function setupWishFeedAutoplay(){
  const feed=document.getElementById('feed');
  const welcome=document.getElementById('wishOnboard');
- if(!feed?.classList.contains('active')||document.hidden||(welcome&&!welcome.hidden))return;
+ if(document.getElementById('wishCommentsDialog')?.open||!feed?.classList.contains('active')||document.hidden||(welcome&&!welcome.hidden))return;
  disconnectWishFeedObserver();
  const videos=Array.from(document.querySelectorAll('#posts video.video'));
  if(!videos.length)return;
@@ -1011,7 +1241,7 @@ function syncVideoButton(id){
  syncFeedAudioButton(v);
 }
 async function playWishFeedVideo(video){
- if(!video||!document.getElementById('feed').classList.contains('active'))return false;
+ if(!video||document.getElementById('wishCommentsDialog')?.open||!document.getElementById('feed').classList.contains('active'))return false;
  const error=document.getElementById('error-'+video.id.replace(/^video-/,''));
  if(error)error.classList.remove('show');
  document.querySelectorAll('#posts video.video').forEach(other=>{if(other!==video)pauseWishFeedVideo(other)});
@@ -1021,14 +1251,14 @@ async function playWishFeedVideo(video){
  if(video.ended)video.currentTime=0;
  video.muted=!wishFeedAudioEnabled;
  syncFeedAudioButton(video);
- try{await video.play();syncVideoButton(video.id.replace(/^video-/,''));return true}
+ try{await video.play();if(document.getElementById('wishCommentsDialog')?.open||!document.getElementById('feed').classList.contains('active')){pauseWishFeedVideo(video);return false}syncVideoButton(video.id.replace(/^video-/,''));return true}
  catch(e){
-  if(wishActiveFeedVideo!==video||!document.getElementById('feed').classList.contains('active'))return false;
+  if(document.getElementById('wishCommentsDialog')?.open||wishActiveFeedVideo!==video||!document.getElementById('feed').classList.contains('active'))return false;
   if(!video.muted&&wishFeedAudioEnabled){
    video.dataset.wishBrowserFallbackMuted='1';
    video.muted=true;
    syncFeedAudioButton(video);
-   try{await video.play();syncVideoButton(video.id.replace(/^video-/,''));return true}
+   try{await video.play();if(document.getElementById('wishCommentsDialog')?.open||!document.getElementById('feed').classList.contains('active')){pauseWishFeedVideo(video);return false}syncVideoButton(video.id.replace(/^video-/,''));return true}
    catch(mutedError){}
   }
   if(wishActiveFeedVideo===video)wishActiveFeedVideo=null;
@@ -1055,6 +1285,7 @@ async function toggleVideo(id){
  await playWishFeedVideo(video);
 }
 function openPage(id){
+ closeWishVideoComments(false);
  if(id!=='feed')stopWishFeedPlayback();
  if(id!=='my-videos')stopWishMyVideosPlayback();
  document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));
@@ -1269,7 +1500,7 @@ function publish(){
  refreshWISHPosts();openPage('feed');showToast('✅ تمت إضافته للمعاينة على جهازك فقط');
  document.getElementById('vfile').value='';document.getElementById('caption').value='';document.getElementById('pname').value='';document.getElementById('hasprod').checked=false;toggleProduct();
 }
-function refreshWISHPosts(){posts=[...localVideoPosts,...cloudVideoPosts,...demoPosts];renderFeed();scheduleWishVideoLikesLoad()}
+function refreshWISHPosts(){posts=[...localVideoPosts,...cloudVideoPosts,...demoPosts];renderFeed();scheduleWishVideoLikesLoad();scheduleWishCommentCounts()}
 function cloudFeedMessage(t){const el=document.getElementById('wishCloudFeedStatus');if(el)el.textContent=t}
 function cloudPublishMessage(t,isError=false){const el=document.getElementById('wishCloudPublishStatus');el.textContent=t;el.classList.toggle('error',isError)}
 async function loadCloudVideos(){
@@ -1304,7 +1535,7 @@ function stopWishMyVideosPlayback(){
  });
 }
 function playWishMyVideo(video){
- if(document.hidden||!document.getElementById('my-videos').classList.contains('active')){
+ if(document.getElementById('wishCommentsDialog')?.open||document.hidden||!document.getElementById('my-videos').classList.contains('active')){
   video.pause();return;
  }
  stopWishFeedPlayback();
@@ -1372,6 +1603,7 @@ function renderWishMyVideos(){
    <div class="wish-my-video-meta">
     <p class="wish-my-video-caption">${escapeHtml(post.caption||'بدون وصف')}</p>
     <div class="wish-my-video-like">${wishVideoLikeMarkup(post)}</div>
+    <div class="wish-my-video-comments">${wishCommentMarkup(post)}</div>
     ${dateText?`<time class="wish-my-video-date" datetime="${escapeHtml(post.created_at)}">${escapeHtml(dateText)}</time>`:''}
     <button class="wish-video-delete" type="button" data-video-id="${escapeHtml(post.id)}" onclick="deleteWishCloudVideo(this.dataset.videoId)"${pending?' disabled':''}>${pending?'⏳ جار الحذف...':'🗑 حذف الفيديو'}</button>
     <p class="wish-video-delete-status" id="wish-my-video-delete-status-${escapeHtml(post.id)}" role="status" aria-live="polite">${escapeHtml(wishVideoDeleteMessages.get(post.id)||'')}</p>
@@ -1421,7 +1653,7 @@ async function loadWishMyVideos(loadMore=false){
   return false;
  }finally{
   if(wishMyVideosRequestIsCurrent(request,uid,epoch)){
-   wishMyVideosLoading=false;renderWishMyVideos();scheduleWishVideoLikesLoad();
+   wishMyVideosLoading=false;renderWishMyVideos();scheduleWishVideoLikesLoad();scheduleWishCommentCounts();
   }
  }
 }
@@ -2528,7 +2760,7 @@ async function toggleWishInterest(productId,button){
   }
 }
 
-function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishVideoLikes();resetWishMyVideos();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
+function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
