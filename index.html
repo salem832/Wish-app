@@ -323,6 +323,28 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 #wishPublicAuthorMore[hidden]{display:none!important}
 .wish-public-author-entry{display:block;width:100%;margin-top:10px;font-size:14px;min-height:44px}
 @media(max-width:340px){.wish-public-author-grid{grid-template-columns:minmax(0,1fr)}}
+.wish-author-follow-panel{margin:14px 0 18px}
+.wish-follow-stats{display:flex;gap:14px;padding:14px 0;border-top:1px solid #2c3c55;border-bottom:1px solid #2c3c55}
+.wish-follow-stats>div{flex:1;text-align:center;min-width:0}
+.wish-follow-stats strong{display:block;font-size:24px;color:#ffe2ec;line-height:1.5}
+.wish-follow-stats span{font-size:14px;color:#b8c8de}
+.wish-follow-button{width:100%;min-height:48px;font-size:16px;margin-top:14px}
+.wish-follow-button.is-following{background:#26344b;border:1px solid #cb7c9f}
+.wish-follow-status,.wish-follow-message,.wish-following-summary{font-size:14px;line-height:1.8;color:#bce6d5;overflow-wrap:anywhere}
+.wish-follow-status{min-height:24px;margin:8px 0 0}
+.wish-follow-status.error,.wish-follow-message.error{color:#ffb4c6}
+.wish-follow-own-list{width:100%;min-height:44px;font-size:14px;margin-top:8px}
+.wish-following-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.wish-following-heading h1{font-size:25px;margin:0;line-height:1.5}
+.wish-following-heading .btn{font-size:14px;min-height:44px}
+.wish-following-item{padding:16px;border:1px solid #394a64;border-radius:18px;background:#131c2e;margin:12px 0}
+.wish-following-item h2{margin:0 0 8px;font-size:18px;line-height:1.6;overflow-wrap:anywhere}
+.wish-following-item p{font-size:14px;color:#bdcce0;line-height:1.7}
+.wish-following-item .row{gap:10px}
+.wish-following-item .btn{min-height:44px;font-size:14px}
+.wish-following-more{width:100%;min-height:44px;font-size:16px;margin-top:18px}
+#wishAuthorFollowPanel[hidden],#wishAuthorFollowButton[hidden],#wishAuthorOwnFollowing[hidden],#wishFollowingMore[hidden]{display:none!important}
+.wish-follow-button:disabled,.wish-following-item button:disabled{opacity:.65;cursor:wait}
 </style>
 </head>
 <body><main class="app">
@@ -403,10 +425,24 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <button type="button" class="btn secondary wish-public-author-back" onclick="leaveWishPublicAuthor()">العودة</button>
   <div class="wish-public-author-heading"><div id="wishPublicAuthorAvatar" class="wish-public-author-avatar" aria-hidden="true">👤</div><div class="wish-public-author-identity"><h1 id="wishPublicAuthorName">حساب صاحب المقطع</h1><p>المقاطع المنشورة للعموم</p></div></div>
   <div class="wish-public-author-actions"><p id="wishPublicAuthorCount" class="wish-public-author-count"></p><button id="wishPublicAuthorRefresh" class="btn secondary" type="button" onclick="loadWishPublicAuthor()">تحديث</button></div>
+  <div id="wishAuthorFollowPanel" class="wish-author-follow-panel" hidden>
+    <div class="wish-follow-stats"><div><strong id="wishAuthorFollowerCount">—</strong><span>متابع</span></div><div><strong id="wishAuthorFollowingCount">—</strong><span>يتابع</span></div></div>
+    <button id="wishAuthorFollowButton" class="btn wish-follow-button" type="button" onclick="toggleWishAuthorFollow()" aria-pressed="false">متابعة</button>
+    <p id="wishAuthorFollowStatus" class="wish-follow-status" role="status" aria-live="polite"></p>
+    <button id="wishAuthorOwnFollowing" class="btn secondary wish-follow-own-list" type="button" onclick="openWishFollowing()" hidden>عرض متابعاتي</button>
+  </div>
   <p id="wishPublicAuthorNameStatus" class="wish-public-author-name-status" role="status" aria-live="polite"></p>
   <p id="wishPublicAuthorStatus" class="wish-public-author-status" role="status" aria-live="polite"></p>
   <div id="wishPublicAuthorVideos" class="wish-public-author-grid" aria-busy="false"></div>
   <button id="wishPublicAuthorMore" class="btn secondary wish-public-author-more" type="button" onclick="loadWishPublicAuthor(true)" hidden>عرض المزيد</button>
+</div></section>
+<section id="following"><div class="content">
+  <button class="btn secondary wish-public-author-back" type="button" onclick="openPage('profile')">العودة إلى حسابي</button>
+  <div class="wish-following-heading"><h1>متابعاتي</h1><button id="wishFollowingRefresh" class="btn secondary" type="button" onclick="loadWishFollowing()">تحديث</button></div>
+  <p class="sub">الحسابات التي تتابعها من هذا الحساب.</p><p id="wishFollowingCount" class="wish-public-author-count"></p>
+  <p id="wishFollowingStatus" class="wish-public-author-status" role="status" aria-live="polite"></p>
+  <div id="wishFollowingList" aria-busy="false"></div>
+  <button id="wishFollowingMore" class="btn secondary wish-following-more" type="button" onclick="loadWishFollowing(true)" hidden>عرض المزيد</button>
 </div></section>
 <section id="profile"><div class="content"><div class="h1">👤 حسابي</div><div class="sub">حسابات WISH التجريبية مرتبطة بخدمة Supabase. تقدر تتابع طلباتك واهتماماتك وترسل ملاحظاتك من هنا.</div>
 <div class="card" id="accountCard"><h3 style="margin-top:0">🔐 حساب WISH</h3>
@@ -458,6 +494,7 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   <button class="btn secondary wish-public-author-entry" type="button" onclick="openWishOwnPublicAuthor()">معاينة صفحتي العامة</button>
 </div>
 
+<div class="card"><h2>متابعاتي</h2><p id="wishFollowingSummary" class="wish-following-summary">سجّل دخولك لعرض الحسابات التي تتابعها.</p><button class="btn" type="button" onclick="openWishFollowing()">عرض متابعاتي</button></div>
 <!-- WISH beta tester guide, privacy summary, and access to existing feedback. -->
 <div class="card" id="wishBetaGuideCard">
   <h3 style="margin:0 0 8px">👋 أهلًا بك في WISH — دليل النسخة التجريبية</h3>
@@ -731,6 +768,10 @@ const wishPublicAuthorStates=new Map(),wishPublicAuthorReads=new Map(),wishPubli
 let wishPublicAuthorTimer=null,wishPublicAuthorId=null,wishPublicAuthorPosts=[],wishPublicAuthorRequest=0;
 let wishPublicAuthorOffset=0,wishPublicAuthorTotal=null,wishPublicAuthorLoaded=false,wishPublicAuthorLoading=false,wishPublicAuthorHasMore=false,wishPublicAuthorError='';
 let wishPublicAuthorReturn={page:'feed',top:0,focus:null};
+const WISH_FOLLOWING_PAGE_SIZE=12;
+const wishFollowStates=new Map(),wishFollowPending=new Map(),wishFollowReads=new Map(),wishFollowRevisions=new Map(),wishFollowMessages=new Map();
+let wishFollowingUid=null,wishFollowingRows=[],wishFollowingCursor=null,wishFollowingHasMore=false;
+let wishFollowingLoading=false,wishFollowingLoaded=false,wishFollowingError='',wishFollowingRequest=0;
 let cloudVideoLoadVersion=0, wishVideoUploading=false;
 const WISH_FEED_AUDIO_KEY='wish-feed-audio-enabled-v1';
 let wishFeedAudioEnabled=false;
@@ -1368,6 +1409,7 @@ function openPage(id){
  closeWishVideoShareDialog(false);
  closeWishVideoComments(false);
  if(id!=='public-author')closeWishPublicAuthorView();
+ if(id!=='following')closeWishFollowingView();
  if(id!=='feed')stopWishFeedPlayback();
  if(id!=='my-videos')stopWishMyVideosPlayback();
  document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===id));
@@ -1375,12 +1417,13 @@ function openPage(id){
  if(id==='wishes')renderWishes();
  if(id==='seller'||id==='my-videos')document.getElementById('nav-profile').classList.add('active');
  if(id==='my-videos')loadWishMyVideos();
- if(id==='public-author')document.getElementById(['profile','my-videos'].includes(wishPublicAuthorReturn.page)?'nav-profile':'nav-feed').classList.add('active');
+ if(id==='following'){document.getElementById('nav-profile').classList.add('active');loadWishFollowing()}
+ if(id==='public-author')document.getElementById(['profile','my-videos','following'].includes(wishPublicAuthorReturn.page)?'nav-profile':'nav-feed').classList.add('active');
  if(id==='create')populateSellerVideoSelect();
  if(id==='feed'&&wishAuthClient)loadCloudVideos();
  if(id==='market')loadMarketProducts();
  if(id==='cart'){renderWishDemoCart();if(!marketProducts.length)loadMarketProducts()}
- if(id==='profile'){loadWishAffiliateStats();loadWishDemoOrders();loadWishInterestMine();if(!document.getElementById('wishFeedbackAdminCard').hidden)loadWishFeedbackAdmin()}
+ if(id==='profile'){loadWishFollowStates([wishFeedCurrentUserId]);loadWishAffiliateStats();loadWishDemoOrders();loadWishInterestMine();if(!document.getElementById('wishFeedbackAdminCard').hidden)loadWishFeedbackAdmin()}
  window.scrollTo({top:0,behavior:'instant'});
  if(id==='feed')setupWishFeedAutoplay();
 }
@@ -1824,6 +1867,131 @@ async function publishToWISH(){
   wishVideoUploading=false;button.disabled=false;button.textContent='🌐 نشر الفيديو للجميع (تجريبي)';
  }
 }
+function wishFollowContext(){return {uid:wishFeedCurrentUserId,epoch:wishVideoDeleteAuthEpoch}}
+function wishFollowContextCurrent(ctx){return ctx.uid===wishFeedCurrentUserId&&ctx.epoch===wishVideoDeleteAuthEpoch}
+function wishParseFollowState(row,id,uid){
+ const followers=Number(row?.follower_count),following=Number(row?.following_count);
+ if(row?.author_id!==id||row?.viewer_id!==uid||row?.follower_count==null||row?.following_count==null||!Number.isSafeInteger(followers)||followers<0||!Number.isSafeInteger(following)||following<0||typeof row.is_following!=='boolean'||typeof row.can_follow!=='boolean')return null;
+ if((!uid&&row.is_following)||(uid===id&&(row.is_following||row.can_follow)))return null;
+ return {loaded:true,available:true,error:false,followers,following,isFollowing:row.is_following,canFollow:row.can_follow};
+}
+function renderWishAuthorFollowPanel(){
+ const panel=document.getElementById('wishAuthorFollowPanel');if(!panel)return;
+ const id=wishPublicAuthorId,uid=wishFeedCurrentUserId,own=uid===id;
+ panel.hidden=!wishVideoUuid(id);if(panel.hidden)return;
+ const state=wishFollowStates.get(id),pending=wishFollowPending.has(id),known=!!state?.loaded&&state.available&&!state.error;
+ document.getElementById('wishAuthorFollowerCount').textContent=known?state.followers.toLocaleString('ar-SA'):'—';
+ document.getElementById('wishAuthorFollowingCount').textContent=known?state.following.toLocaleString('ar-SA'):'—';
+ const button=document.getElementById('wishAuthorFollowButton');button.hidden=own;
+ button.setAttribute('aria-pressed',String(known&&state.isFollowing));button.setAttribute('aria-busy',String(pending));
+ button.classList.toggle('is-following',!!known&&state.isFollowing);
+ button.disabled=pending||(!known&&!state?.error&&wishVideoUuid(uid))||(!!state?.loaded&&!state.available)|| (!!known&&!state.isFollowing&&!state.canFollow);
+ button.textContent=pending?'جار الحفظ...':!wishVideoUuid(uid)?'سجّل دخولك للمتابعة':state?.error?'إعادة المحاولة':!state?.loaded?'جار التحميل...':known&&state.isFollowing?'إلغاء المتابعة':known&&state.canFollow?'متابعة':'المتابعة غير متاحة حاليًا';
+ const ownList=document.getElementById('wishAuthorOwnFollowing');ownList.hidden=!own;
+ const message=wishFollowMessages.get(id),status=document.getElementById('wishAuthorFollowStatus');
+ status.textContent=state?.error?(message?.error?message.text:'تعذر تحديث المتابعة. اضغط إعادة المحاولة.'):(message?.text||(state?.loaded&&!state.available?'هذا الحساب غير متاح للمتابعة حاليًا.':''));
+ status.classList.toggle('error',!!message?.error||!!state?.error);
+}
+function renderWishFollowingSummary(){
+ const el=document.getElementById('wishFollowingSummary');if(!el)return;
+ if(!wishVideoUuid(wishFeedCurrentUserId)){el.textContent='سجّل دخولك لعرض الحسابات التي تتابعها.';return}
+ const state=wishFollowStates.get(wishFeedCurrentUserId);
+ el.textContent=state?.loaded&&state.available&&!state.error?'تتابع '+state.following.toLocaleString('ar-SA')+' حسابًا.':state?.error?'تعذر تحديث العدد. افتح متابعاتي للمحاولة.':'جار تحديث متابعاتك...';
+}
+function wishSyncFollowUI(){renderWishAuthorFollowPanel();renderWishFollowingSummary();if(document.getElementById('following').classList.contains('active'))renderWishFollowing()}
+async function loadWishFollowStates(requested=[wishPublicAuthorId,wishFeedCurrentUserId]){
+ if(!wishAuthClient)return false;
+ const ids=[...new Set(requested.filter(wishVideoUuid))].filter(id=>!wishFollowPending.has(id));if(!ids.length)return true;
+ if(ids.length>100){const chunks=[];for(let i=0;i<ids.length;i+=100)chunks.push(loadWishFollowStates(ids.slice(i,i+100)));return (await Promise.all(chunks)).every(Boolean)}
+ const ctx=wishFollowContext(),tokens=new Map(ids.map(id=>[id,{...ctx,revision:wishFollowRevisions.get(id)||0}]));
+ for(const [id,token] of tokens)wishFollowReads.set(id,token);
+ const current=id=>wishFollowContextCurrent(ctx)&&wishFollowReads.get(id)===tokens.get(id)&&!wishFollowPending.has(id)&&(wishFollowRevisions.get(id)||0)===tokens.get(id).revision;
+ try{
+  const {data,error}=await wishAuthClient.rpc('wish_author_follow_state',{p_author_ids:ids});
+  if(error||!Array.isArray(data))throw error||new Error('invalid follow state');
+  const rows=new Map();for(const row of data){if(!ids.includes(row?.author_id)||rows.has(row.author_id))throw new Error('unexpected author state');rows.set(row.author_id,row)}
+  for(const id of ids){if(!current(id))continue;const row=rows.get(id),parsed=row?wishParseFollowState(row,id,ctx.uid):{loaded:true,available:false,error:false};if(!parsed)throw new Error('invalid follow state');wishFollowStates.set(id,parsed);if(wishFollowMessages.get(id)?.error)wishFollowMessages.delete(id)}
+  return wishFollowContextCurrent(ctx);
+ }catch(error){for(const id of ids)if(current(id))wishFollowStates.set(id,{...wishFollowStates.get(id),error:true});return false}
+ finally{for(const id of ids)if(wishFollowReads.get(id)===tokens.get(id))wishFollowReads.delete(id);wishSyncFollowUI()}
+}
+async function toggleWishAuthorFollow(){
+ const id=wishPublicAuthorId;if(!wishVideoUuid(id))return false;
+ if(!wishVideoUuid(wishFeedCurrentUserId)){openPage('profile');showToast('سجّل دخولك لمتابعة هذا الحساب.');return false}
+ if(id===wishFeedCurrentUserId||wishFollowPending.has(id))return false;
+ const state=wishFollowStates.get(id);
+ if(!state?.loaded||state.error){await loadWishFollowStates([id]);return false}
+ if(!state.available||(!state.isFollowing&&!state.canFollow))return false;
+ return setWishAuthorFollow(id,!state.isFollowing);
+}
+async function setWishAuthorFollow(id,desired){
+ if(!wishVideoUuid(id)||typeof desired!=='boolean'||!wishVideoUuid(wishFeedCurrentUserId)||id===wishFeedCurrentUserId||!wishAuthClient||wishFollowPending.has(id))return false;
+ const ctx={...wishFollowContext(),id,desired};wishFollowPending.set(id,ctx);wishFollowMessages.delete(id);
+ wishFollowRevisions.set(id,(wishFollowRevisions.get(id)||0)+1);
+ wishFollowRevisions.set(ctx.uid,(wishFollowRevisions.get(ctx.uid)||0)+1);
+ wishFollowStates.set(ctx.uid,{...wishFollowStates.get(ctx.uid),loaded:false});
+ wishFollowingRequest++;wishFollowingLoading=false;wishSyncFollowUI();
+ const current=()=>wishFollowContextCurrent(ctx)&&wishFollowPending.get(id)===ctx;
+ try{
+  const {data,error}=await wishAuthClient.rpc('wish_author_follow_set',{p_author_id:id,p_follow:desired,p_expected_user_id:ctx.uid});
+  if(!current())return false;if(error)throw error;
+  const row=Array.isArray(data)&&data.length===1?data[0]:null,parsed=wishParseFollowState(row,id,ctx.uid);
+  if(!parsed||parsed.isFollowing!==desired)throw new Error('unconfirmed follow state');
+  wishFollowStates.set(id,parsed);wishFollowMessages.set(id,{text:desired?'تمت المتابعة.':'تم إلغاء المتابعة.',error:false});
+  if(!desired&&wishFollowingUid===ctx.uid)wishFollowingRows=wishFollowingRows.filter(row=>row.id!==id);
+  return true;
+ }catch(error){
+  if(current()){wishFollowStates.set(id,{...wishFollowStates.get(id),error:true});wishFollowMessages.set(id,{text:'تعذر تأكيد حفظ المتابعة. حدّث الحالة قبل المحاولة مرة أخرى.',error:true})}
+  return false;
+ }finally{
+  if(wishFollowPending.get(id)===ctx){wishFollowPending.delete(id);if(wishFollowContextCurrent(ctx)){wishSyncFollowUI();loadWishFollowStates([ctx.uid])}}
+ }
+}
+function resetWishFollowing(){
+ wishFollowStates.clear();wishFollowReads.clear();wishFollowPending.clear();wishFollowRevisions.clear();wishFollowMessages.clear();
+ wishFollowingRequest++;wishFollowingUid=null;wishFollowingRows=[];wishFollowingCursor=null;wishFollowingHasMore=false;wishFollowingLoading=false;wishFollowingLoaded=false;wishFollowingError='';
+ wishSyncFollowUI();renderWishFollowing();
+ if(document.getElementById('following').classList.contains('active'))setTimeout(()=>loadWishFollowing(),0);
+}
+function closeWishFollowingView(){wishFollowingRequest++;wishFollowingLoading=false}
+function openWishFollowing(){openPage('following')}
+function renderWishFollowing(){
+ const box=document.getElementById('wishFollowingList');if(!box)return;
+ const signed=wishVideoUuid(wishFeedCurrentUserId),same=wishFollowingUid===wishFeedCurrentUserId;
+ const refresh=document.getElementById('wishFollowingRefresh'),more=document.getElementById('wishFollowingMore'),status=document.getElementById('wishFollowingStatus');
+ refresh.disabled=!signed||wishFollowingLoading;more.hidden=!signed||!same||!wishFollowingHasMore;more.disabled=wishFollowingLoading;more.textContent=wishFollowingLoading?'جار التحميل...':'عرض المزيد';
+ box.setAttribute('aria-busy',String(wishFollowingLoading));status.classList.toggle('error',!!wishFollowingError);
+ document.getElementById('wishFollowingCount').textContent='';
+ if(!signed){status.textContent='سجّل دخولك لعرض متابعاتك.';box.innerHTML='<div class="empty">متابعاتك خاصة بحسابك.<button class="btn" type="button" onclick="openPage(\'profile\')">تسجيل الدخول</button></div>';return}
+ const rows=same?wishFollowingRows:[],own=wishFollowStates.get(wishFeedCurrentUserId);
+ document.getElementById('wishFollowingCount').textContent=own?.loaded&&own.available&&!own.error?own.following.toLocaleString('ar-SA')+' حسابًا تتابعه':'';
+ status.textContent=wishFollowingError||(wishFollowingLoading?'جار تحميل متابعاتك...':wishFollowingLoaded?'':'افتح القائمة لعرض متابعاتك.');
+ if(!rows.length){box.innerHTML=wishFollowingLoaded&&!wishFollowingLoading&&!wishFollowingError?(wishFollowingHasMore?'<div class="empty">حدّثت متابعاتك. اضغط عرض المزيد لمتابعة القائمة.</div>':'<div class="empty">ما تتابع حسابات حتى الآن. افتح صفحة صاحب مقطع واضغط متابعة.</div>'):'';return}
+ box.innerHTML=rows.map(row=>{const pending=wishFollowPending.has(row.id),message=wishFollowMessages.get(row.id);return `<article class="wish-following-item" data-following-author="${escapeHtml(row.id)}"><h2>${escapeHtml(row.name)}</h2><p>${row.videoCount.toLocaleString('ar-SA')} مقطع منشور</p><div class="row"><button class="btn" type="button" data-author-id="${escapeHtml(row.id)}" onclick="openWishPublicAuthor(this.dataset.authorId)">عرض الحساب</button><button class="btn secondary" type="button" data-author-id="${escapeHtml(row.id)}" onclick="setWishAuthorFollow(this.dataset.authorId,false)"${pending?' disabled':''}>${pending?'جار الحفظ...':'إلغاء المتابعة'}</button></div>${message?`<p class="wish-follow-message${message.error?' error':''}" role="status">${escapeHtml(message.text)}</p>`:''}</article>`}).join('');
+}
+async function loadWishFollowing(loadMore=false){
+ const ctx=wishFollowContext();
+ if(!wishVideoUuid(ctx.uid)){wishFollowingUid=null;wishFollowingRows=[];wishFollowingLoaded=false;renderWishFollowing();return false}
+ if(loadMore&&(wishFollowingLoading||!wishFollowingHasMore||wishFollowingUid!==ctx.uid))return false;
+ const request=++wishFollowingRequest,cursor=loadMore?wishFollowingCursor:null;
+ if(!loadMore){wishFollowingUid=ctx.uid;wishFollowingRows=[];wishFollowingCursor=null;wishFollowingHasMore=false;wishFollowingLoaded=false}
+ wishFollowingLoading=true;wishFollowingError='';renderWishFollowing();loadWishFollowStates([ctx.uid]);
+ const current=()=>wishFollowContextCurrent(ctx)&&request===wishFollowingRequest&&wishFollowingUid===ctx.uid&&document.getElementById('following').classList.contains('active');
+ try{
+  if(!wishAuthClient)throw new Error('following unavailable');
+  const {data,error}=await wishAuthClient.rpc('wish_author_following_list',{p_expected_user_id:ctx.uid,p_before_created_at:cursor?.time||null,p_before_author_id:cursor?.id||null,p_limit:WISH_FOLLOWING_PAGE_SIZE+1});
+  if(!current())return false;if(error||!Array.isArray(data)||data.length>WISH_FOLLOWING_PAGE_SIZE+1)throw error||new Error('invalid following list');
+  const page=[],seen=new Set();
+  for(const row of data){const name=typeof row?.display_name==='string'?row.display_name.trim():'',count=Number(row?.video_count);if(row?.viewer_id!==ctx.uid||row?.video_count==null||!wishVideoUuid(row?.author_id)||row.author_id===ctx.uid||seen.has(row.author_id)||!name||Array.from(name).length>35||!Number.isSafeInteger(count)||count<0||!Number.isFinite(Date.parse(row.followed_at)))throw new Error('invalid following row');seen.add(row.author_id);page.push({id:row.author_id,name,videoCount:count,time:row.followed_at})}
+  const visible=page.slice(0,WISH_FOLLOWING_PAGE_SIZE),known=new Set(wishFollowingRows.map(row=>row.id));
+  for(const row of visible)if(!known.has(row.id)){wishFollowingRows.push(row);known.add(row.id)}
+  wishFollowingHasMore=page.length>WISH_FOLLOWING_PAGE_SIZE;
+  if(visible.length){const last=visible.at(-1);wishFollowingCursor={time:last.time,id:last.id}}
+  wishFollowingLoaded=true;return true;
+ }catch(error){if(current())wishFollowingError='تعذر تحميل متابعاتك. تحقق من الاتصال ثم اضغط تحديث.';return false}
+ finally{if(current()){wishFollowingLoading=false;renderWishFollowing()}}
+}
+
 function wishPublicAuthorIds(){
  return [...new Set([...cloudVideoPosts,...wishMyVideoPosts,...wishPublicAuthorPosts].filter(p=>p.cloud&&wishVideoUuid(p.owner_id)).map(p=>p.owner_id))];
 }
@@ -1899,7 +2067,7 @@ function openWishPublicAuthor(ownerId){
 }
 function closeWishPublicAuthorView(){wishPublicAuthorRequest++;wishPublicAuthorLoading=false;stopWishPublicAuthorPlayback()}
 function leaveWishPublicAuthor(){
- const back=wishPublicAuthorReturn,allowed=['feed','profile','my-videos','market','wishes'];
+ const back=wishPublicAuthorReturn,allowed=['feed','profile','my-videos','market','wishes','following'];
  openPage(allowed.includes(back.page)?back.page:'feed');
  requestAnimationFrame(()=>{window.scrollTo({top:back.top||0,behavior:'instant'});if(back.focus?.isConnected)back.focus.focus({preventScroll:true})});
 }
@@ -1916,6 +2084,7 @@ function renderWishPublicAuthorHeading(){
  const note=document.getElementById('wishPublicAuthorNameStatus');
  note.textContent=state?.error?'تعذر تحديث اسم الحساب. حاول التحديث.':!state?.loaded?'جار تحميل اسم الحساب...':'';
  note.classList.toggle('error',!!state?.error);
+ renderWishAuthorFollowPanel();
 }
 function renderWishPublicAuthor(){
  const box=document.getElementById('wishPublicAuthorVideos');if(!box)return;
@@ -1947,6 +2116,7 @@ async function loadWishPublicAuthor(loadMore=false){
  if(!loadMore){wishPublicAuthorPosts=[];wishPublicAuthorOffset=0;wishPublicAuthorTotal=null;wishPublicAuthorHasMore=false;wishPublicAuthorLoaded=false}
  wishPublicAuthorLoading=true;wishPublicAuthorError='';renderWishPublicAuthor();
  loadWishPublicAuthorNames([owner],true);
+ if(!loadMore)loadWishFollowStates([owner]);
  try{
   if(!wishAuthClient)throw new Error('public videos unavailable');
   const {data,error,count}=await wishAuthClient.from('wish_videos').select('id,owner_id,caption,storage_path,created_at',{count:'exact'})
@@ -3151,7 +3321,7 @@ async function toggleWishInterest(productId,button){
   }
 }
 
-function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){closeWishVideoShareDialog(false);wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();wishPublicAuthorAuthChanged();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
+function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){closeWishVideoShareDialog(false);wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishFollowing();resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();wishPublicAuthorAuthChanged();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session);renderWishFollowingSummary()}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
