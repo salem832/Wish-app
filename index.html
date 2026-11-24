@@ -2027,13 +2027,18 @@ function closeWishFollowersView(){wishFollowersRequest++;wishFollowersLoading=fa
 function openWishFollowers(){openPage('followers')}
 function captureWishFollowerProfileHint(id,page){
  wishFollowerProfileHint=null;
- if(page!=='followers'||wishFollowersUid!==wishFeedCurrentUserId||!wishVideoUuid(wishFeedCurrentUserId))return;
- const row=wishFollowersRows.find(row=>row.id===id);
+ if(!wishVideoUuid(wishFeedCurrentUserId))return;
+ const rows=page==='followers'&&wishFollowersUid===wishFeedCurrentUserId?wishFollowersRows:page==='following'&&wishFollowingUid===wishFeedCurrentUserId?wishFollowingRows:[];
+ const row=rows.find(row=>row.id===id);
  if(row)wishFollowerProfileHint={...wishFollowContext(),id,name:row.name};
 }
 function wishFollowerProfileName(){
  const hint=wishFollowerProfileHint;
- return hint&&hint.id===wishPublicAuthorId&&wishFollowContextCurrent(hint)?hint.name:'';
+ if(hint&&hint.id===wishPublicAuthorId&&wishFollowContextCurrent(hint))return hint.name;
+ const user=wishCurrentAuthSession?.user;
+ if(!wishVideoUuid(wishFeedCurrentUserId)||wishPublicAuthorId!==wishFeedCurrentUserId||user?.id!==wishFeedCurrentUserId)return '';
+ const value=user.user_metadata?.display_name;
+ return typeof value==='string'&&value.trim()?Array.from(value.replace(/\s+/gu,' ').trim()).slice(0,35).join(''):'عضو WISH';
 }
 function renderWishFollowers(){
  const box=document.getElementById('wishFollowersList');if(!box)return;
