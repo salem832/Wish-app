@@ -274,11 +274,34 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
 #my-videos button:focus-visible,.wish-my-videos-entry button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 #my-videos button:disabled{opacity:.6;cursor:wait}
 @media(max-width:340px){.wish-my-videos-grid{grid-template-columns:minmax(0,1fr)}}
+/* Public video links and selectable copy fallback. */
+.wish-shared-video-banner{margin:14px 16px;padding:16px;background:#152238;border:1px solid #445974;border-radius:16px}
+.wish-shared-video-banner p{font-size:16px;line-height:1.7;margin:0 0 12px;overflow-wrap:anywhere}
+.wish-shared-video-banner .row{margin-top:0}
+.wish-shared-video-banner .btn{font-size:14px;min-height:44px}
+#wishSharedVideoBanner[hidden],#wishCloudFeedBar[hidden],#posts[hidden],#wishSharedVideoRetry[hidden]{display:none!important}
+.feedpost{scroll-margin-top:68px}
+.wish-my-video-share{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+.wish-my-video-share button{min-height:44px;min-width:44px;border:1px solid #526782;border-radius:12px;background:#202c43;color:white;font-size:20px}
+.wish-my-video-share .label{font-size:14px;color:#d4dfed}
+.wish-share-dialog{position:fixed;inset:auto 0 0;width:min(100%,460px);max-width:100%;max-height:95dvh;overflow:auto;margin:0 auto;padding:20px;color:var(--txt);background:#121b2c;border:1px solid #45536c;border-radius:24px 24px 0 0;box-shadow:0 -12px 45px #0009;padding-bottom:max(20px,env(safe-area-inset-bottom))}
+.wish-share-dialog::backdrop{background:#03050bcc}
+.wish-share-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.wish-share-header h2{font-size:21px;margin:0}
+.wish-share-dialog p{font-size:16px;line-height:1.7}
+.wish-share-dialog label{font-size:14px}
+.wish-share-dialog input{direction:ltr;text-align:left;font-size:16px;min-height:48px}
+.wish-share-dialog .btn{font-size:16px;min-height:44px}
+.wish-share-dialog .wish-share-copy{width:100%;margin-top:14px}
+.wish-share-dialog .wish-share-status{font-size:14px;min-height:24px;color:#bce6d5;margin-bottom:0}
+.wish-share-dialog .error{color:#ffb4c6}
+.wish-share-dialog button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+@media(max-height:450px){.wish-share-dialog{padding:12px 16px;max-height:98dvh}.wish-share-dialog p{margin:8px 0}.wish-share-dialog label{margin-top:8px}.wish-share-dialog .wish-share-copy{margin-top:8px}}
 </style>
 </head>
 <body><main class="app">
 <header><div class="brand">WISH <span>ويش</span></div><div class="tabs"><button class="active" onclick="openPage('feed')">لك</button><button onclick="openPage('wishes')">أمنياتي</button></div><div class="badge">نموذج تجريبي</div></header>
-<section id="feed" class="active"><div class="cloud-feed-bar"><div id="wishCloudFeedStatus" class="cloud-feed-message" aria-live="polite">🎬 جار تحميل المقاطع المنشورة... ستظهر النماذج التوضيحية أسفلها.</div><button type="button" class="refresh-video" onclick="loadCloudVideos()">↻ تحديث المقاطع</button></div><div id="posts"></div></section>
+<section id="feed" class="active"><div id="wishCloudFeedBar" class="cloud-feed-bar"><div id="wishCloudFeedStatus" class="cloud-feed-message" aria-live="polite">🎬 جار تحميل المقاطع المنشورة... ستظهر النماذج التوضيحية أسفلها.</div><button type="button" class="refresh-video" onclick="loadCloudVideos()">↻ تحديث المقاطع</button></div><div id="wishSharedVideoBanner" class="wish-shared-video-banner" hidden><p id="wishSharedVideoStatus" role="status" aria-live="polite"></p><div class="row"><button id="wishSharedVideoRetry" class="btn" type="button" onclick="loadWishSharedVideo()" hidden>إعادة المحاولة</button><button class="btn secondary" type="button" onclick="leaveWishSharedVideo()">عرض كل المقاطع</button></div></div><div id="posts"></div></section>
 <section id="wishes"><div class="content"><div class="h1">❤️ أمنياتي</div><div class="sub">هنا تُحفظ المنتجات اللي تختار لها «أتمناها» أو «ناوي أشتريها».</div><div id="wishlist"></div></div></section>
 <section id="market"><div class="content">
   <div class="h1">🛍️ سوق WISH</div>
@@ -604,6 +627,13 @@ section{display:none;padding-bottom:88px}section.active{display:block}.feedpost{
   </form>
   <div id="wishCommentsGuest" class="wish-comments-guest"><p>سجّل دخولك لكتابة تعليق. تقدر تقرأ التعليقات بدون تسجيل.</p><button class="btn" type="button" onclick="closeWishVideoComments(false);openPage('profile')">تسجيل الدخول</button></div>
 </dialog>
+<dialog id="wishVideoShareDialog" class="wish-share-dialog" aria-labelledby="wishVideoShareTitle" onclose="wishVideoShareDialogClosed()" onclick="wishVideoShareBackdrop(event)">
+  <div class="wish-share-header"><h2 id="wishVideoShareTitle">مشاركة المقطع</h2><button class="btn secondary" type="button" onclick="closeWishVideoShareDialog()" aria-label="إغلاق المشاركة" autofocus>×</button></div>
+  <p>أرسل الرابط ليفتح نفس المقطع على موقع WISH.</p>
+  <label for="wishVideoShareLink">رابط المقطع</label><input id="wishVideoShareLink" type="text" dir="ltr" readonly spellcheck="false" autocomplete="off">
+  <button id="wishVideoShareCopy" class="btn wish-share-copy" type="button" onclick="copyWishVideoShareLink()">نسخ الرابط</button>
+  <p id="wishVideoShareStatus" class="wish-share-status" role="status" aria-live="polite"></p>
+</dialog>
 <div class="toast" id="toast"></div>
 
 <!-- WISH beta onboarding. Appears on the first visit in this browser. -->
@@ -655,6 +685,11 @@ const wishCommentDrafts=new Map(),wishCommentAddPending=new Map(),wishCommentDel
 let wishCommentCountTimer=null,wishCommentListRequest=0,wishCommentPanelSerial=0;
 let wishCommentPanel={videoId:null,rows:[],hasMore:false,loaded:false,loading:false,status:'',loadError:false,formStatus:'',formError:false};
 let wishCommentReturnFocus=null,wishCommentPreviousOverflow=null;
+const WISH_VIDEO_SHARE_BASE='https://salem832.github.io/Wish-app/';
+let wishSharedVideoRoute=readWishSharedVideoRoute(),wishSharedVideoRequest=0;
+let wishVideoSharePending=false,wishVideoShareRequest=0;
+let wishVideoShareState={videoId:null,url:'',serial:0},wishVideoShareCopyPending=null;
+let wishVideoShareReturnFocus=null,wishVideoSharePreviousOverflow=null;
 let cloudVideoLoadVersion=0, wishVideoUploading=false;
 const WISH_FEED_AUDIO_KEY='wish-feed-audio-enabled-v1';
 let wishFeedAudioEnabled=false;
@@ -703,8 +738,9 @@ function renderFeed(){
    :'';
   return `<article class="feedpost"><div class="art" style="--from:${p.from};--to:${p.to}">${p.video
    ?`<video class="video" id="video-${p.id}" src="${escapeHtml(p.video)}" controls playsinline webkit-playsinline preload="metadata" ${mutedAttribute} onplay="syncVideoButton('${p.id}')" onpause="syncVideoButton('${p.id}')" onended="syncVideoButton('${p.id}')" onvolumechange="syncFeedVideoAudio('${p.id}')" onerror="videoFailed('${p.id}')"></video><button class="video-play" id="play-${p.id}" onclick="toggleVideo('${p.id}')" aria-label="تشغيل الفيديو">▶</button><button class="video-audio" id="audio-${p.id}" type="button" onclick="toggleFeedVideoAudio('${p.id}')" aria-label="${wishFeedAudioEnabled?'الصوت يعمل':'الصوت مكتوم'}" aria-pressed="${wishFeedAudioEnabled?'true':'false'}">${wishFeedAudioEnabled?'🔊':'🔇'}</button><div class="video-error" id="error-${p.id}"></div>`
-   :`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div>${deleteActions}<div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side">${wishVideoLikeMarkup(p)}${wishCommentMarkup(p)}${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}<button onclick="shareDemo()">↗</button><span class="label">مشاركة</span></div></article>`;
+   :`<div class="symbol">${p.emoji}</div>`}<span class="hint">${p.video?(p.cloud?'مقطع منشور في WISH':'معاينة على جوالك'):'مثال توضيحي · ليس فيديو حقيقيًا'}</span></div>${deleteActions}<div class="shadow"></div><div class="details"><div class="handle">${escapeHtml(p.name)}</div><div class="caption">${escapeHtml(p.caption)}</div>${p.product?`<div class="tags">🛍️ <b>${escapeHtml(p.product)}</b></div>`:''}</div><div class="side">${wishVideoLikeMarkup(p)}${wishCommentMarkup(p)}${p.product?`<button class="want" onclick="openWish('${p.id}')">أبيها</button><span class="label">المنتج</span>`:''}${wishVideoShareMarkup(p)}</div></article>`;
  }).join('');
+ syncWishSharedVideoRoute();
  if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay();
 }
 
@@ -861,6 +897,7 @@ function wishForgetVideoComments(id){
 }
 function openWishVideoComments(videoId){
  if(!wishCommentKnownVideo(videoId)){showToast('هذا المقطع غير متاح للتعليقات.');return false}
+ closeWishVideoShareDialog(false);
  const dialog=document.getElementById('wishCommentsDialog');
  stopWishFeedPlayback();stopWishMyVideosPlayback();
  if(!dialog.open){wishCommentReturnFocus=document.activeElement;wishCommentPreviousOverflow=document.body.style.overflow;document.body.style.overflow='hidden'}
@@ -1106,7 +1143,8 @@ async function deleteWishCloudVideo(videoId){
   wishAssertVideoDeleteSession(uid,authEpoch);
   wishVideoDeleteMessages.delete(videoId);
   cloudVideoLoadVersion++;
-  wishForgetVideoLikes(videoId);
+  forgetWishSharedVideo(videoId);
+   wishForgetVideoLikes(videoId);
   wishForgetVideoComments(videoId);
   cloudVideoPosts=cloudVideoPosts.filter(item=>item.id!==videoId);
   wishRemoveMyVideo(videoId);
@@ -1168,7 +1206,7 @@ function feedVideoVisibility(video){
 function updateWishFeedAutoplay(){
  const feed=document.getElementById('feed');
  const welcome=document.getElementById('wishOnboard');
- if(document.getElementById('wishCommentsDialog')?.open||!feed?.classList.contains('active')||document.hidden||(welcome&&!welcome.hidden)){stopWishFeedPlayback();return}
+ if(wishVideoSharePending||document.getElementById('wishVideoShareDialog')?.open||document.getElementById('wishCommentsDialog')?.open||!feed?.classList.contains('active')||document.hidden||(welcome&&!welcome.hidden)){stopWishFeedPlayback();return}
  let selected=null,bestRatio=0;
  for(const [video,ratio] of wishFeedVisibility){
   if(!video.isConnected)continue;
@@ -1188,7 +1226,7 @@ function updateWishFeedAutoplay(){
 function setupWishFeedAutoplay(){
  const feed=document.getElementById('feed');
  const welcome=document.getElementById('wishOnboard');
- if(document.getElementById('wishCommentsDialog')?.open||!feed?.classList.contains('active')||document.hidden||(welcome&&!welcome.hidden))return;
+ if(wishVideoSharePending||document.getElementById('wishVideoShareDialog')?.open||document.getElementById('wishCommentsDialog')?.open||!feed?.classList.contains('active')||document.hidden||(welcome&&!welcome.hidden))return;
  disconnectWishFeedObserver();
  const videos=Array.from(document.querySelectorAll('#posts video.video'));
  if(!videos.length)return;
@@ -1241,7 +1279,7 @@ function syncVideoButton(id){
  syncFeedAudioButton(v);
 }
 async function playWishFeedVideo(video){
- if(!video||document.getElementById('wishCommentsDialog')?.open||!document.getElementById('feed').classList.contains('active'))return false;
+ if(!video||wishVideoSharePending||document.getElementById('wishVideoShareDialog')?.open||document.getElementById('wishCommentsDialog')?.open||!document.getElementById('feed').classList.contains('active'))return false;
  const error=document.getElementById('error-'+video.id.replace(/^video-/,''));
  if(error)error.classList.remove('show');
  document.querySelectorAll('#posts video.video').forEach(other=>{if(other!==video)pauseWishFeedVideo(other)});
@@ -1251,14 +1289,14 @@ async function playWishFeedVideo(video){
  if(video.ended)video.currentTime=0;
  video.muted=!wishFeedAudioEnabled;
  syncFeedAudioButton(video);
- try{await video.play();if(document.getElementById('wishCommentsDialog')?.open||!document.getElementById('feed').classList.contains('active')){pauseWishFeedVideo(video);return false}syncVideoButton(video.id.replace(/^video-/,''));return true}
+ try{await video.play();if(wishVideoSharePending||document.getElementById('wishVideoShareDialog')?.open||document.getElementById('wishCommentsDialog')?.open||!document.getElementById('feed').classList.contains('active')){pauseWishFeedVideo(video);return false}syncVideoButton(video.id.replace(/^video-/,''));return true}
  catch(e){
-  if(document.getElementById('wishCommentsDialog')?.open||wishActiveFeedVideo!==video||!document.getElementById('feed').classList.contains('active'))return false;
+  if(wishVideoSharePending||document.getElementById('wishVideoShareDialog')?.open||document.getElementById('wishCommentsDialog')?.open||wishActiveFeedVideo!==video||!document.getElementById('feed').classList.contains('active'))return false;
   if(!video.muted&&wishFeedAudioEnabled){
    video.dataset.wishBrowserFallbackMuted='1';
    video.muted=true;
    syncFeedAudioButton(video);
-   try{await video.play();if(document.getElementById('wishCommentsDialog')?.open||!document.getElementById('feed').classList.contains('active')){pauseWishFeedVideo(video);return false}syncVideoButton(video.id.replace(/^video-/,''));return true}
+   try{await video.play();if(wishVideoSharePending||document.getElementById('wishVideoShareDialog')?.open||document.getElementById('wishCommentsDialog')?.open||!document.getElementById('feed').classList.contains('active')){pauseWishFeedVideo(video);return false}syncVideoButton(video.id.replace(/^video-/,''));return true}
    catch(mutedError){}
   }
   if(wishActiveFeedVideo===video)wishActiveFeedVideo=null;
@@ -1285,6 +1323,7 @@ async function toggleVideo(id){
  await playWishFeedVideo(video);
 }
 function openPage(id){
+ closeWishVideoShareDialog(false);
  closeWishVideoComments(false);
  if(id!=='feed')stopWishFeedPlayback();
  if(id!=='my-videos')stopWishMyVideosPlayback();
@@ -1500,12 +1539,18 @@ function publish(){
  refreshWISHPosts();openPage('feed');showToast('✅ تمت إضافته للمعاينة على جهازك فقط');
  document.getElementById('vfile').value='';document.getElementById('caption').value='';document.getElementById('pname').value='';document.getElementById('hasprod').checked=false;toggleProduct();
 }
-function refreshWISHPosts(){posts=[...localVideoPosts,...cloudVideoPosts,...demoPosts];renderFeed();scheduleWishVideoLikesLoad();scheduleWishCommentCounts()}
+function refreshWISHPosts(){
+ const shared=wishSharedVideoRoute.requested&&wishSharedVideoRoute.status==='ready'?wishSharedVideoRoute.post:null;
+ if(shared){shared.name=shared.owner_id===wishFeedCurrentUserId?'@أنا':'@عضو_WISH';cloudVideoPosts=[shared,...cloudVideoPosts.filter(p=>p.id!==shared.id)]}
+ posts=shared?[shared,...localVideoPosts,...cloudVideoPosts.filter(p=>p.id!==shared.id),...demoPosts]:[...localVideoPosts,...cloudVideoPosts,...demoPosts];
+ renderFeed();scheduleWishVideoLikesLoad();scheduleWishCommentCounts();
+}
 function cloudFeedMessage(t){const el=document.getElementById('wishCloudFeedStatus');if(el)el.textContent=t}
 function cloudPublishMessage(t,isError=false){const el=document.getElementById('wishCloudPublishStatus');el.textContent=t;el.classList.toggle('error',isError)}
 async function loadCloudVideos(){
  const version=++cloudVideoLoadVersion;
  if(!wishAuthClient){cloudFeedMessage('المقاطع المنشورة تحتاج اتصال Supabase. النماذج أسفل الصفحة للعرض فقط.');return false}
+ if(wishSharedVideoRoute.requested&&wishSharedVideoRoute.status!=='loading')loadWishSharedVideo();
  cloudFeedMessage('⏳ جار تحميل الفيديوهات المنشورة...');
  try{
   const {data,error}=await wishAuthClient.from('wish_videos')
@@ -1535,7 +1580,7 @@ function stopWishMyVideosPlayback(){
  });
 }
 function playWishMyVideo(video){
- if(document.getElementById('wishCommentsDialog')?.open||document.hidden||!document.getElementById('my-videos').classList.contains('active')){
+ if(wishVideoSharePending||document.getElementById('wishVideoShareDialog')?.open||document.getElementById('wishCommentsDialog')?.open||document.hidden||!document.getElementById('my-videos').classList.contains('active')){
   video.pause();return;
  }
  stopWishFeedPlayback();
@@ -1604,6 +1649,7 @@ function renderWishMyVideos(){
     <p class="wish-my-video-caption">${escapeHtml(post.caption||'بدون وصف')}</p>
     <div class="wish-my-video-like">${wishVideoLikeMarkup(post)}</div>
     <div class="wish-my-video-comments">${wishCommentMarkup(post)}</div>
+    <div class="wish-my-video-share">${wishVideoShareMarkup(post)}</div>
     ${dateText?`<time class="wish-my-video-date" datetime="${escapeHtml(post.created_at)}">${escapeHtml(dateText)}</time>`:''}
     <button class="wish-video-delete" type="button" data-video-id="${escapeHtml(post.id)}" onclick="deleteWishCloudVideo(this.dataset.videoId)"${pending?' disabled':''}>${pending?'⏳ جار الحذف...':'🗑 حذف الفيديو'}</button>
     <p class="wish-video-delete-status" id="wish-my-video-delete-status-${escapeHtml(post.id)}" role="status" aria-live="polite">${escapeHtml(wishVideoDeleteMessages.get(post.id)||'')}</p>
@@ -1733,7 +1779,144 @@ async function publishToWISH(){
   wishVideoUploading=false;button.disabled=false;button.textContent='🌐 نشر الفيديو للجميع (تجريبي)';
  }
 }
-async function shareDemo(){showToast('هذه نسخة محلية للتجربة؛ المشاركة الحقيقية بعد النشر على الإنترنت')}
+function failWishSharedVideoStartup(){
+ if(wishSharedVideoRoute.requested&&wishSharedVideoRoute.status==='waiting'){wishSharedVideoRoute.status='error';syncWishSharedVideoRoute()}
+}
+function readWishSharedVideoRoute(href=window.location.href){
+ const empty={requested:false,id:null,status:'none',post:null,positioned:false};
+ try{
+  const u=new URL(href),q=u.searchParams,h=new URLSearchParams(u.hash.replace(/^#/,''));
+  // Existing product/referral and password recovery links keep their original routes.
+  if(q.has('wish_product')||q.has('wish_reset')||q.has('code')||h.has('access_token')||h.get('type')==='recovery'||!q.has('wish_video'))return empty;
+  const values=q.getAll('wish_video'),id=values.length===1&&wishVideoUuid(values[0])?values[0].toLowerCase():null;
+  return {requested:true,id,status:id?'waiting':'invalid',post:null,positioned:false};
+ }catch(error){return empty}
+}
+function wishVideoShareUrl(videoId){
+ if(!wishVideoUuid(videoId))return '';
+ const url=new URL(WISH_VIDEO_SHARE_BASE);
+ url.searchParams.set('wish_video',videoId.toLowerCase());
+ return url.toString();
+}
+function wishVideoShareMarkup(post){
+ if(!post.cloud||!wishVideoUuid(post.id))return '<button type="button" onclick="showToast(\'المشاركة متاحة للمقاطع المنشورة في WISH فقط.\')" aria-label="مشاركة">↗</button><span class="label">مشاركة</span>';
+ return `<button type="button" data-share-video-id="${escapeHtml(post.id)}" onclick="shareWishVideo(this.dataset.shareVideoId)" aria-label="مشاركة المقطع">↗</button><span class="label">مشاركة</span>`;
+}
+function wishKnownShareVideo(videoId){return [...cloudVideoPosts,...wishMyVideoPosts].find(p=>p.cloud&&p.id===videoId&&wishVideoUuid(p.id))}
+async function shareWishVideo(videoId){
+ if(!wishKnownShareVideo(videoId)||wishVideoDeleteInProgress.has(videoId)){showToast('هذا المقطع غير متاح للمشاركة الآن.');return false}
+ if(wishVideoSharePending)return false;
+ const url=wishVideoShareUrl(videoId),request=++wishVideoShareRequest;
+ wishVideoSharePending=true;stopWishFeedPlayback();stopWishMyVideosPlayback();
+ try{
+  if(typeof navigator.share==='function'){
+   try{
+    // No fetch before share(): this must run directly from the user's tap.
+    await navigator.share({title:'WISH | ويش',text:'شاهد هذا المقطع على WISH',url});
+    return true; // A system handoff is not proof that a message was delivered.
+   }catch(error){if(error?.name==='AbortError')return false}
+  }
+  if(request!==wishVideoShareRequest||!wishKnownShareVideo(videoId))return false;
+  openWishVideoShareDialog(videoId,url);return true;
+ }finally{
+  wishVideoSharePending=false;
+  if(!document.getElementById('wishVideoShareDialog')?.open&&document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay();
+ }
+}
+function openWishVideoShareDialog(videoId,url){
+ closeWishVideoComments(false);
+ const dialog=document.getElementById('wishVideoShareDialog');
+ stopWishFeedPlayback();stopWishMyVideosPlayback();
+ if(!dialog.open){wishVideoShareReturnFocus=document.activeElement;wishVideoSharePreviousOverflow=document.body.style.overflow;document.body.style.overflow='hidden'}
+ wishVideoShareState={videoId,url,serial:wishVideoShareState.serial+1};wishVideoShareCopyPending=null;
+ document.getElementById('wishVideoShareLink').value=url;
+ document.getElementById('wishVideoShareCopy').disabled=false;
+ const status=document.getElementById('wishVideoShareStatus');status.textContent='';status.classList.remove('error');
+ if(!dialog.open)dialog.showModal();
+}
+function closeWishVideoShareDialog(resume=true){
+ const dialog=document.getElementById('wishVideoShareDialog'),wasOpen=!!dialog?.open||wishVideoShareState.videoId!==null;
+ if(dialog?.open)dialog.close();
+ wishVideoShareRequest++;wishVideoShareState={videoId:null,url:'',serial:wishVideoShareState.serial+1};wishVideoShareCopyPending=null;
+ if(wishVideoSharePreviousOverflow!==null){document.body.style.overflow=wishVideoSharePreviousOverflow;wishVideoSharePreviousOverflow=null}
+ if(wasOpen&&resume){wishVideoShareReturnFocus?.focus?.({preventScroll:true});if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay()}
+ wishVideoShareReturnFocus=null;
+}
+function wishVideoShareDialogClosed(){if(!document.getElementById('wishVideoShareDialog').open&&wishVideoShareState.videoId!==null)closeWishVideoShareDialog()}
+function wishVideoShareBackdrop(event){
+ const dialog=document.getElementById('wishVideoShareDialog');if(event.target!==dialog||!event.detail)return;
+ const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeWishVideoShareDialog();
+}
+async function copyWishVideoShareLink(){
+ const context=wishVideoShareState,dialog=document.getElementById('wishVideoShareDialog');
+ if(!dialog.open||!context.url||wishVideoShareCopyPending)return false;
+ const status=document.getElementById('wishVideoShareStatus'),input=document.getElementById('wishVideoShareLink'),button=document.getElementById('wishVideoShareCopy');
+ wishVideoShareCopyPending=context;button.disabled=true;
+ const current=()=>dialog.open&&wishVideoShareState===context;
+ try{
+  if(typeof navigator.clipboard?.writeText!=='function')throw new Error('manual copy');
+  await navigator.clipboard.writeText(context.url);
+  if(!current())return false;
+  status.textContent='تم نسخ رابط المقطع.';status.classList.remove('error');return true;
+ }catch(error){
+  if(!current())return false;
+  input.focus();input.select();input.setSelectionRange(0,input.value.length);
+  status.textContent='اضغط مطولًا على الرابط واختر «نسخ»، ثم أرسله.';status.classList.add('error');return false;
+ }finally{if(current()){button.disabled=false;wishVideoShareCopyPending=null}}
+}
+function syncWishSharedVideoRoute(){
+ const route=wishSharedVideoRoute,banner=document.getElementById('wishSharedVideoBanner'),box=document.getElementById('posts');
+ if(!banner||!box)return;
+ banner.hidden=!route.requested;
+ document.getElementById('wishCloudFeedBar').hidden=route.requested;
+ box.hidden=route.requested&&route.status!=='ready';
+ if(!route.requested)return;
+ const retry=document.getElementById('wishSharedVideoRetry');retry.hidden=!['error','missing'].includes(route.status);
+ const messages={waiting:'جار فتح المقطع الذي تمت مشاركته معك...',loading:'جار تحميل المقطع الذي تمت مشاركته معك...',ready:'مقطع تمت مشاركته معك',invalid:'رابط المقطع غير صالح.',missing:'هذا المقطع غير متاح. قد يكون محذوفًا أو الرابط قديمًا.',error:'تعذر تحميل المقطع. تحقق من الإنترنت ثم أعد المحاولة.'};
+ document.getElementById('wishSharedVideoStatus').textContent=messages[route.status]||messages.error;
+ banner.setAttribute('aria-busy',String(route.status==='waiting'||route.status==='loading'));
+ if(route.status==='ready'&&!route.positioned&&document.getElementById('feed').classList.contains('active')){
+  const request=wishSharedVideoRequest;
+  requestAnimationFrame(()=>{
+   if(wishSharedVideoRoute!==route||request!==wishSharedVideoRequest||!document.getElementById('feed').classList.contains('active'))return;
+   const card=document.getElementById('video-'+route.id)?.closest('.feedpost');
+   if(card){route.positioned=true;card.scrollIntoView({block:'start',behavior:'instant'})}
+  });
+ }
+}
+async function loadWishSharedVideo(){
+ const route=wishSharedVideoRoute;
+ if(!route.requested||!wishVideoUuid(route.id)){syncWishSharedVideoRoute();return false}
+ const request=++wishSharedVideoRequest;
+ route.status='loading';route.post=null;syncWishSharedVideoRoute();stopWishFeedPlayback();
+ const current=()=>wishSharedVideoRoute===route&&request===wishSharedVideoRequest;
+ try{
+  if(!wishAuthClient)throw new Error('video service unavailable');
+  const {data,error}=await wishAuthClient.from('wish_videos').select('id,owner_id,caption,storage_path,created_at').eq('id',route.id).maybeSingle();
+  if(!current())return false;
+  if(error)throw error;
+  const parts=String(data?.storage_path||'').split('/');
+  if(!data){route.status='missing';refreshWISHPosts();return false}
+  if(data.id!==route.id||!wishVideoUuid(data.owner_id)||parts.length!==2||parts[0]!==data.owner_id||!parts[1].toLowerCase().endsWith('.mp4')||!wishVideoUuid(parts[1].slice(0,-4)))throw new Error('invalid public video row');
+  const video=wishAuthClient.storage.from('wish-videos').getPublicUrl(data.storage_path).data.publicUrl;
+  route.post={id:data.id,owner_id:data.owner_id,caption:typeof data.caption==='string'?data.caption:'',storage_path:data.storage_path,created_at:data.created_at,video,cloud:true,product:null,emoji:'🎬',from:'#102a3f',to:'#392058'};
+  route.status='ready';refreshWISHPosts();return true;
+ }catch(error){
+  if(!current())return false;
+  route.status='error';route.post=null;syncWishSharedVideoRoute();return false;
+ }
+}
+function leaveWishSharedVideo(){
+ wishSharedVideoRequest++;
+ wishSharedVideoRoute={requested:false,id:null,status:'none',post:null,positioned:false};
+ const url=new URL(window.location.href);url.searchParams.delete('wish_video');
+ window.history.replaceState(null,'',url.pathname+url.search+url.hash);
+ syncWishSharedVideoRoute();openPage('feed');
+}
+function forgetWishSharedVideo(videoId){
+ if(wishVideoShareState.videoId===videoId)closeWishVideoShareDialog(false);
+ if(wishSharedVideoRoute.requested&&wishSharedVideoRoute.id===videoId){wishSharedVideoRequest++;wishSharedVideoRoute.status='missing';wishSharedVideoRoute.post=null;syncWishSharedVideoRoute()}
+}
 document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});renderFeed();renderWishes();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2760,7 +2943,7 @@ async function toggleWishInterest(productId,button){
   }
 }
 
-function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
+function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){closeWishVideoShareDialog(false);wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session)}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
@@ -2783,10 +2966,11 @@ async function submitWishAuth(){
 async function signOutWish(){if(!wishAuthClient)return;const {error}=await wishAuthClient.auth.signOut();if(error)authMessage(error.message,true);else{renderWishAuth(null);authMessage('تم تسجيل الخروج')}}
 async function initWishAuth(){
  const setup=document.getElementById('authSetup');
- if(!WISH_SUPABASE_URL||!WISH_SUPABASE_PUBLISHABLE_KEY){setup.textContent='الحسابات الحقيقية لم تُربط بعد. الخطوة التالية: إنشاء مشروع مجاني في Supabase وربط عنوان المشروع والمفتاح العام؛ لا تضع أي مفتاح سري في هذا الملف.';return}
- if(!window.supabase?.createClient){setup.textContent='تعذر تحميل خدمة تسجيل الدخول. تحقق من اتصال الإنترنت ثم أعد فتح الصفحة.';cloudFeedMessage('تعذر الاتصال بنظام الفيديوهات. تحقق من الإنترنت ثم أعد فتح الصفحة.');return}
+ if(!WISH_SUPABASE_URL||!WISH_SUPABASE_PUBLISHABLE_KEY){failWishSharedVideoStartup();setup.textContent='الحسابات الحقيقية لم تُربط بعد. الخطوة التالية: إنشاء مشروع مجاني في Supabase وربط عنوان المشروع والمفتاح العام؛ لا تضع أي مفتاح سري في هذا الملف.';return}
+ if(!window.supabase?.createClient){failWishSharedVideoStartup();setup.textContent='تعذر تحميل خدمة تسجيل الدخول. تحقق من اتصال الإنترنت ثم أعد فتح الصفحة.';cloudFeedMessage('تعذر الاتصال بنظام الفيديوهات. تحقق من الإنترنت ثم أعد فتح الصفحة.');return}
  try{
    wishAuthClient=window.supabase.createClient(WISH_SUPABASE_URL,WISH_SUPABASE_PUBLISHABLE_KEY);
+   if(wishSharedVideoRoute.requested)loadWishSharedVideo();
    setup.style.display='none';
    setAuthMode('signup');
    // Listen before getSession so a recovery callback cannot be missed.
@@ -2811,7 +2995,7 @@ async function initWishAuth(){
    loadCloudVideos();
    const sharedProduct=new URLSearchParams(window.location.search).get('wish_product')||'';
    if(/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(sharedProduct))openPage('market');
- }catch(e){setup.style.display='block';setup.textContent='تعذر الاتصال بنظام الحسابات. راجع إعدادات Supabase.';authMessage(e?.message||'خطأ بالاتصال',true)}
+ }catch(e){failWishSharedVideoStartup();setup.style.display='block';setup.textContent='تعذر الاتصال بنظام الحسابات. راجع إعدادات Supabase.';authMessage(e?.message||'خطأ بالاتصال',true)}
 }
 
 // First-visit guidance. This flag is local to each browser, not a database record.
@@ -2840,6 +3024,7 @@ function dismissWishWelcome(){
   if(document.getElementById('feed').classList.contains('active'))setupWishFeedAutoplay();
 }
 function initWishWelcome(){
+ if(wishSharedVideoRoute.requested)return;
   let seen=false;
   try{seen=localStorage.getItem(WISH_WELCOME_SEEN_KEY)==='1'}catch(e){}
   if(!seen)openWishWelcome();
