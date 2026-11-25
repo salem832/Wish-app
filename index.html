@@ -369,10 +369,17 @@ header .tabs button{min-height:44px;padding:8px 6px;white-space:nowrap}
 #profile-edit label{font-size:16px}#profile-edit input{font-size:16px}#profile-edit button:disabled{opacity:.65;cursor:wait}
 #wishProfileRemoveImage[hidden],#wishProfileReloadButton[hidden],#wishProfileCleanupButton[hidden],#wishAccountBio[hidden],#wishPublicAuthorBio[hidden]{display:none!important}
 .wish-profile-cleanup{font-size:14px;line-height:1.7;width:100%;margin-top:8px}
+
+/* WISH account search */
+.wish-search-entry{border:1px solid #53617a;background:#263149;color:white;border-radius:12px;min-width:48px;min-height:44px;padding:9px;font-size:16px}
+#account-search label,#account-search input,#account-search p{font-size:16px;line-height:1.8}
+.wish-search-form{display:flex;gap:8px;align-items:stretch}.wish-search-form input{min-width:0;flex:1}.wish-search-form .btn{min-height:48px;font-size:16px}
+.wish-search-card{padding:18px}.wish-search-identity{display:flex;align-items:center;gap:12px}.wish-search-identity>div{min-width:0}.wish-search-identity h2{font-size:20px;margin:0;overflow-wrap:anywhere}.wish-search-identity p{margin:4px 0;color:var(--muted)}
+.wish-search-card .btn{width:100%;min-height:48px;font-size:16px;margin-top:12px}.wish-search-bio{white-space:pre-wrap;overflow-wrap:anywhere}.wish-search-status{min-height:30px}.wish-search-status.error{color:#ffb4c6}#account-search button:focus-visible,.wish-search-entry:focus-visible{outline:3px solid #ffd8e5;outline-offset:3px}
 </style>
 </head>
 <body><main class="app">
-<header><div class="brand">WISH <span>ويش</span></div><div class="tabs" aria-label="التصفح"><button class="active" type="button" data-page="feed" aria-current="page" onclick="openPage('feed')">لك</button><button type="button" data-page="following-feed" onclick="openPage('following-feed')">أتابعهم</button><button type="button" data-page="wishes" onclick="openPage('wishes')">أمنياتي</button></div><div class="badge">نموذج تجريبي</div></header>
+<header><div class="brand">WISH <span>ويش</span></div><div class="tabs" aria-label="التصفح"><button class="active" type="button" data-page="feed" aria-current="page" onclick="openPage('feed')">لك</button><button type="button" data-page="following-feed" onclick="openPage('following-feed')">أتابعهم</button><button type="button" data-page="wishes" onclick="openPage('wishes')">أمنياتي</button></div><button id="wishSearchEntry" class="wish-search-entry" type="button" onclick="openPage('account-search')" aria-label="البحث عن الحسابات">بحث</button></header>
 <section id="feed" class="active"><div id="wishCloudFeedBar" class="cloud-feed-bar"><div id="wishCloudFeedStatus" class="cloud-feed-message" aria-live="polite">🎬 جار تحميل المقاطع المنشورة... ستظهر النماذج التوضيحية أسفلها.</div><button type="button" class="refresh-video" onclick="loadCloudVideos()">↻ تحديث المقاطع</button></div><div id="wishSharedVideoBanner" class="wish-shared-video-banner" hidden><p id="wishSharedVideoStatus" role="status" aria-live="polite"></p><div class="row"><button id="wishSharedVideoRetry" class="btn" type="button" onclick="loadWishSharedVideo()" hidden>إعادة المحاولة</button><button class="btn secondary" type="button" onclick="leaveWishSharedVideo()">عرض كل المقاطع</button></div></div><div id="posts"></div></section>
 <section id="following-feed" aria-label="أتابعهم"><div class="cloud-feed-bar"><div><h1 class="wish-following-feed-title">أتابعهم</h1><p id="wishFollowingFeedStatus" class="cloud-feed-message" role="status" aria-live="polite">آخر المقاطع المنشورة من الحسابات اللي تتابعها.</p></div><button id="wishFollowingFeedRefresh" type="button" class="refresh-video" onclick="loadWishFollowingFeed()">↻ تحديث</button></div><div id="wishFollowingFeedPosts"></div><div class="wish-following-feed-footer"><div id="wishFollowingFeedEmpty"></div><button id="wishFollowingFeedMore" class="btn secondary wish-following-more" type="button" onclick="loadWishFollowingFeed(true)" hidden>عرض المزيد</button></div></section>
 <section id="wishes"><div class="content"><div class="h1">❤️ أمنياتي</div><div class="sub">هنا تُحفظ المنتجات اللي تختار لها «أتمناها» أو «ناوي أشتريها».</div><div id="wishlist"></div></div></section>
@@ -446,6 +453,17 @@ header .tabs button{min-height:44px;padding:8px 6px;white-space:nowrap}
   <button id="wishMyVideosMore" class="btn secondary wish-my-videos-more" type="button" onclick="loadWishMyVideos(true)" hidden>عرض المزيد</button>
 </div></section>
 
+<section id="account-search"><div class="content">
+<button type="button" class="btn secondary wish-public-author-back" onclick="openPage('feed')">العودة إلى لك</button>
+<h1 class="h1">البحث عن الحسابات</h1>
+<p class="sub">ابحث بالاسم عن أصحاب المقاطع العامة. عند تسجيل الدخول، تظهر أيضًا الحسابات التي تتابعها أو تتابعك.</p>
+<form onsubmit="event.preventDefault();loadWishAccountSearch()" role="search" aria-label="بحث الحسابات">
+<label for="wishSearchInput">اسم الحساب</label><div class="wish-search-form"><input id="wishSearchInput" type="search" placeholder="مثال: سفير القمر" autocomplete="off" enterkeyhint="search" oninput="editWishAccountSearch()" aria-describedby="wishSearchStatus"><button id="wishSearchSubmit" class="btn" type="submit">بحث</button></div></form>
+<p id="wishSearchStatus" class="wish-search-status" role="status" aria-live="polite"></p>
+<button id="wishSearchRetry" type="button" class="btn secondary" onclick="loadWishAccountSearch(wishSearchRows.length>0)" hidden>إعادة المحاولة</button>
+<div id="wishSearchResults" aria-busy="false"></div>
+<button id="wishSearchMore" type="button" class="btn secondary wish-profile-full" onclick="loadWishAccountSearch(true)" hidden>عرض المزيد</button>
+</div></section>
 <section id="public-author"><div class="content">
   <button type="button" class="btn secondary wish-public-author-back" onclick="leaveWishPublicAuthor()">العودة</button>
   <div class="wish-public-author-heading"><div id="wishPublicAuthorAvatar" class="wish-public-author-avatar" aria-hidden="true">👤</div><div class="wish-public-author-identity"><h1 id="wishPublicAuthorName">حساب صاحب المقطع</h1><p>المقاطع المنشورة للعموم</p><p id="wishPublicAuthorBio" class="wish-profile-bio" hidden></p></div></div>
@@ -1484,6 +1502,7 @@ async function toggleVideo(id){
 function openPage(id){
  closeWishVideoShareDialog(false);
  closeWishVideoComments(false);
+ if(id!=='account-search')closeWishAccountSearch();
  if(id!=='profile-edit')closeWishProfileEditor();
  if(id!=='public-author')closeWishPublicAuthorView();
  if(id!=='following')closeWishFollowingView();
@@ -1495,6 +1514,7 @@ function openPage(id){
  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='nav-'+id));
  document.querySelectorAll('header .tabs button[data-page]').forEach(button=>{const active=button.dataset.page===id;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')});
  if(id==='following-feed'){document.getElementById('nav-feed').classList.add('active');renderWishFollowingFeed();if(!wishFollowingFeedLoaded||wishFollowingFeedUid!==wishFeedCurrentUserId)loadWishFollowingFeed()}
+ if(id==='account-search'){document.getElementById('nav-feed').classList.add('active');renderWishAccountSearch()}
  if(id==='wishes')renderWishes();
  if(id==='seller'||id==='my-videos'||id==='profile-edit')document.getElementById('nav-profile').classList.add('active');
  if(id==='my-videos')loadWishMyVideos();
@@ -1949,6 +1969,62 @@ async function publishToWISH(){
   wishVideoUploading=false;button.disabled=false;button.textContent='🌐 نشر الفيديو للجميع (تجريبي)';
  }
 }
+// WISH account search: bounded literal queries and viewer-scoped results.
+let wishSearchRows=[],wishSearchQuery='',wishSearchCursor=null,wishSearchMore=false,wishSearchLoading=false,wishSearchError='',wishSearchLoaded=false,wishSearchRequest=0;
+function wishSearchContext(){return {uid:wishFeedCurrentUserId,epoch:wishVideoDeleteAuthEpoch}}
+function wishSearchContextCurrent(c){return c.uid===wishFeedCurrentUserId&&c.epoch===wishVideoDeleteAuthEpoch}
+function normalizeWishSearch(value){return String(value||'').replace(/\s+/gu,' ').trim()}
+function resetWishAccountSearch(){
+ wishSearchRequest++;wishSearchRows=[];wishSearchQuery='';wishSearchCursor=null;wishSearchMore=false;wishSearchLoading=false;wishSearchError='';wishSearchLoaded=false;
+ const input=document.getElementById('wishSearchInput');if(input)input.value='';renderWishAccountSearch();
+}
+function closeWishAccountSearch(){wishSearchRequest++;wishSearchLoading=false}
+function editWishAccountSearch(){
+ wishSearchRequest++;wishSearchRows=[];wishSearchQuery='';wishSearchCursor=null;wishSearchMore=false;wishSearchLoading=false;wishSearchError='';wishSearchLoaded=false;renderWishAccountSearch();
+}
+function renderWishAccountSearch(){
+ const box=document.getElementById('wishSearchResults');if(!box)return;
+ box.setAttribute('aria-busy',String(wishSearchLoading));
+ document.getElementById('wishSearchSubmit').disabled=wishSearchLoading;
+ const more=document.getElementById('wishSearchMore');more.hidden=!wishSearchMore;more.disabled=wishSearchLoading;
+ const status=document.getElementById('wishSearchStatus');status.classList.toggle('error',!!wishSearchError);
+ status.textContent=wishSearchError||(wishSearchLoading?'جار البحث عن الحسابات...':wishSearchLoaded?(wishSearchRows.length?'النتائج المعروضة: '+wishSearchRows.length.toLocaleString('ar-SA'): 'لم نعثر على حساب مطابق. جرّب جزءًا آخر من الاسم.'):'اكتب حرفين على الأقل ثم اضغط بحث.');
+ document.getElementById('wishSearchRetry').hidden=!wishSearchError||!wishSearchQuery;
+ box.innerHTML=wishSearchRows.map(row=>`<article class="card wish-search-card"><div class="wish-search-identity">${wishProfileAvatarMarkup(row.id,row.name)}<div><h2 data-profile-name="${escapeHtml(row.id)}">${escapeHtml(row.name)}</h2><p>${row.videoCount.toLocaleString('ar-SA')} مقطع منشور</p></div></div>${row.bio?`<p class="wish-search-bio">${escapeHtml(row.bio)}</p>`:''}<button type="button" class="btn" data-search-owner="${escapeHtml(row.id)}" onclick="openWishSearchAccount(this.dataset.searchOwner)">عرض الحساب</button></article>`).join('');
+}
+function parseWishSearchRow(row,ctx){
+ if(!row||!wishVideoUuid(row.owner_id)||row.viewer_id!==ctx.uid||typeof row.display_name!=='string'||!row.display_name.trim()||Array.from(row.display_name).length>35||typeof row.bio!=='string'||Array.from(row.bio).length>160||!wishValidAvatarPath(row.avatar_path,row.owner_id)||!Number.isSafeInteger(row.revision)||row.revision<0||row.video_count==null||!Number.isSafeInteger(Number(row.video_count))||Number(row.video_count)<0||typeof row.search_name!=='string'||!row.search_name||Array.from(row.search_name).length>35)return null;
+ return {...ctx,id:row.owner_id,name:row.display_name,bio:row.bio,avatar:row.avatar_path,revision:row.revision,videoCount:Number(row.video_count),key:row.search_name};
+}
+async function loadWishAccountSearch(loadMore=false){
+ if(wishSearchLoading)return false;
+ const input=document.getElementById('wishSearchInput'),query=loadMore?wishSearchQuery:normalizeWishSearch(input.value);
+ if(Array.from(query).length<2||Array.from(query).length>35||/[\u0000-\u001f\u007f]/u.test(query)){editWishAccountSearch();wishSearchError='اكتب اسمًا من حرفين إلى ٣٥ حرفًا.';renderWishAccountSearch();return false}
+ if(loadMore&&(!wishSearchMore||!wishSearchCursor||normalizeWishSearch(input.value)!==query))return false;
+ const ctx=wishSearchContext(),token=++wishSearchRequest,cursor=loadMore?wishSearchCursor:null;
+ if(!loadMore){wishSearchRows=[];wishSearchCursor=null;wishSearchMore=false;wishSearchLoaded=false}
+ wishSearchQuery=query;wishSearchLoading=true;wishSearchError='';renderWishAccountSearch();
+ const current=()=>token===wishSearchRequest&&wishSearchContextCurrent(ctx)&&document.getElementById('account-search').classList.contains('active');
+ try{
+  if(!wishAuthClient)throw new Error('Client unavailable');
+  const {data,error}=await wishAuthClient.rpc('wish_account_search',{p_query:query,p_expected_user_id:ctx.uid,p_after_name:cursor?.name||null,p_after_id:cursor?.id||null,p_limit:13});
+  if(!current())return false;
+  if(error||!Array.isArray(data)||data.length>13)throw error||new Error('Invalid search response');
+  const rows=data.map(row=>parseWishSearchRow(row,ctx));if(rows.some(row=>!row)||new Set(rows.map(row=>row.id)).size!==rows.length)throw new Error('Invalid search rows');
+  const displayed=rows.slice(0,12),seen=new Set(wishSearchRows.map(row=>row.id));
+  wishSearchRows.push(...displayed.filter(row=>!seen.has(row.id)));wishSearchMore=rows.length>12;
+  if(displayed.length){const last=displayed.at(-1);wishSearchCursor={name:last.key,id:last.id}}
+  for(const row of displayed){const cached=wishProfileCard(row.id);if(!cached||cached.missing||cached.error||row.revision>=cached.revision)wishProfileCards.set(row.id,{...row,updatedAt:Date.now(),error:false})}
+  wishSearchLoaded=true;return true;
+ }catch(error){if(current())wishSearchError='تعذر تحميل نتائج البحث. حاول مرة أخرى.';return false}
+ finally{if(current()){wishSearchLoading=false;renderWishAccountSearch()}}
+}
+function openWishSearchAccount(id){
+ const row=wishSearchRows.find(row=>row.id===id&&wishSearchContextCurrent(row));
+ return !!row&&openWishPublicAuthor(id);
+}
+// End WISH account search.
+
 // WISH editable profiles: asynchronous work is bound to a viewer epoch.
 const WISH_PROFILE_AVATAR_BUCKET='wish-profile-avatars',WISH_PROFILE_MAX_IMAGE=2097152;
 const wishProfileCards=new Map(),wishProfileCardReads=new Map(),wishProfileCardRevisions=new Map(),wishProfileCleanupRunning=new Map();
@@ -2020,6 +2096,7 @@ function closeWishProfileEditor(){
  for(const id of ['wishProfileNameInput','wishProfileBioInput','wishProfileImageInput']){const el=document.getElementById(id);if(el)el.value=''}
 }
 function wishProfileAuthChanged(){
+ resetWishAccountSearch();
  closeWishProfileEditor();wishOwnProfileRequest++;wishOwnProfileRead=null;wishOwnProfile=null;wishOwnProfileLoading=false;wishOwnProfileError='';wishProfileSavePending=null;wishProfileCards.clear();wishProfileCardReads.clear();wishProfileCardRevisions.clear();renderWishOwnProfileSummary();renderWishProfileEditor();
  const ctx=wishProfileContext();if(wishVideoUuid(ctx.uid))setTimeout(()=>{if(wishProfileContextCurrent(ctx)){loadWishOwnProfile();wishCleanupProfileAvatars()}},0);
 }
@@ -2074,6 +2151,7 @@ async function wishCleanupProfileAvatars(){
  finally{if(wishProfileCleanupRunning.get(ctx.uid)===ctx)wishProfileCleanupRunning.delete(ctx.uid);if(wishProfileContextCurrent(ctx))renderWishOwnProfileSummary()}
 }
 function wishApplySavedProfile(saved){
+ resetWishAccountSearch();
  wishOwnProfileRequest++;wishOwnProfileRead=null;wishOwnProfileLoading=false;wishOwnProfileError='';wishOwnProfile=saved;
  wishProfileCardRevisions.set(saved.id,(wishProfileCardRevisions.get(saved.id)||0)+1);wishProfileCardReads.delete(saved.id);wishProfileCards.set(saved.id,{...saved,updatedAt:Date.now()});
  wishPublicAuthorRevisions.set(saved.id,(wishPublicAuthorRevisions.get(saved.id)||0)+1);wishPublicAuthorReads.delete(saved.id);const old=wishPublicAuthorStates.get(saved.id);if(old?.count>0)wishPublicAuthorStates.set(saved.id,{...old,name:saved.name,updatedAt:0});
@@ -2144,7 +2222,7 @@ function wishFollowingFeedAuthChanged(){
  if(document.getElementById('following-feed').classList.contains('active'))setTimeout(()=>{if(epoch===wishVideoDeleteAuthEpoch&&document.getElementById('following-feed').classList.contains('active'))loadWishFollowingFeed()},0);
 }
 function closeWishFollowingFeedView(){wishFollowingFeedRequest++;wishFollowingFeedLoading=false}
-function invalidateWishFollowingFeed(){resetWishFollowingFeed()}
+function invalidateWishFollowingFeed(){resetWishFollowingFeed();resetWishAccountSearch()}
 function wishFollowingFeedRequestCurrent(ctx,request){
  return wishFollowContextCurrent(ctx)&&wishFollowingFeedUid===ctx.uid&&request===wishFollowingFeedRequest&&document.getElementById('following-feed').classList.contains('active');
 }
@@ -2328,7 +2406,7 @@ function openWishFollowers(){openPage('followers')}
 function captureWishFollowerProfileHint(id,page){
  wishFollowerProfileHint=null;
  if(!wishVideoUuid(wishFeedCurrentUserId))return;
- const rows=page==='followers'&&wishFollowersUid===wishFeedCurrentUserId?wishFollowersRows:page==='following'&&wishFollowingUid===wishFeedCurrentUserId?wishFollowingRows:[];
+ const rows=page==='account-search'?wishSearchRows.filter(wishSearchContextCurrent):page==='followers'&&wishFollowersUid===wishFeedCurrentUserId?wishFollowersRows:page==='following'&&wishFollowingUid===wishFeedCurrentUserId?wishFollowingRows:[];
  const row=rows.find(row=>row.id===id);
  if(row)wishFollowerProfileHint={...wishFollowContext(),id,name:row.name};
 }
@@ -2453,7 +2531,7 @@ function openWishPublicAuthor(ownerId){
 }
 function closeWishPublicAuthorView(){wishPublicAuthorRequest++;wishPublicAuthorLoading=false;wishFollowerProfileHint=null;stopWishPublicAuthorPlayback()}
 function leaveWishPublicAuthor(){
- const back=wishPublicAuthorReturn,allowed=['feed','following-feed','profile','my-videos','market','wishes','following','followers'];
+ const back=wishPublicAuthorReturn,allowed=['feed','following-feed','profile','my-videos','market','wishes','following','followers','account-search'];
  openPage(allowed.includes(back.page)?back.page:'feed');
  requestAnimationFrame(()=>{window.scrollTo({top:back.top||0,behavior:'instant'});if(back.focus?.isConnected)back.focus.focus({preventScroll:true})});
 }
