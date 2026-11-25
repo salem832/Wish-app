@@ -1500,6 +1500,7 @@ async function toggleVideo(id){
  await playWishFeedVideo(video);
 }
 function openPage(id){
+ const wishNavigationPrevious=wishNavigationBeforeChange(id);
  closeWishVideoShareDialog(false);
  closeWishVideoComments(false);
  if(id!=='account-search')closeWishAccountSearch();
@@ -1528,6 +1529,7 @@ function openPage(id){
  if(id==='profile'){loadWishOwnProfile(true);loadWishFollowStates([wishFeedCurrentUserId]);loadWishAffiliateStats();loadWishDemoOrders();loadWishInterestMine();if(!document.getElementById('wishFeedbackAdminCard').hidden)loadWishFeedbackAdmin()}
  window.scrollTo({top:0,behavior:'instant'});
  if(id==='feed'||id==='following-feed')setupWishFeedAutoplay();
+ wishNavigationAfterChange(id,wishNavigationPrevious);
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden){stopWishFeedPlayback();stopWishMyVideosPlayback();stopWishPublicAuthorPlayback()}else if(wishActiveFeedPage())setupWishFeedAutoplay()});
 window.addEventListener('pagehide',()=>{stopWishFeedPlayback();stopWishMyVideosPlayback();stopWishPublicAuthorPlayback()});
@@ -1969,6 +1971,58 @@ async function publishToWISH(){
   wishVideoUploading=false;button.disabled=false;button.textContent='🌐 نشر الفيديو للجميع (تجريبي)';
  }
 }
+// WISH in-document history: actual fragment navigations reach Android WebView history.
+const wishNavigationEntries=new Map();
+let wishNavigationKey=null,wishNavigationSerial=0,wishNavigationRestoring=false,wishNavigationSession=null;
+function wishNavigationAvailable(){return !!(window.history&&window.location)&&(!window.location.hash||/^#wish-nav=/.test(window.location.hash))}
+function wishNavigationContext(){return {uid:wishFeedCurrentUserId,epoch:wishVideoDeleteAuthEpoch}}
+function wishNavigationContextCurrent(entry){return entry.uid===wishFeedCurrentUserId&&entry.epoch===wishVideoDeleteAuthEpoch}
+function wishNavigationSnapshot(page){
+ return {...wishNavigationContext(),page,owner:page==='public-author'?wishPublicAuthorId:null,back:page==='public-author'?{...wishPublicAuthorReturn}:null,top:window.scrollY||0,focus:document.activeElement};
+}
+function wishNavigationBeforeChange(id){
+ if(wishNavigationRestoring||!wishNavigationAvailable())return null;
+ const page=document.querySelector('section.active')?.id;if(!page||page===id)return null;
+ if(!wishNavigationKey){
+  if(id!=='account-search'&&id!=='public-author')return null;
+  wishNavigationSession=Math.random().toString(36).slice(2);wishNavigationKey='#wish-nav='+wishNavigationSession+'-0';
+  wishNavigationEntries.set(wishNavigationKey,wishNavigationSnapshot(page));
+  try{window.history.replaceState(null,'',window.location.pathname+window.location.search+wishNavigationKey)}catch(error){wishNavigationKey=null;return null}
+ }
+ const old=wishNavigationEntries.get(wishNavigationKey);
+ if(old){old.top=window.scrollY||0;old.focus=document.activeElement}
+ return wishNavigationKey;
+}
+function wishNavigationAfterChange(id,previousKey){
+ if(!previousKey||wishNavigationRestoring||!wishNavigationAvailable())return;
+ const entry=wishNavigationSnapshot(id);entry.previousKey=previousKey;
+ const key='#wish-nav='+wishNavigationSession+'-'+(++wishNavigationSerial);
+ wishNavigationEntries.set(key,entry);wishNavigationKey=key;
+ // Fragment navigation, rather than pushState alone, updates Android's native canGoBack.
+ try{window.location.hash=key}catch(error){wishNavigationEntries.delete(key);wishNavigationKey=previousKey}
+}
+function wishNavigationBackFromAuthor(){
+ const entry=wishNavigationEntries.get(wishNavigationKey);
+ if(wishNavigationAvailable()&&window.location.hash===wishNavigationKey&&entry?.page==='public-author'&&entry.previousKey&&wishNavigationEntries.has(entry.previousKey)){
+  window.history.back();return true;
+ }
+ return false;
+}
+function restoreWishNavigation(){
+ const key=window.location.hash;if(key===wishNavigationKey)return;
+ const entry=wishNavigationEntries.get(key);if(!entry)return;
+ wishNavigationKey=key;wishNavigationRestoring=true;
+ const valid=wishNavigationContextCurrent(entry),page=valid&&document.getElementById(entry.page)?entry.page:'feed';
+ try{
+  if(page==='public-author'&&wishVideoUuid(entry.owner)){
+   wishPublicAuthorReturn=entry.back?{...entry.back}:{page:'feed',top:0,focus:null};openWishPublicAuthor(entry.owner);
+  }else openPage(page);
+ }finally{wishNavigationRestoring=false}
+ requestAnimationFrame(()=>{if(wishNavigationKey!==key)return;window.scrollTo({top:valid?entry.top||0:0,behavior:'instant'});if(valid&&entry.focus?.isConnected)entry.focus.focus({preventScroll:true})});
+}
+window.addEventListener('hashchange',restoreWishNavigation);
+// End WISH in-document history.
+
 // WISH account search: bounded literal queries and viewer-scoped results.
 let wishSearchRows=[],wishSearchQuery='',wishSearchCursor=null,wishSearchMore=false,wishSearchLoading=false,wishSearchError='',wishSearchLoaded=false,wishSearchRequest=0;
 function wishSearchContext(){return {uid:wishFeedCurrentUserId,epoch:wishVideoDeleteAuthEpoch}}
@@ -2523,7 +2577,7 @@ function openWishPublicAuthor(ownerId){
  if(!wishVideoUuid(ownerId))return false;
  const page=document.querySelector('section.active')?.id||'feed';
  captureWishFollowerProfileHint(ownerId,page);
- if(page!=='public-author')wishPublicAuthorReturn={page,top:window.scrollY||0,focus:document.activeElement};
+ if(page!=='public-author'&&!wishNavigationRestoring)wishPublicAuthorReturn={page,top:window.scrollY||0,focus:document.activeElement};
  wishPublicAuthorRequest++;stopWishPublicAuthorPlayback();
  wishPublicAuthorId=ownerId;wishPublicAuthorPosts=[];wishPublicAuthorOffset=0;wishPublicAuthorTotal=null;
  wishPublicAuthorLoaded=false;wishPublicAuthorLoading=false;wishPublicAuthorHasMore=false;wishPublicAuthorError='';
@@ -2531,6 +2585,7 @@ function openWishPublicAuthor(ownerId){
 }
 function closeWishPublicAuthorView(){wishPublicAuthorRequest++;wishPublicAuthorLoading=false;wishFollowerProfileHint=null;stopWishPublicAuthorPlayback()}
 function leaveWishPublicAuthor(){
+ if(wishNavigationBackFromAuthor())return;
  const back=wishPublicAuthorReturn,allowed=['feed','following-feed','profile','my-videos','market','wishes','following','followers','account-search'];
  openPage(allowed.includes(back.page)?back.page:'feed');
  requestAnimationFrame(()=>{window.scrollTo({top:back.top||0,behavior:'instant'});if(back.focus?.isConnected)back.focus.focus({preventScroll:true})});
