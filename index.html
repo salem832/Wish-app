@@ -353,6 +353,22 @@ header .tabs button{min-height:44px;padding:8px 6px;white-space:nowrap}
 #wishFollowingFeedStatus{margin:0;line-height:1.7}
 .wish-following-feed-footer{padding:0 18px 24px}
 #wishFollowingFeedMore[hidden]{display:none!important}
+
+.wish-account-identity,.wish-profile-list-heading{display:flex;gap:14px;align-items:center;min-width:0}
+.wish-account-identity .auth-name{min-width:0;overflow-wrap:anywhere}
+.wish-profile-avatar{width:88px;height:88px;flex:0 0 88px;border-radius:50%;overflow:hidden;background:#492340;border:1px solid #bc6d98;color:#ffd9e7;display:grid;place-items:center;font-size:28px;font-weight:800}
+.wish-profile-avatar img,.wish-profile-list-avatar img,.wish-public-author-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.wish-profile-list-avatar{width:48px;height:48px;flex:0 0 48px;border-radius:50%;overflow:hidden;background:#492340;display:grid;place-items:center;font-weight:800;color:#ffd9e7}
+.wish-profile-list-heading h2{min-width:0;overflow-wrap:anywhere;margin:0}
+.wish-profile-bio{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8;color:var(--muted);font-size:16px}
+.wish-profile-edit-entry,.wish-profile-full{width:100%;min-height:48px;font-size:16px;margin-top:14px}
+.wish-profile-preview{text-align:center;padding:24px 18px}.wish-profile-preview .wish-profile-avatar{margin:0 auto}.wish-profile-preview h2{font-size:22px;overflow-wrap:anywhere}
+.wish-profile-help,.wish-profile-length,.wish-profile-status{font-size:14px;line-height:1.8;color:#c7d8ee;overflow-wrap:anywhere}
+.wish-profile-length{text-align:left;margin:6px 0}.wish-profile-status.error{color:#ffb4c6}
+#wishProfileBioInput{width:100%;padding:12px 13px;border:1px solid #39445a;border-radius:12px;background:#0d1321;color:white;font:inherit;min-height:120px;resize:vertical}
+#profile-edit label{font-size:16px}#profile-edit input{font-size:16px}#profile-edit button:disabled{opacity:.65;cursor:wait}
+#wishProfileRemoveImage[hidden],#wishProfileReloadButton[hidden],#wishProfileCleanupButton[hidden],#wishAccountBio[hidden],#wishPublicAuthorBio[hidden]{display:none!important}
+.wish-profile-cleanup{font-size:14px;line-height:1.7;width:100%;margin-top:8px}
 </style>
 </head>
 <body><main class="app">
@@ -432,7 +448,7 @@ header .tabs button{min-height:44px;padding:8px 6px;white-space:nowrap}
 
 <section id="public-author"><div class="content">
   <button type="button" class="btn secondary wish-public-author-back" onclick="leaveWishPublicAuthor()">العودة</button>
-  <div class="wish-public-author-heading"><div id="wishPublicAuthorAvatar" class="wish-public-author-avatar" aria-hidden="true">👤</div><div class="wish-public-author-identity"><h1 id="wishPublicAuthorName">حساب صاحب المقطع</h1><p>المقاطع المنشورة للعموم</p></div></div>
+  <div class="wish-public-author-heading"><div id="wishPublicAuthorAvatar" class="wish-public-author-avatar" aria-hidden="true">👤</div><div class="wish-public-author-identity"><h1 id="wishPublicAuthorName">حساب صاحب المقطع</h1><p>المقاطع المنشورة للعموم</p><p id="wishPublicAuthorBio" class="wish-profile-bio" hidden></p></div></div>
   <div class="wish-public-author-actions"><p id="wishPublicAuthorCount" class="wish-public-author-count"></p><button id="wishPublicAuthorRefresh" class="btn secondary" type="button" onclick="loadWishPublicAuthor()">تحديث</button></div>
   <div id="wishAuthorFollowPanel" class="wish-author-follow-panel" hidden>
     <div class="wish-follow-stats"><div><strong id="wishAuthorFollowerCount">—</strong><span>متابع</span></div><div><strong id="wishAuthorFollowingCount">—</strong><span>يتابع</span></div></div>
@@ -463,6 +479,22 @@ header .tabs button{min-height:44px;padding:8px 6px;white-space:nowrap}
   <div id="wishFollowingList" aria-busy="false"></div>
   <button id="wishFollowingMore" class="btn secondary wish-following-more" type="button" onclick="loadWishFollowing(true)" hidden>عرض المزيد</button>
 </div></section>
+<section id="profile-edit"><div class="content">
+  <button class="btn secondary wish-public-author-back" type="button" onclick="openPage('profile')">إلغاء والعودة إلى حسابي</button>
+  <h1 class="h1">تعديل الملف الشخصي</h1>
+  <p class="sub">اسمك وصورتك ونبذتك تظهر في صفحتك العامة وقوائم المتابعة. التغييرات تُنشر عند الضغط على الحفظ.</p>
+  <div class="card wish-profile-preview"><div id="wishProfilePreviewAvatar" class="wish-profile-avatar" aria-hidden="true">👤</div><h2 id="wishProfilePreviewName">اسمك في WISH</h2><p id="wishProfilePreviewBio" class="wish-profile-bio">نبذتك تظهر هنا</p><span class="tiny">معاينة قبل الحفظ</span></div>
+  <form onsubmit="event.preventDefault();saveWishProfile()">
+    <label for="wishProfileImageInput">صورة الحساب</label><input id="wishProfileImageInput" type="file" accept="image/jpeg,image/png,image/webp" onchange="chooseWishProfileImage()">
+    <p class="wish-profile-help">JPG أو PNG أو WebP حتى 10 ميجابايت. تُجهّز الصورة بقص مربع وتظهر داخل دائرة.</p>
+    <button id="wishProfileRemoveImage" class="btn secondary" type="button" onclick="removeWishProfileImage()" hidden>إزالة الصورة</button>
+    <label for="wishProfileNameInput">الاسم الظاهر للجميع</label><input id="wishProfileNameInput" type="text" maxlength="70" autocomplete="nickname" placeholder="اسمك في WISH" oninput="updateWishProfileDraft()"><p id="wishProfileNameLength" class="wish-profile-length" aria-live="polite">0 / 35</p>
+    <label for="wishProfileBioInput">نبذة عنك</label><textarea id="wishProfileBioInput" rows="4" maxlength="320" placeholder="اكتب نبذة قصيرة عنك" oninput="updateWishProfileDraft()"></textarea><p id="wishProfileBioLength" class="wish-profile-length" aria-live="polite">0 / 160</p>
+    <p id="wishProfileEditStatus" class="wish-profile-status" role="status" aria-live="polite"></p>
+    <button id="wishProfileReloadButton" class="btn secondary wish-profile-full" type="button" onclick="openWishProfileEditor()" hidden>تحميل آخر نسخة من الملف</button>
+    <button id="wishProfileSaveButton" class="btn wish-profile-full" type="submit" disabled>حفظ التغييرات</button>
+  </form>
+</div></section>
 <section id="profile"><div class="content"><div class="h1">👤 حسابي</div><div class="sub">حسابات WISH التجريبية مرتبطة بخدمة Supabase. تقدر تتابع طلباتك واهتماماتك وترسل ملاحظاتك من هنا.</div>
 <div class="card" id="accountCard"><h3 style="margin-top:0">🔐 حساب WISH</h3>
 <div id="authSetup" class="notice">الحسابات الحقيقية غير مفعّلة بعد. سنربطها بخدمة Supabase، ولا نخزّن كلمات المرور في GitHub.</div>
@@ -477,7 +509,7 @@ header .tabs button{min-height:44px;padding:8px 6px;white-space:nowrap}
   <button id="wishForgotTrigger" class="wish-recovery-link" type="button" onclick="openWishResetRequest()" hidden>🔑 نسيت كلمة المرور؟</button>
   <div class="notice">هذا تسجيل حقيقي فقط بعد ربط Supabase. قد يلزم تأكيد البريد الإلكتروني. لا تشارك كلمة المرور مع أحد.</div>
 </div>
-<div id="authSigned" style="display:none"><div class="auth-name" id="authDisplayName"></div><div class="auth-email" id="authDisplayEmail"></div><p class="hintline">✅ مسجّل الدخول. تستطيع نشر فيديو MP4 تجريبي من صفحة «إضافة» بعد الموافقة على النشر العام.</p><button class="wish-recovery-link" type="button" onclick="openWishResetRequest()">🔐 استعادة كلمة مرور حساب آخر</button><button class="btn secondary" type="button" onclick="signOutWish()">تسجيل الخروج</button></div>
+<div id="authSigned" style="display:none"><div class="wish-account-identity"><div id="wishAccountAvatar" class="wish-profile-avatar" aria-hidden="true">👤</div><div class="auth-name" id="authDisplayName"></div></div><p id="wishAccountBio" class="wish-profile-bio" hidden></p><div class="auth-email" id="authDisplayEmail"></div><p class="hintline">✅ مسجّل الدخول. تستطيع نشر فيديو MP4 تجريبي من صفحة «إضافة» بعد الموافقة على النشر العام.</p><button id="wishProfileEditButton" class="btn wish-profile-edit-entry" type="button" onclick="openWishProfileEditor()">تعديل الملف الشخصي</button><p id="wishOwnProfileStatus" class="wish-profile-status" role="status" aria-live="polite"></p><button id="wishProfileCleanupButton" class="btn secondary wish-profile-cleanup" type="button" onclick="wishCleanupProfileAvatars()" hidden>إعادة محاولة حذف ملفات الصور السابقة</button><button class="wish-recovery-link" type="button" onclick="openWishResetRequest()">🔐 استعادة كلمة مرور حساب آخر</button><button class="btn secondary" type="button" onclick="signOutWish()">تسجيل الخروج</button></div>
 <div id="wishResetRequest" class="wish-recovery-section" hidden>
   <h4>🔑 استعادة كلمة المرور</h4>
   <p class="auth-note">اكتب بريد الحساب اللي نسيت كلمة مروره. ما راح نسجّل خروجك من أي حساب عشان نرسل الطلب.</p>
@@ -528,6 +560,7 @@ header .tabs button{min-height:44px;padding:8px 6px;white-space:nowrap}
     <p>التسجيل اختياري للتصفح، لكنه مطلوب للطلبات التجريبية وتسجيل الاهتمام وإرسال التقييم. تُدار الحسابات بالبريد وكلمة المرور عبر Supabase، وتُحفظ بيانات حسابك وطلباتك وتجاربك المرتبطة به لدى الخدمة.</p>
     <ul>
       <li>الفيديوهات والمنتجات التي تنشرها للعامة يمكن أن يراها الآخرون. يستطيع صاحب الفيديو حذفه من حسابه بعد التأكيد.</li>
+      <li>يمكنك تعديل الاسم والصورة والنبذة من «حسابي». صورة الحساب تُنشر للعامة، ويظهر اسمك المعدّل في صفحتك وقوائم المتابعة والتعليقات الجديدة.</li>
       <li>عند متابعة حساب، يظهر اسم حسابك لصاحبه في قائمة متابعيه. قائمتا متابعيك ومتابعاتك خاصتان بحسابك، وتظهر أعدادهما في صفحتك العامة.</li>
       <li>السلة وأمنيات العرض التجريبي تُخزَّن محليًا في المتصفح، وقد لا تنتقل إلى جهاز آخر.</li>
       <li>اهتمامات الشراء والطلبات التجريبية تُحفظ في Supabase؛ عدد المهتمين يظهر للتاجر دون عرض هوياتهم، والطلبات يشاهدها طرفاها.</li>
@@ -1451,6 +1484,7 @@ async function toggleVideo(id){
 function openPage(id){
  closeWishVideoShareDialog(false);
  closeWishVideoComments(false);
+ if(id!=='profile-edit')closeWishProfileEditor();
  if(id!=='public-author')closeWishPublicAuthorView();
  if(id!=='following')closeWishFollowingView();
  if(id!=='followers')closeWishFollowersView();
@@ -1462,7 +1496,7 @@ function openPage(id){
  document.querySelectorAll('header .tabs button[data-page]').forEach(button=>{const active=button.dataset.page===id;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')});
  if(id==='following-feed'){document.getElementById('nav-feed').classList.add('active');renderWishFollowingFeed();if(!wishFollowingFeedLoaded||wishFollowingFeedUid!==wishFeedCurrentUserId)loadWishFollowingFeed()}
  if(id==='wishes')renderWishes();
- if(id==='seller'||id==='my-videos')document.getElementById('nav-profile').classList.add('active');
+ if(id==='seller'||id==='my-videos'||id==='profile-edit')document.getElementById('nav-profile').classList.add('active');
  if(id==='my-videos')loadWishMyVideos();
  if(id==='followers'){document.getElementById('nav-profile').classList.add('active');loadWishFollowers()}
  if(id==='following'){document.getElementById('nav-profile').classList.add('active');loadWishFollowing()}
@@ -1471,7 +1505,7 @@ function openPage(id){
  if(id==='feed'&&wishAuthClient)loadCloudVideos();
  if(id==='market')loadMarketProducts();
  if(id==='cart'){renderWishDemoCart();if(!marketProducts.length)loadMarketProducts()}
- if(id==='profile'){loadWishFollowStates([wishFeedCurrentUserId]);loadWishAffiliateStats();loadWishDemoOrders();loadWishInterestMine();if(!document.getElementById('wishFeedbackAdminCard').hidden)loadWishFeedbackAdmin()}
+ if(id==='profile'){loadWishOwnProfile(true);loadWishFollowStates([wishFeedCurrentUserId]);loadWishAffiliateStats();loadWishDemoOrders();loadWishInterestMine();if(!document.getElementById('wishFeedbackAdminCard').hidden)loadWishFeedbackAdmin()}
  window.scrollTo({top:0,behavior:'instant'});
  if(id==='feed'||id==='following-feed')setupWishFeedAutoplay();
 }
@@ -1915,6 +1949,168 @@ async function publishToWISH(){
   wishVideoUploading=false;button.disabled=false;button.textContent='🌐 نشر الفيديو للجميع (تجريبي)';
  }
 }
+// WISH editable profiles: asynchronous work is bound to a viewer epoch.
+const WISH_PROFILE_AVATAR_BUCKET='wish-profile-avatars',WISH_PROFILE_MAX_IMAGE=2097152;
+const wishProfileCards=new Map(),wishProfileCardReads=new Map(),wishProfileCardRevisions=new Map(),wishProfileCleanupRunning=new Map();
+let wishOwnProfile=null,wishOwnProfileLoading=false,wishOwnProfileError='',wishOwnProfileRequest=0,wishOwnProfileRead=null;
+let wishProfileEditorSerial=0,wishProfileFileSerial=0,wishProfileDraft=null,wishProfileSavePending=null;
+function wishProfileContext(){return {uid:wishFeedCurrentUserId,epoch:wishVideoDeleteAuthEpoch}}
+function wishProfileContextCurrent(ctx){return ctx.uid===wishFeedCurrentUserId&&ctx.epoch===wishVideoDeleteAuthEpoch}
+function wishAssertProfileContext(ctx){if(!wishProfileContextCurrent(ctx)){const e=new Error('Account changed');e.code='WISH_PROFILE_ACCOUNT_CHANGED';throw e}}
+async function wishVerifyProfileUser(ctx){const {data,error}=await wishAuthClient.auth.getUser();wishAssertProfileContext(ctx);if(error)throw error;if(data?.user?.id!==ctx.uid){const e=new Error('Account changed');e.code='WISH_PROFILE_ACCOUNT_CHANGED';throw e}}
+function wishNormalizeProfileName(value){return String(value||'').replace(/\s+/gu,' ').trim()}
+function wishNormalizeProfileBio(value){return String(value||'').replace(/\r\n?/g,'\n').trim()}
+function wishValidAvatarPath(path,owner){return path===null||wishVideoUuid(owner)&&typeof path==='string'&&new RegExp('^'+owner+'/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}[.]jpg$').test(path)}
+function wishAvatarUrl(path,owner){if(!path||!wishValidAvatarPath(path,owner)||!wishAuthClient)return '';try{return wishAuthClient.storage.from(WISH_PROFILE_AVATAR_BUCKET).getPublicUrl(path).data.publicUrl||''}catch(e){return ''}}
+function wishParseOwnProfile(row,ctx){
+ if(row?.owner_id!==ctx.uid||row.viewer_id!==ctx.uid||typeof row.display_name!=='string'||!row.display_name.trim()||Array.from(row.display_name).length>35||typeof row.bio!=='string'||Array.from(row.bio).length>160||!wishValidAvatarPath(row.avatar_path,ctx.uid)||!Number.isSafeInteger(row.revision)||row.revision<0||(row.revision===0?row.request_id!==null:!wishVideoUuid(row.request_id)))return null;
+ return {uid:ctx.uid,epoch:ctx.epoch,id:row.owner_id,name:row.display_name,bio:row.bio,avatar:row.avatar_path,revision:row.revision,requestId:row.request_id};
+}
+function wishCurrentOwnProfile(){return wishOwnProfile&&wishProfileContextCurrent(wishOwnProfile)&&wishOwnProfile.id===wishFeedCurrentUserId?wishOwnProfile:null}
+function wishProfileCard(id){const card=wishProfileCards.get(id);return card&&wishProfileContextCurrent(card)?card:null}
+function wishProfileName(id,fallback='عضو WISH'){const own=wishCurrentOwnProfile();return own?.id===id?own.name:wishProfileCard(id)?.name||fallback}
+function wishProfileAvatarValue(id){const own=wishCurrentOwnProfile();return own?.id===id?own.avatar:wishProfileCard(id)?.avatar||null}
+function wishProfileAvatarMarkup(id,name){
+ const initials=Array.from(name||'عضو WISH').slice(0,2).join(''),src=wishAvatarUrl(wishProfileAvatarValue(id),id);
+ return `<span class="wish-profile-list-avatar" data-profile-avatar="${escapeHtml(id)}" data-initials="${escapeHtml(initials)}" aria-hidden="true">${src?`<img src="${escapeHtml(src)}" alt="" loading="lazy" decoding="async" onerror="wishProfileAvatarFailed(this)">`:escapeHtml(initials)}</span>`;
+}
+function wishProfileAvatarFailed(image){const parent=image.parentElement;if(parent)parent.textContent=parent.dataset.initials||'👤'}
+function wishPaintProfileAvatar(element,id,name){
+ if(!element)return;const initials=Array.from(name||'عضو WISH').slice(0,2).join(''),src=wishAvatarUrl(wishProfileAvatarValue(id),id);
+ element.dataset.initials=initials;element.innerHTML=src?`<img src="${escapeHtml(src)}" alt="" decoding="async" onerror="wishProfileAvatarFailed(this)">`:escapeHtml(initials);
+}
+function wishSyncProfileCards(ids){
+ for(const id of ids){const card=wishProfileCard(id);document.querySelectorAll('[data-profile-avatar="'+id+'"]').forEach(el=>wishPaintProfileAvatar(el,id,card?.name||el.dataset.initials||'عضو WISH'));if(card?.name)document.querySelectorAll('[data-profile-name="'+id+'"]').forEach(el=>{el.textContent=card.name})}
+ renderWishOwnProfileSummary();if(ids.includes(wishPublicAuthorId))renderWishPublicAuthorHeading();
+}
+async function loadWishProfileCards(requested,force=false){
+ if(!wishAuthClient)return false;const ctx=wishProfileContext(),ids=[...new Set(requested.filter(wishVideoUuid))].filter(id=>force||!wishProfileCard(id)||wishProfileCard(id).error||Date.now()-(wishProfileCard(id).updatedAt||0)>30000);
+ if(!ids.length)return true;if(ids.length>100){const chunks=[];for(let i=0;i<ids.length;i+=100)chunks.push(loadWishProfileCards(ids.slice(i,i+100),force));return (await Promise.all(chunks)).every(Boolean)}
+ const tokens=new Map(ids.map(id=>[id,{...ctx,revision:wishProfileCardRevisions.get(id)||0}]));for(const [id,token] of tokens)wishProfileCardReads.set(id,token);
+ const current=id=>wishProfileContextCurrent(ctx)&&wishProfileCardReads.get(id)===tokens.get(id)&&(wishProfileCardRevisions.get(id)||0)===tokens.get(id).revision;
+ try{
+  const {data,error}=await wishAuthClient.rpc('wish_profile_cards',{p_owner_ids:ids});if(!wishProfileContextCurrent(ctx))return false;
+  if(error||!Array.isArray(data))throw error||new Error('Invalid profiles');const rows=new Map();
+  for(const row of data){if(!ids.includes(row?.owner_id)||rows.has(row.owner_id)||row.viewer_id!==ctx.uid||typeof row.display_name!=='string'||!row.display_name.trim()||Array.from(row.display_name).length>35||typeof row.bio!=='string'||Array.from(row.bio).length>160||!wishValidAvatarPath(row.avatar_path,row.owner_id)||!Number.isSafeInteger(row.revision)||row.revision<0||row.video_count==null||!Number.isSafeInteger(Number(row.video_count))||Number(row.video_count)<0)throw new Error('Invalid profile card');rows.set(row.owner_id,{...ctx,id:row.owner_id,name:row.display_name,bio:row.bio,avatar:row.avatar_path,revision:row.revision,videoCount:Number(row.video_count),updatedAt:Date.now(),error:false})}
+  for(const id of ids)if(current(id))wishProfileCards.set(id,rows.get(id)||{...ctx,id,missing:true,updatedAt:Date.now()});return true;
+ }catch(error){for(const id of ids)if(current(id))wishProfileCards.set(id,{...wishProfileCard(id),...ctx,id,error:true});return false}
+ finally{for(const id of ids)if(wishProfileCardReads.get(id)===tokens.get(id))wishProfileCardReads.delete(id);if(wishProfileContextCurrent(ctx))wishSyncProfileCards(ids)}
+}
+function renderWishOwnProfileSummary(){
+ const uid=wishFeedCurrentUserId,own=wishCurrentOwnProfile(),signed=wishVideoUuid(uid),name=signed?wishProfileName(uid,wishCurrentAuthSession?.user?.id===uid?wishCurrentAuthSession.user.user_metadata?.display_name||'عضو WISH':'عضو WISH'):'';
+ const title=document.getElementById('authDisplayName');if(title&&signed)title.textContent=name;
+ wishPaintProfileAvatar(document.getElementById('wishAccountAvatar'),uid,name);
+ const bio=document.getElementById('wishAccountBio');if(bio){bio.textContent=own?.bio||'';bio.hidden=!own?.bio}
+ const edit=document.getElementById('wishProfileEditButton');if(edit)edit.disabled=!signed||!!wishProfileSavePending&&wishProfileContextCurrent(wishProfileSavePending);
+ const status=document.getElementById('wishOwnProfileStatus');if(status){status.textContent=signed?(wishOwnProfileError||(wishOwnProfileLoading?'جار تحديث ملفك الشخصي...':'')):'';status.classList.toggle('error',!!wishOwnProfileError)}
+ const cleanup=document.getElementById('wishProfileCleanupButton');if(cleanup){cleanup.hidden=!signed||!wishProfileCleanupQueue(uid).length;cleanup.disabled=wishProfileCleanupRunning.has(uid)}
+}
+function loadWishOwnProfile(force=false){
+ const ctx=wishProfileContext();if(!wishVideoUuid(ctx.uid)||!wishAuthClient)return Promise.resolve(false);
+ if(!force&&wishCurrentOwnProfile())return Promise.resolve(true);
+ if(!force&&wishOwnProfileRead&&wishProfileContextCurrent(wishOwnProfileRead))return wishOwnProfileRead.promise;
+ const token=++wishOwnProfileRequest,read={...ctx,token,promise:null};wishOwnProfileRead=read;wishOwnProfileLoading=true;wishOwnProfileError='';renderWishOwnProfileSummary();
+ const current=()=>wishProfileContextCurrent(ctx)&&token===wishOwnProfileRequest;
+ read.promise=(async()=>{try{const {data,error}=await wishAuthClient.rpc('wish_profile_get',{p_expected_user_id:ctx.uid});if(!current())return false;const parsed=Array.isArray(data)&&data.length===1?wishParseOwnProfile(data[0],ctx):null;if(error||!parsed)throw error||new Error('Invalid own profile');wishOwnProfile=parsed;return true}catch(error){if(current())wishOwnProfileError='تعذر تحديث ملفك الشخصي. حاول مرة أخرى.';return false}finally{if(current()){wishOwnProfileLoading=false;wishOwnProfileRead=null;renderWishOwnProfileSummary()}}})();return read.promise;
+}
+function wishRevokeProfileDraftUrl(){if(wishProfileDraft?.imageUrl){URL.revokeObjectURL(wishProfileDraft.imageUrl);wishProfileDraft.imageUrl=null}}
+function closeWishProfileEditor(){
+ const draft=wishProfileDraft;if(draft?.attempt?.newPath&&!draft.attempt.confirmed&&!wishProfileSavePending)wishQueueProfileCleanup(draft.uid,draft.attempt.newPath);
+ wishRevokeProfileDraftUrl();wishProfileEditorSerial++;wishProfileFileSerial++;wishProfileDraft=null;
+ for(const id of ['wishProfileNameInput','wishProfileBioInput','wishProfileImageInput']){const el=document.getElementById(id);if(el)el.value=''}
+}
+function wishProfileAuthChanged(){
+ closeWishProfileEditor();wishOwnProfileRequest++;wishOwnProfileRead=null;wishOwnProfile=null;wishOwnProfileLoading=false;wishOwnProfileError='';wishProfileSavePending=null;wishProfileCards.clear();wishProfileCardReads.clear();wishProfileCardRevisions.clear();renderWishOwnProfileSummary();renderWishProfileEditor();
+ const ctx=wishProfileContext();if(wishVideoUuid(ctx.uid))setTimeout(()=>{if(wishProfileContextCurrent(ctx)){loadWishOwnProfile();wishCleanupProfileAvatars()}},0);
+}
+async function openWishProfileEditor(){
+ if(!wishVideoUuid(wishFeedCurrentUserId)){openPage('profile');return false}
+ if(wishProfileSavePending&&wishProfileContextCurrent(wishProfileSavePending)){showToast('جار حفظ ملفك الشخصي...');return false}
+ closeWishProfileEditor();const ctx={...wishProfileContext(),serial:wishProfileEditorSerial};openPage('profile-edit');renderWishProfileEditor();
+ const ok=await loadWishOwnProfile(true);if(!wishProfileContextCurrent(ctx)||ctx.serial!==wishProfileEditorSerial||!document.getElementById('profile-edit').classList.contains('active'))return false;
+ if(!ok){renderWishProfileEditor();return false}const own=wishCurrentOwnProfile();wishProfileDraft={...ctx,base:{...own},name:own.name,bio:own.bio,avatar:own.avatar,imageBlob:null,imageUrl:null,encoding:false,status:'',error:false,uncertain:false,conflict:false,attempt:null};renderWishProfileEditor();return true;
+}
+function wishProfileDraftCurrent(){return wishProfileDraft&&wishProfileContextCurrent(wishProfileDraft)?wishProfileDraft:null}
+function wishProfileDraftDirty(draft){return !!draft&&(wishNormalizeProfileName(draft.name)!==draft.base.name||wishNormalizeProfileBio(draft.bio)!==draft.base.bio||draft.avatar!==draft.base.avatar||!!draft.imageBlob)}
+function updateWishProfileDraft(){const d=wishProfileDraftCurrent();if(!d||wishProfileSavePending||d.uncertain||d.conflict)return;d.name=document.getElementById('wishProfileNameInput').value;d.bio=document.getElementById('wishProfileBioInput').value;d.status='';d.error=false;renderWishProfileEditor()}
+function renderWishProfileEditor(){
+ const section=document.getElementById('profile-edit');if(!section)return;const d=wishProfileDraftCurrent(),busy=!!wishProfileSavePending&&wishProfileContextCurrent(wishProfileSavePending),locked=busy||!d||d.encoding||d.uncertain||d.conflict;
+ for(const id of ['wishProfileNameInput','wishProfileBioInput','wishProfileImageInput','wishProfileRemoveImage']){const el=document.getElementById(id);if(el)el.disabled=!!locked}
+ const name=document.getElementById('wishProfileNameInput'),bio=document.getElementById('wishProfileBioInput');if(name.value!==(d?.name||''))name.value=d?.name||'';if(bio.value!==(d?.bio||''))bio.value=d?.bio||'';
+ document.getElementById('wishProfileNameLength').textContent=Array.from(d?.name||'').length+' / 35';document.getElementById('wishProfileBioLength').textContent=Array.from(d?.bio||'').length+' / 160';
+ const previewName=wishNormalizeProfileName(d?.name)||'اسمك في WISH',preview=document.getElementById('wishProfilePreviewAvatar');preview.dataset.initials=Array.from(previewName).slice(0,2).join('');const src=d?.imageUrl||wishAvatarUrl(d?.avatar,d?.uid);preview.innerHTML=src?`<img src="${escapeHtml(src)}" alt="معاينة صورة الحساب" onerror="wishProfileAvatarFailed(this)">`:escapeHtml(preview.dataset.initials);
+ document.getElementById('wishProfilePreviewName').textContent=previewName;document.getElementById('wishProfilePreviewBio').textContent=d?.bio||'نبذتك تظهر هنا';
+ const status=document.getElementById('wishProfileEditStatus');status.textContent=d?.status||(d?.encoding?'جار تجهيز الصورة...':!d?(wishOwnProfileError||(wishVideoUuid(wishFeedCurrentUserId)?'جار تحميل ملفك...':'سجّل دخولك لتعديل ملفك.')):'');status.classList.toggle('error',!!d?.error||!!wishOwnProfileError);
+ const save=document.getElementById('wishProfileSaveButton');save.disabled=busy||!d||d.encoding||d.conflict||!wishProfileDraftDirty(d);save.textContent=busy?'جار الحفظ...':d?.uncertain?'إعادة محاولة الحفظ':'حفظ التغييرات';
+ document.getElementById('wishProfileReloadButton').hidden=!!d&&!d.conflict;document.getElementById('wishProfileReloadButton').disabled=busy||wishOwnProfileLoading;
+ document.getElementById('wishProfileRemoveImage').hidden=!d?.avatar&&!d?.imageBlob;
+}
+async function wishEncodeProfileImage(file){
+ if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size<1||file.size>10485760)throw new Error('اختر صورة JPG أو PNG أو WebP بحجم لا يتجاوز 10 ميجابايت.');
+ let image,url;try{if(typeof createImageBitmap==='function')image=await createImageBitmap(file,{imageOrientation:'from-image'});else{url=URL.createObjectURL(file);image=await new Promise((resolve,reject)=>{const el=new Image();el.onload=()=>resolve(el);el.onerror=()=>reject(new Error('تعذر قراءة الصورة.'));el.src=url})}
+ const width=image.width||image.naturalWidth,height=image.height||image.naturalHeight;if(!width||!height||width>16384||height>16384||width*height>40000000)throw new Error('أبعاد الصورة كبيرة. اختر صورة أصغر.');
+ const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;const context=canvas.getContext('2d');if(!context)throw new Error('تعذر تجهيز الصورة.');context.fillStyle='#ffffff';context.fillRect(0,0,512,512);const side=Math.min(width,height);context.drawImage(image,(width-side)/2,(height-side)/2,side,side,0,0,512,512);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.85));if(!blob||blob.type!=='image/jpeg'||blob.size<1||blob.size>WISH_PROFILE_MAX_IMAGE)throw new Error('تعذر تجهيز الصورة. اختر صورة أخرى.');return blob;
+ }finally{if(image?.close)image.close();if(url)URL.revokeObjectURL(url)}
+}
+async function chooseWishProfileImage(){
+ const input=document.getElementById('wishProfileImageInput'),file=input.files?.[0],d=wishProfileDraftCurrent();input.value='';if(!file||!d||wishProfileSavePending||d.uncertain||d.conflict)return false;
+ const serial=++wishProfileFileSerial;d.encoding=true;d.status='';d.error=false;renderWishProfileEditor();
+ try{const blob=await wishEncodeProfileImage(file);if(d!==wishProfileDraft||!wishProfileContextCurrent(d)||serial!==wishProfileFileSerial)return false;wishRevokeProfileDraftUrl();d.imageBlob=blob;d.imageUrl=URL.createObjectURL(blob);d.attempt=null;return true}
+ catch(error){if(d===wishProfileDraft&&wishProfileContextCurrent(d)&&serial===wishProfileFileSerial){d.error=true;d.status=error.message||'تعذر تجهيز الصورة.'}return false}
+ finally{if(d===wishProfileDraft&&wishProfileContextCurrent(d)&&serial===wishProfileFileSerial){d.encoding=false;renderWishProfileEditor()}}
+}
+function removeWishProfileImage(){const d=wishProfileDraftCurrent();if(!d||wishProfileSavePending||d.uncertain||d.conflict)return;wishProfileFileSerial++;wishRevokeProfileDraftUrl();d.imageBlob=null;d.avatar=null;d.attempt=null;d.status='';d.error=false;renderWishProfileEditor()}
+function wishProfileCleanupQueue(uid){if(!wishVideoUuid(uid))return [];try{const rows=JSON.parse(localStorage.getItem('wish-profile-cleanup-'+uid)||'[]');return Array.isArray(rows)?[...new Set(rows.filter(path=>path&&wishValidAvatarPath(path,uid)))].slice(0,1000):[]}catch(e){return []}}
+function wishWriteProfileCleanupQueue(uid,rows){try{localStorage.setItem('wish-profile-cleanup-'+uid,JSON.stringify([...new Set(rows)]))}catch(e){}}
+function wishQueueProfileCleanup(uid,path){if(!path||!wishValidAvatarPath(path,uid))return;wishWriteProfileCleanupQueue(uid,[...wishProfileCleanupQueue(uid),path])}
+async function wishCleanupProfileAvatars(){
+ const ctx=wishProfileContext();if(!wishVideoUuid(ctx.uid)||!wishAuthClient||wishProfileCleanupRunning.has(ctx.uid)&&wishProfileContextCurrent(wishProfileCleanupRunning.get(ctx.uid)))return false;
+ const paths=wishProfileCleanupQueue(ctx.uid).slice(0,50);if(!paths.length)return true;wishProfileCleanupRunning.set(ctx.uid,ctx);renderWishOwnProfileSummary();let success=true;
+ try{await wishVerifyProfileUser(ctx);if(!await loadWishOwnProfile())return false;wishAssertProfileContext(ctx);for(const path of paths){wishAssertProfileContext(ctx);if(wishCurrentOwnProfile()?.avatar===path){wishWriteProfileCleanupQueue(ctx.uid,wishProfileCleanupQueue(ctx.uid).filter(x=>x!==path));continue}
+   await wishAuthClient.storage.from(WISH_PROFILE_AVATAR_BUCKET).remove([path]);wishAssertProfileContext(ctx);const filename=path.split('/')[1],{data,error}=await wishAuthClient.storage.from(WISH_PROFILE_AVATAR_BUCKET).list(ctx.uid,{limit:100,search:filename});wishAssertProfileContext(ctx);
+   if(error||!Array.isArray(data)||data.some(row=>row.name===filename)){success=false;continue}wishWriteProfileCleanupQueue(ctx.uid,wishProfileCleanupQueue(ctx.uid).filter(x=>x!==path));
+  }return success;
+ }catch(error){return false}
+ finally{if(wishProfileCleanupRunning.get(ctx.uid)===ctx)wishProfileCleanupRunning.delete(ctx.uid);if(wishProfileContextCurrent(ctx))renderWishOwnProfileSummary()}
+}
+function wishApplySavedProfile(saved){
+ wishOwnProfileRequest++;wishOwnProfileRead=null;wishOwnProfileLoading=false;wishOwnProfileError='';wishOwnProfile=saved;
+ wishProfileCardRevisions.set(saved.id,(wishProfileCardRevisions.get(saved.id)||0)+1);wishProfileCardReads.delete(saved.id);wishProfileCards.set(saved.id,{...saved,updatedAt:Date.now()});
+ wishPublicAuthorRevisions.set(saved.id,(wishPublicAuthorRevisions.get(saved.id)||0)+1);wishPublicAuthorReads.delete(saved.id);const old=wishPublicAuthorStates.get(saved.id);if(old?.count>0)wishPublicAuthorStates.set(saved.id,{...old,name:saved.name,updatedAt:0});
+ renderWishOwnProfileSummary();wishSyncPublicAuthorNames([saved.id]);wishSyncProfileCards([saved.id]);
+}
+async function saveWishProfile(){
+ const d=wishProfileDraftCurrent();if(!d||d.encoding||d.conflict||wishProfileSavePending||!wishAuthClient||!wishProfileDraftDirty(d))return false;
+ const name=wishNormalizeProfileName(d.name),bio=wishNormalizeProfileBio(d.bio);if(Array.from(name).length<2||Array.from(name).length>35||Array.from(bio).length>160||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(name+bio)){d.status='اكتب اسمًا من حرفين إلى 35 حرفًا، ونبذة لا تتجاوز 160 حرفًا.';d.error=true;renderWishProfileEditor();return false}
+ const attempt=d.attempt||{...wishProfileContext(),name,bio,avatar:d.avatar,expectedRevision:d.base.revision,requestId:crypto.randomUUID(),oldPath:d.base.avatar,blob:d.imageBlob,uploaded:false,writeSent:false,confirmed:false};
+ if(attempt.blob&&!attempt.newPath){attempt.newPath=attempt.uid+'/'+attempt.requestId+'.jpg';attempt.avatar=attempt.newPath}d.attempt=attempt;wishProfileSavePending=attempt;d.status='جار حفظ ملفك...';d.error=false;renderWishProfileEditor();renderWishOwnProfileSummary();
+ const current=()=>wishProfileContextCurrent(attempt)&&wishProfileSavePending===attempt;
+ const confirm=saved=>{if(!saved||saved.requestId!==attempt.requestId||saved.name!==attempt.name||saved.bio!==attempt.bio||saved.avatar!==attempt.avatar||saved.revision!==attempt.expectedRevision+1)throw new Error('Unconfirmed profile');return saved};
+ let saved=null;
+ try{
+  await wishVerifyProfileUser(attempt);
+  if(attempt.blob&&!attempt.uploaded){
+   const result=await wishAuthClient.storage.from(WISH_PROFILE_AVATAR_BUCKET).upload(attempt.newPath,attempt.blob,{contentType:'image/jpeg',cacheControl:'3600',upsert:false});wishAssertProfileContext(attempt);
+   if(result.error){const {data,error}=await wishAuthClient.storage.from(WISH_PROFILE_AVATAR_BUCKET).list(attempt.uid,{limit:100,search:attempt.requestId+'.jpg'});wishAssertProfileContext(attempt);const object=Array.isArray(data)?data.find(row=>row.name===attempt.requestId+'.jpg'):null;if(error||object?.metadata?.mimetype!=='image/jpeg'||Number(object.metadata.size)!==attempt.blob.size)throw new Error('تعذر رفع الصورة أو التأكد من اكتمالها. أعد المحاولة.')}attempt.uploaded=true;
+  }
+  await wishVerifyProfileUser(attempt);attempt.writeSent=true;
+  const {data,error}=await wishAuthClient.rpc('wish_profile_save',{p_expected_user_id:attempt.uid,p_display_name:attempt.name,p_bio:attempt.bio,p_avatar_path:attempt.avatar,p_expected_revision:attempt.expectedRevision,p_request_id:attempt.requestId});wishAssertProfileContext(attempt);if(error)throw error;
+  saved=confirm(Array.isArray(data)&&data.length===1?wishParseOwnProfile(data[0],attempt):null);
+ }catch(error){
+  if(!current())return false;
+  if(attempt.writeSent){try{const {data,error:readError}=await wishAuthClient.rpc('wish_profile_get',{p_expected_user_id:attempt.uid});wishAssertProfileContext(attempt);const actual=!readError&&Array.isArray(data)&&data.length===1?wishParseOwnProfile(data[0],attempt):null;if(actual?.requestId===attempt.requestId)saved=confirm(actual);else if(actual&&actual.revision!==attempt.expectedRevision){d.conflict=true;d.status='تغيّر ملفك من جلسة أخرى. حمّل آخر نسخة قبل التعديل.'}}catch(readError){}}
+  if(!saved&&d===wishProfileDraft){d.uncertain=!d.conflict;d.error=true;d.status=d.status&&d.conflict?d.status:attempt.writeSent?'تعذر تأكيد الحفظ. أعد المحاولة بنفس التغييرات.':error.message||'تعذر حفظ الملف. حاول مرة أخرى.'}
+ }finally{
+  if(current()){
+   if(saved){attempt.confirmed=true;wishApplySavedProfile(saved);if(attempt.oldPath&&attempt.oldPath!==saved.avatar)wishQueueProfileCleanup(attempt.uid,attempt.oldPath);d.uncertain=false;d.error=false;d.status='تم حفظ ملفك الشخصي.';wishProfileSavePending=null;if(d===wishProfileDraft&&document.getElementById('profile-edit').classList.contains('active'))openPage('profile');showToast('تم حفظ ملفك الشخصي.');wishCleanupProfileAvatars()}
+   else wishProfileSavePending=null;
+   renderWishProfileEditor();renderWishOwnProfileSummary();
+  }
+ }
+ return !!saved;
+}
+// End WISH editable profiles.
+
 function renderWishFollowingFeedStatus(){
  const signed=wishVideoUuid(wishFeedCurrentUserId),same=wishFollowingFeedUid===wishFeedCurrentUserId;
  const pending=wishFollowPending.size>0,refresh=document.getElementById('wishFollowingFeedRefresh'),more=document.getElementById('wishFollowingFeedMore');
@@ -2090,7 +2286,7 @@ function renderWishFollowing(){
  document.getElementById('wishFollowingCount').textContent=own?.loaded&&own.available&&!own.error?own.following.toLocaleString('ar-SA')+' حسابًا تتابعه':'';
  status.textContent=wishFollowingError||(wishFollowingLoading?'جار تحميل متابعاتك...':wishFollowingLoaded?'':'افتح القائمة لعرض متابعاتك.');
  if(!rows.length){box.innerHTML=wishFollowingLoaded&&!wishFollowingLoading&&!wishFollowingError?(wishFollowingHasMore?'<div class="empty">حدّثت متابعاتك. اضغط عرض المزيد لمتابعة القائمة.</div>':'<div class="empty">ما تتابع حسابات حتى الآن. افتح صفحة صاحب مقطع واضغط متابعة.</div>'):'';return}
- box.innerHTML=rows.map(row=>{const pending=wishFollowPending.has(row.id),message=wishFollowMessages.get(row.id);return `<article class="wish-following-item" data-following-author="${escapeHtml(row.id)}"><h2>${escapeHtml(row.name)}</h2><p>${row.videoCount.toLocaleString('ar-SA')} مقطع منشور</p><div class="row"><button class="btn" type="button" data-author-id="${escapeHtml(row.id)}" onclick="openWishPublicAuthor(this.dataset.authorId)">عرض الحساب</button><button class="btn secondary" type="button" data-author-id="${escapeHtml(row.id)}" onclick="setWishAuthorFollow(this.dataset.authorId,false)"${pending?' disabled':''}>${pending?'جار الحفظ...':'إلغاء المتابعة'}</button></div>${message?`<p class="wish-follow-message${message.error?' error':''}" role="status">${escapeHtml(message.text)}</p>`:''}</article>`}).join('');
+ box.innerHTML=rows.map(row=>{const pending=wishFollowPending.has(row.id),message=wishFollowMessages.get(row.id);return `<article class="wish-following-item" data-following-author="${escapeHtml(row.id)}"><div class="wish-profile-list-heading">${wishProfileAvatarMarkup(row.id,row.name)}<h2 data-profile-name="${escapeHtml(row.id)}">${escapeHtml(row.name)}</h2></div><p>${row.videoCount.toLocaleString('ar-SA')} مقطع منشور</p><div class="row"><button class="btn" type="button" data-author-id="${escapeHtml(row.id)}" onclick="openWishPublicAuthor(this.dataset.authorId)">عرض الحساب</button><button class="btn secondary" type="button" data-author-id="${escapeHtml(row.id)}" onclick="setWishAuthorFollow(this.dataset.authorId,false)"${pending?' disabled':''}>${pending?'جار الحفظ...':'إلغاء المتابعة'}</button></div>${message?`<p class="wish-follow-message${message.error?' error':''}" role="status">${escapeHtml(message.text)}</p>`:''}</article>`}).join('');
 }
 async function loadWishFollowing(loadMore=false){
  const ctx=wishFollowContext();
@@ -2112,7 +2308,7 @@ async function loadWishFollowing(loadMore=false){
   if(visible.length){const last=visible.at(-1);wishFollowingCursor={time:last.time,id:last.id}}
   wishFollowingLoaded=true;return true;
  }catch(error){if(current())wishFollowingError='تعذر تحميل متابعاتك. تحقق من الاتصال ثم اضغط تحديث.';return false}
- finally{if(current()){wishFollowingLoading=false;renderWishFollowing()}}
+ finally{if(current()){wishFollowingLoading=false;renderWishFollowing();if(wishFollowingLoaded)loadWishProfileCards(wishFollowingRows.map(row=>row.id),true)}}
 }
 
 function renderWishFollowersSummary(){
@@ -2156,7 +2352,7 @@ function renderWishFollowers(){
  document.getElementById('wishFollowersCount').textContent=own?.loaded&&own.available&&!own.error?own.followers.toLocaleString('ar-SA')+' متابع':'';
  status.textContent=wishFollowersError||(wishFollowersLoading?'جار تحميل متابعينك...':wishFollowersLoaded?'':'افتح القائمة لعرض متابعينك.');
  if(!rows.length){box.innerHTML=wishFollowersLoaded&&!wishFollowersLoading&&!wishFollowersError?'<div class="empty">ما عندك متابعون حتى الآن. إذا تابعك حساب بيظهر هنا.</div>':'';return}
- box.innerHTML=rows.map(row=>`<article class="wish-following-item" data-follower-id="${escapeHtml(row.id)}"><h2>${escapeHtml(row.name)}</h2><p>${row.videoCount.toLocaleString('ar-SA')} مقطع منشور</p><button class="btn" type="button" data-author-id="${escapeHtml(row.id)}" onclick="openWishPublicAuthor(this.dataset.authorId)">عرض الحساب</button></article>`).join('');
+ box.innerHTML=rows.map(row=>`<article class="wish-following-item" data-follower-id="${escapeHtml(row.id)}"><div class="wish-profile-list-heading">${wishProfileAvatarMarkup(row.id,row.name)}<h2 data-profile-name="${escapeHtml(row.id)}">${escapeHtml(row.name)}</h2></div><p>${row.videoCount.toLocaleString('ar-SA')} مقطع منشور</p><button class="btn" type="button" data-author-id="${escapeHtml(row.id)}" onclick="openWishPublicAuthor(this.dataset.authorId)">عرض الحساب</button></article>`).join('');
 }
 async function loadWishFollowers(loadMore=false){
  const ctx=wishFollowContext();
@@ -2178,7 +2374,7 @@ async function loadWishFollowers(loadMore=false){
   if(visible.length){const last=visible.at(-1);wishFollowersCursor={time:last.time,id:last.id}}
   wishFollowersLoaded=true;return true;
  }catch(error){if(current())wishFollowersError='تعذر تحميل متابعينك. تحقق من الاتصال ثم اضغط تحديث.';return false}
- finally{if(current()){wishFollowersLoading=false;renderWishFollowers()}}
+ finally{if(current()){wishFollowersLoading=false;renderWishFollowers();if(wishFollowersLoaded)loadWishProfileCards(wishFollowersRows.map(row=>row.id),true)}}
 }
 
 function wishPublicAuthorIds(){
@@ -2186,12 +2382,12 @@ function wishPublicAuthorIds(){
 }
 function wishPublicAuthorMarkup(post){
  if(!post.cloud||!wishVideoUuid(post.owner_id))return escapeHtml(post.name);
- const state=wishPublicAuthorStates.get(post.owner_id),name=state?.name||'عرض حساب صاحب المقطع';
+ const state=wishPublicAuthorStates.get(post.owner_id),name=wishProfileName(post.owner_id,state?.name||'عرض حساب صاحب المقطع');
  return `<button class="wish-author-trigger" type="button" data-author-id="${escapeHtml(post.owner_id)}" onclick="openWishPublicAuthor(this.dataset.authorId)" aria-label="${escapeHtml('عرض حساب '+name)}" aria-busy="${!!state?.loading}"><span class="wish-author-name">${escapeHtml(name)}</span></button>`;
 }
 function wishSyncPublicAuthorNames(ids=wishPublicAuthorIds()){
  for(const id of ids){
-  const state=wishPublicAuthorStates.get(id),name=state?.name||'عرض حساب صاحب المقطع';
+  const state=wishPublicAuthorStates.get(id),name=wishProfileName(id,state?.name||'عرض حساب صاحب المقطع');
   document.querySelectorAll('.wish-author-trigger[data-author-id="'+id+'"]').forEach(button=>{
    const text=button.querySelector('.wish-author-name');if(text)text.textContent=name;
    button.setAttribute('aria-label','عرض حساب '+name);button.setAttribute('aria-busy',String(!!state?.loading));
@@ -2266,9 +2462,10 @@ function wishPublicAuthorRequestCurrent(request,owner,uid,epoch){
 }
 function renderWishPublicAuthorHeading(){
  const title=document.getElementById('wishPublicAuthorName');if(!title)return;
- const state=wishPublicAuthorStates.get(wishPublicAuthorId),privateName=wishFollowerProfileName(),name=state?.name||privateName||'حساب صاحب المقطع';
+ const state=wishPublicAuthorStates.get(wishPublicAuthorId),privateName=wishFollowerProfileName(),name=wishProfileName(wishPublicAuthorId,state?.name||privateName||'حساب صاحب المقطع');
  title.textContent=name;
- document.getElementById('wishPublicAuthorAvatar').textContent=state?.name||privateName?Array.from(name).slice(0,2).join(''):'👤';
+ wishPaintProfileAvatar(document.getElementById('wishPublicAuthorAvatar'),wishPublicAuthorId,name);
+ const bio=document.getElementById('wishPublicAuthorBio'),card=wishProfileCard(wishPublicAuthorId);bio.textContent=card?.bio||'';bio.hidden=!card?.bio;
  const total=wishPublicAuthorTotal??(state?.loaded?state.count:null);
  document.getElementById('wishPublicAuthorCount').textContent=total!==null?Number(total).toLocaleString('ar-SA')+' مقطع منشور':'';
  const note=document.getElementById('wishPublicAuthorNameStatus');
@@ -2305,7 +2502,7 @@ async function loadWishPublicAuthor(loadMore=false){
  const request=++wishPublicAuthorRequest,offset=loadMore?wishPublicAuthorOffset:0;
  if(!loadMore){wishPublicAuthorPosts=[];wishPublicAuthorOffset=0;wishPublicAuthorTotal=null;wishPublicAuthorHasMore=false;wishPublicAuthorLoaded=false}
  wishPublicAuthorLoading=true;wishPublicAuthorError='';renderWishPublicAuthor();
- loadWishPublicAuthorNames([owner],true);
+ loadWishPublicAuthorNames([owner],true);loadWishProfileCards([owner],true);
  if(!loadMore)loadWishFollowStates([owner]);
  try{
   if(!wishAuthClient)throw new Error('public videos unavailable');
@@ -3511,7 +3708,7 @@ async function toggleWishInterest(productId,button){
   }
 }
 
-function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){closeWishVideoShareDialog(false);wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;wishFollowingFeedAuthChanged();resetWishFollowing();resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();wishPublicAuthorAuthChanged();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session);renderWishFollowingSummary()}
+function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){closeWishVideoShareDialog(false);wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;wishProfileAuthChanged();wishFollowingFeedAuthChanged();resetWishFollowing();resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();wishPublicAuthorAuthChanged();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session);renderWishFollowingSummary();renderWishOwnProfileSummary()}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
