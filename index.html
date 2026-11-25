@@ -862,7 +862,33 @@ try{
 }catch(e){}
 let wishFeedIntersectionObserver=null,wishFeedVisibility=new Map(),wishActiveFeedVideo=null,wishFeedScrollFallback=null;
 let marketProducts=[],marketRequestId=0;
-let currentProduct=null;let wishes=[];try{wishes=JSON.parse(localStorage.getItem('wish-demo-wishes')||'[]')}catch(e){};
+// WISH account-scoped local wishes v2. The unowned legacy key is never imported.
+let currentProduct=null,wishes=[],wishListOwner=null,wishListReady=false,wishListEpoch=0,wishModalOwner=null,wishModalEpoch=-1;
+const WISH_LIST_PREFIX='wish-account-wishes-v2:';
+function readWishList(owner){
+ try{const rows=JSON.parse(localStorage.getItem(WISH_LIST_PREFIX+owner)||'[]');
+ if(!Array.isArray(rows))return [];
+ const names=new Set();return rows.filter(w=>w&&typeof w.product==='string'&&w.product.trim()&&w.product.length<=200&&['أتمناها','ناوي أشتريها'].includes(w.type)&&!names.has(w.product)&&names.add(w.product)).slice(0,200).map(w=>({product:w.product,type:w.type}));
+ }catch(e){return []}
+}
+function wishListAuthChanged(session){
+ const owner=session?.user?.id||'guest';
+ if(wishListReady&&owner===wishListOwner)return;
+ wishListEpoch++;wishListOwner=owner;wishListReady=true;wishes=readWishList(owner);
+ currentProduct=null;wishModalOwner=null;wishModalEpoch=-1;
+ document.getElementById('modal')?.classList.remove('show');renderWishes();
+}
+function beginWishSelection(product){
+ if(!wishListReady){showToast('انتظر اكتمال التحقق من الحساب ثم حاول مرة أخرى');return false}
+ currentProduct=product;wishModalOwner=wishListOwner;wishModalEpoch=wishListEpoch;return true;
+}
+function wishSelectionCurrent(){return wishListReady&&!!currentProduct&&wishModalOwner===wishListOwner&&wishModalEpoch===wishListEpoch}
+function persistWishList(next){
+ if(!wishListReady)return false;
+ try{localStorage.setItem(WISH_LIST_PREFIX+wishListOwner,JSON.stringify(next));wishes=next;return true}
+ catch(e){showToast('تعذر حفظ أمنياتك على هذا الجهاز؛ حاول مرة أخرى');return false}
+}
+// End WISH account-scoped local wishes v2.
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function validMerchantUrl(value){
  if(!value||typeof value!=='string'||value.length>1500||/\s/.test(value))return false;
@@ -1537,11 +1563,17 @@ function openPage(id){
 document.addEventListener('visibilitychange',()=>{if(document.hidden){stopWishFeedPlayback();stopWishMyVideosPlayback();stopWishPublicAuthorPlayback()}else if(wishActiveFeedPage())setupWishFeedAutoplay()});
 window.addEventListener('pagehide',()=>{stopWishFeedPlayback();stopWishMyVideosPlayback();stopWishPublicAuthorPlayback()});
 function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
-function openWish(id){let p=posts.find(p=>p.id===id);if(!p?.product)return;currentProduct=p.product;document.getElementById('modalTitle').textContent='🔥 '+p.product;document.getElementById('modalDesc').textContent='اختر الطريقة اللي تناسبك';document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;stopWishFeedPlayback();document.getElementById('modal').classList.add('show')}
-function closeModal(){document.getElementById('modal').classList.remove('show');if(wishActiveFeedPage())setupWishFeedAutoplay()}
-function saveWish(type){let existing=wishes.find(x=>x.product===currentProduct);if(existing)existing.type=type;else wishes.unshift({product:currentProduct,type});try{localStorage.setItem('wish-demo-wishes',JSON.stringify(wishes))}catch(e){};closeModal();showToast(type==='أتمناها'?'❤️ انحفظ المنتج في أمنياتك':'💰 انحفظ المنتج ضمن نوايا الشراء');renderWishes()}
-function showIntent(){document.getElementById('modalDesc').textContent='متى تفكر تشتري المنتج؟';document.getElementById('modalOptions').innerHTML=`<label for="budget">ميزانيتك (اختياري)</label><input type="number" id="budget" placeholder="مثال: 500" min="0"><label for="when">موعد الشراء</label><select id="when"><option>خلال أسبوع</option><option>خلال شهر</option><option>خلال 3 أشهر</option><option>لسه ما قررت</option></select><button class="btn" onclick="saveWish('ناوي أشتريها')">حفظ نية الشراء</button><div class="hintline">العروض والشراء غير مفعّلين في النموذج التجريبي.</div>`}
-function renderWishes(){const box=document.getElementById('wishlist');if(!wishes.length){box.innerHTML='<div class="empty"><span class="em">💭</span>ما عندك أمنيات محفوظة الآن.<br>روح لصفحة «لك» واضغط «أبيها» على أي منتج.</div>';return}box.innerHTML=wishes.map((w,i)=>`<div class="card"><div class="item"><div class="itememoji">${w.product.includes('عطر')?'🌹':w.product.includes('سماع')?'🎧':w.product.includes('تحكم')?'🎮':'🛍️'}</div><div class="itemdetail"><b>${escapeHtml(w.product)}</b><small>${escapeHtml(w.type)}</small></div></div><div class="row"><button class="btn small secondary" onclick="removeWish(${i})">حذف</button><button class="btn small" onclick="showToast('لا يوجد متجر مربوط بعد — سنضيف العروض لاحقًا')">عرض المتاجر (قريبًا)</button></div></div>`).join('')}
+function openWish(id){let p=posts.find(p=>p.id===id);if(!p?.product)return;if(!beginWishSelection(p.product))return;document.getElementById('modalTitle').textContent='🔥 '+p.product;document.getElementById('modalDesc').textContent='اختر الطريقة اللي تناسبك';document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;stopWishFeedPlayback();document.getElementById('modal').classList.add('show')}
+function closeModal(){currentProduct=null;wishModalOwner=null;wishModalEpoch=-1;document.getElementById('modal').classList.remove('show');if(wishActiveFeedPage())setupWishFeedAutoplay()}
+function saveWish(type){
+ if(!wishSelectionCurrent()||!['أتمناها','ناوي أشتريها'].includes(type))return;
+ const next=wishes.map(w=>({...w})),existing=next.find(w=>w.product===currentProduct);
+ if(existing)existing.type=type;else{if(next.length>=200){showToast('وصلت إلى حد الأمنيات المحفوظة');return}next.unshift({product:currentProduct,type})}
+ if(!persistWishList(next))return;
+ closeModal();showToast(type==='أتمناها'?'❤️ انحفظ المنتج في أمنياتك':'💰 انحفظ المنتج ضمن نوايا الشراء');renderWishes();
+}
+function showIntent(){if(!wishSelectionCurrent())return;document.getElementById('modalDesc').textContent='متى تفكر تشتري المنتج؟';document.getElementById('modalOptions').innerHTML=`<label for="budget">ميزانيتك (اختياري)</label><input type="number" id="budget" placeholder="مثال: 500" min="0"><label for="when">موعد الشراء</label><select id="when"><option>خلال أسبوع</option><option>خلال شهر</option><option>خلال 3 أشهر</option><option>لسه ما قررت</option></select><button class="btn" onclick="saveWish('ناوي أشتريها')">حفظ نية الشراء</button><div class="hintline">العروض والشراء غير مفعّلين في النموذج التجريبي.</div>`}
+function renderWishes(){const box=document.getElementById('wishlist');if(!box)return;if(!wishListReady){box.innerHTML='<div class="empty">جار التحقق من الحساب...</div>';return}if(!wishes.length){box.innerHTML='<div class="empty"><span class="em">💭</span>ما عندك أمنيات محفوظة الآن.<br>روح لصفحة «لك» واضغط «أبيها» على أي منتج.</div>';return}box.innerHTML=wishes.map((w,i)=>`<div class="card"><div class="item"><div class="itememoji">${w.product.includes('عطر')?'🌹':w.product.includes('سماع')?'🎧':w.product.includes('تحكم')?'🎮':'🛍️'}</div><div class="itemdetail"><b>${escapeHtml(w.product)}</b><small>${escapeHtml(w.type)}</small></div></div><div class="row"><button class="btn small secondary" onclick="removeWish(${i},${wishListEpoch})">حذف</button><button class="btn small" onclick="showToast('لا يوجد متجر مربوط بعد — سنضيف العروض لاحقًا')">عرض المتاجر (قريبًا)</button></div></div>`).join('')}
 function marketMessage(message){const el=document.getElementById('marketStatus');if(el)el.textContent=message}
 function renderMarketProducts(){
  const el=document.getElementById('marketProducts');if(!el)return;
@@ -1718,13 +1750,13 @@ async function createWishAffiliateLink(productId){
 }
 function openMarketWish(index){
  const item=marketProducts[index];if(!item)return;
- currentProduct=item.name;
+ if(!beginWishSelection(item.name))return;
  document.getElementById('modalTitle').textContent='❤️ '+item.name;
  document.getElementById('modalDesc').textContent='هذا منتج منشور للتجربة فقط؛ لا يوجد شراء حقيقي الآن. اختر رغبتك:';
  document.getElementById('modalOptions').innerHTML=`<button class="btn secondary" onclick="saveWish('أتمناها')">❤️ أتمناها — أضف إلى أمنياتي</button><button class="btn" onclick="showIntent()">💰 ناوي أشتريها</button>`;
  stopWishFeedPlayback();document.getElementById('modal').classList.add('show');
 }
-function removeWish(i){wishes.splice(i,1);try{localStorage.setItem('wish-demo-wishes',JSON.stringify(wishes))}catch(e){};renderWishes()}
+function removeWish(i,epoch){if(!wishListReady||epoch!==wishListEpoch||!Number.isInteger(i)||i<0||i>=wishes.length)return;const next=wishes.filter((_,n)=>n!==i);if(persistWishList(next))renderWishes()}
 function toggleProduct(){document.getElementById('productFields').style.display=document.getElementById('hasprod').checked?'block':'none'}
 function publish(){
  const f=document.getElementById('vfile').files[0],desc=document.getElementById('caption').value.trim(),check=document.getElementById('hasprod').checked,product=document.getElementById('pname').value.trim();
@@ -3912,7 +3944,7 @@ async function toggleWishInterest(productId,button){
   }
 }
 
-function renderWishAuth(session){wishCurrentAuthSession=session;const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){closeWishVideoShareDialog(false);wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;wishProfileAuthChanged();wishFollowingFeedAuthChanged();resetWishFollowing();resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();wishPublicAuthorAuthChanged();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session);renderWishFollowingSummary();renderWishOwnProfileSummary()}
+function renderWishAuth(session){wishCurrentAuthSession=session;wishListAuthChanged(session);const nextUid=session?.user?.id||null;if(nextUid!==wishFeedCurrentUserId){closeWishVideoShareDialog(false);wishFeedCurrentUserId=nextUid;wishVideoDeleteAuthEpoch++;wishProfileAuthChanged();wishFollowingFeedAuthChanged();resetWishFollowing();resetWishVideoLikes();resetWishVideoComments();resetWishMyVideos();wishPublicAuthorAuthChanged();refreshWISHPosts();if(document.getElementById('my-videos').classList.contains('active'))setTimeout(()=>loadWishMyVideos(),0)}updateWishAuthPanels();if(session){const user=session.user;document.getElementById('authDisplayName').textContent=user.user_metadata?.display_name||'عضو WISH';document.getElementById('authDisplayEmail').textContent=user.email||''}shopAuthChanged(session);affiliateStatsAuthChanged(session);wishDemoOrdersAuthChanged(session);wishFeedbackAuthChanged(session);wishDemoCartAuthChanged(session);wishInterestAuthChanged(session);renderWishFollowingSummary();renderWishOwnProfileSummary()}
 async function submitWishAuth(){
  if(!wishAuthClient){authMessage('التسجيل غير مفعل حتى نربط Supabase.',true);return}
  const button=document.getElementById('authSubmit');button.disabled=true;
@@ -3935,7 +3967,7 @@ async function submitWishAuth(){
 async function signOutWish(){if(!wishAuthClient)return;const {error}=await wishAuthClient.auth.signOut();if(error)authMessage(error.message,true);else{renderWishAuth(null);authMessage('تم تسجيل الخروج')}}
 async function initWishAuth(){
  const setup=document.getElementById('authSetup');
- if(!WISH_SUPABASE_URL||!WISH_SUPABASE_PUBLISHABLE_KEY){failWishSharedVideoStartup();setup.textContent='الحسابات الحقيقية لم تُربط بعد. الخطوة التالية: إنشاء مشروع مجاني في Supabase وربط عنوان المشروع والمفتاح العام؛ لا تضع أي مفتاح سري في هذا الملف.';return}
+ if(!WISH_SUPABASE_URL||!WISH_SUPABASE_PUBLISHABLE_KEY){wishListAuthChanged(null);failWishSharedVideoStartup();setup.textContent='الحسابات الحقيقية لم تُربط بعد. الخطوة التالية: إنشاء مشروع مجاني في Supabase وربط عنوان المشروع والمفتاح العام؛ لا تضع أي مفتاح سري في هذا الملف.';return}
  if(!window.supabase?.createClient){failWishSharedVideoStartup();setup.textContent='تعذر تحميل خدمة تسجيل الدخول. تحقق من اتصال الإنترنت ثم أعد فتح الصفحة.';cloudFeedMessage('تعذر الاتصال بنظام الفيديوهات. تحقق من الإنترنت ثم أعد فتح الصفحة.');return}
  try{
    wishAuthClient=window.supabase.createClient(WISH_SUPABASE_URL,WISH_SUPABASE_PUBLISHABLE_KEY);
